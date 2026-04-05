@@ -1,0 +1,58 @@
+<svg width="1242" height="1660" viewBox="0 0 1242 1660" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1242" height="1660" rx="60" fill="#F7F2EA"></rect>
+  <rect x="116" y="646" width="292" height="460" rx="34" fill="#FFFDF9" stroke="#D7EAE3" stroke-width="3"></rect>
+  <rect x="470" y="646" width="292" height="460" rx="34" fill="#FFFDF9" stroke="#F3DEC8" stroke-width="3"></rect>
+  <rect x="824" y="646" width="292" height="460" rx="34" fill="#FFFDF9" stroke="#D7EAE3" stroke-width="3"></rect>
+  <rect x="108" y="1388" width="1024" height="116" rx="28" fill="#173845"></rect>
+  <circle cx="1120" cy="152" r="150" fill="#E8F7F3"></circle>
+  <circle cx="152" cy="1484" r="190" fill="#D9F0EB"></circle>
+  <text data-slot="eyebrow" x="108" y="176" fill="#173845" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="40" font-weight="700" text-anchor="start">
+    <tspan x="108" dy="0">最容易卡住</tspan>
+  </text>
+  <text data-slot="title" x="104" y="316" fill="#102C35" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="82" font-weight="800" text-anchor="start">
+    <tspan x="104" dy="0">用户最容易卡住的点</tspan>
+  </text>
+  <text data-slot="subtitle" x="108" y="478" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="34" font-weight="500" text-anchor="start">
+    <tspan x="108" dy="0">真正耗时间的常常不是功能</tspan>
+    <tspan x="108" dy="44">而是装之前和装之后的那些小问题</tspan>
+  </text>
+  <text data-slot="cardA" x="156" y="760" fill="#173845" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="40" font-weight="700" text-anchor="start">
+    <tspan x="156" dy="0">依赖问题</tspan>
+  </text>
+  <text data-slot="cardAL1" x="156" y="846" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="156" dy="0">Node 没装对</tspan>
+  </text>
+  <text data-slot="cardAL2" x="156" y="892" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="156" dy="0">pnpm 缺失</tspan>
+  </text>
+  <text data-slot="cardAL3" x="156" y="938" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="156" dy="0">版本不一致</tspan>
+  </text>
+  <text data-slot="cardB" x="510" y="760" fill="#173845" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="40" font-weight="700" text-anchor="start">
+    <tspan x="510" dy="0">配置问题</tspan>
+  </text>
+  <text data-slot="cardBL1" x="510" y="846" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="510" dy="0">文件在哪</tspan>
+  </text>
+  <text data-slot="cardBL2" x="510" y="892" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="510" dy="0">字段怎么填</tspan>
+  </text>
+  <text data-slot="cardBL3" x="510" y="938" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="510" dy="0">路径往哪写</tspan>
+  </text>
+  <text data-slot="cardC" x="864" y="760" fill="#173845" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="40" font-weight="700" text-anchor="start">
+    <tspan x="864" dy="0">状态问题</tspan>
+  </text>
+  <text data-slot="cardCL1" x="864" y="846" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="864" dy="0">插件装没装上</tspan>
+  </text>
+  <text data-slot="cardCL2" x="864" y="892" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="864" dy="0">为什么失败</tspan>
+  </text>
+  <text data-slot="cardCL3" x="864" y="938" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="864" dy="0">下一步做什么</tspan>
+  </text>
+  <text data-slot="footer" x="128" y="1468" fill="#FFF8EF" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="38" font-weight="700" text-anchor="start">
+    <tspan x="128" dy="0">能把状态说清楚 用户就不会一直猜</tspan>
+  </text>
+</svg>

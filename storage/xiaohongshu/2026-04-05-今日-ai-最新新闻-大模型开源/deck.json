@@ -1,0 +1,101 @@
+{
+  "prompt": "今日 AI 最新新闻 + 大模型开源",
+  "topic": "今日 AI 最新新闻 + 大模型开源",
+  "slideCount": 5,
+  "summary": "围绕 今日 AI 最新新闻 + 大模型开源 生成一组适合发布的小红书图文素材。",
+  "createdAt": "2026-04-05T04:24:12.318Z",
+  "logs": [],
+  "sources": [],
+  "slides": [
+    {
+      "id": "slide-1775363052322-al7d2v",
+      "index": 1,
+      "templateId": "cover-hero",
+      "values": {
+        "eyebrow": "今日 AI",
+        "title": "今日 AI 最新新闻 + 大模型开源",
+        "subtitle": "围绕 今日 AI 最新新闻 + 大模型开源 快速提炼要点",
+        "highlight": "围绕 今日 AI 最新新闻 + 大模型开源 生成一组适合发布的小红书",
+        "featureA": "新闻点",
+        "featureADesc": "重点事件",
+        "featureB": "为什么火",
+        "featureBDesc": "行业影响",
+        "featureC": "可跟进",
+        "featureCDesc": "后续观察"
+      },
+      "fileName": "slide-1.svg"
+    },
+    {
+      "id": "slide-1775363052324-yp7phi",
+      "index": 2,
+      "templateId": "step-list",
+      "values": {
+        "eyebrow": "快速看完",
+        "title": "今天这条新闻怎么拆",
+        "subtitle": "先交代事实，再给读者一个清晰判断。",
+        "step1": "今天的核心事件",
+        "step2": "提炼第一层背景",
+        "step3": "补充第二条关联动态",
+        "step4": "补充第三条市场反馈",
+        "step5": "最后给出你的判断",
+        "footer": "这页适合做信息总览，读者能马上进入状态。"
+      },
+      "fileName": "slide-2.svg"
+    },
+    {
+      "id": "slide-1775363052325-s49aqq",
+      "index": 3,
+      "templateId": "triple-cards",
+      "values": {
+        "eyebrow": "三点提炼",
+        "title": "这条新闻最值得看的点",
+        "subtitle": "把冗长原文压缩成三块信息，比较适合传播。",
+        "cardA": "事实",
+        "cardAL1": "发生了什么",
+        "cardAL2": "谁发布的",
+        "cardAL3": "时间节点",
+        "cardB": "影响",
+        "cardBL1": "行业变化",
+        "cardBL2": "用户影响",
+        "cardBL3": "商业信号",
+        "cardC": "动作",
+        "cardCL1": "继续追踪",
+        "cardCL2": "补充观点",
+        "cardCL3": "整理选题",
+        "footer": "三卡片结构很适合做小红书第二屏或第三屏。"
+      },
+      "fileName": "slide-3.svg"
+    },
+    {
+      "id": "slide-1775363052327-0a643s",
+      "index": 4,
+      "templateId": "story-split",
+      "values": {
+        "eyebrow": "怎么理解",
+        "title": "新闻事实和行业判断分开讲",
+        "subtitle": "左边讲发生了什么，右边讲这对读者意味着什么。",
+        "leftLabel": "事实层",
+        "leftTitle": "核心变化",
+        "leftBody": "先讲清楚新闻事实和关键数据。",
+        "rightLabel": "判断层",
+        "rightTitle": "值得关注",
+        "rightBody": "再给出这条新闻背后的行业判断。",
+        "footer": "把事实和观点拆开，读者更容易接受。"
+      },
+      "fileName": "slide-4.svg"
+    },
+    {
+      "id": "slide-1775363052327-qung2s",
+      "index": 5,
+      "templateId": "quote-cta",
+      "values": {
+        "eyebrow": "发布建议",
+        "title": "这组图文适合今天发",
+        "subtitle": "用 今日 AI 最新新闻 + 大模型开源 这个话题切入，",
+        "button": "继续更新下一条",
+        "footer": "mid-mint x 小红书素材"
+      },
+      "fileName": "slide-5.svg"
+    }
+  ]
+}

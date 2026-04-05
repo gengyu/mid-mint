@@ -1,0 +1,50 @@
+[
+  {
+    "id": "job-1775381857475-l8zpso",
+    "status": "INPUT_RECEIVED",
+    "rewriteCount": 0,
+    "activeVersion": 1,
+    "createdAt": "2026-04-05T09:37:37.475Z",
+    "updatedAt": "2026-04-05T09:37:37.475Z"
+  },
+  {
+    "id": "job-1775381844983-8gurap",
+    "status": "APPROVED",
+    "rewriteCount": 0,
+    "activeVersion": 1,
+    "createdAt": "2026-04-05T09:37:24.982Z",
+    "updatedAt": "2026-04-05T09:37:37.472Z"
+  },
+  {
+    "id": "job-1775372008659-ufz9py",
+    "status": "APPROVED",
+    "rewriteCount": 0,
+    "activeVersion": 1,
+    "createdAt": "2026-04-05T06:53:28.658Z",
+    "updatedAt": "2026-04-05T06:53:37.768Z"
+  },
+  {
+    "id": "job-1775371837011-6lngn9",
+    "status": "APPROVED",
+    "rewriteCount": 0,
+    "activeVersion": 1,
+    "createdAt": "2026-04-05T06:50:37.010Z",
+    "updatedAt": "2026-04-05T06:50:37.038Z"
+  },
+  {
+    "id": "job-1775371027590-oqski2",
+    "status": "REWRITE_PENDING",
+    "rewriteCount": 1,
+    "activeVersion": 2,
+    "createdAt": "2026-04-05T06:37:07.589Z",
+    "updatedAt": "2026-04-05T06:37:07.608Z"
+  },
+  {
+    "id": "job-1775371008406-mz12sj",
+    "status": "REWRITE_PENDING",
+    "rewriteCount": 0,
+    "activeVersion": 1,
+    "createdAt": "2026-04-05T06:36:48.406Z",
+    "updatedAt": "2026-04-05T06:36:48.417Z"
+  }
+]

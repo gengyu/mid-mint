@@ -1,0 +1,57 @@
+<svg width="1242" height="1660" viewBox="0 0 1242 1660" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1242" height="1660" rx="60" fill="#F7F2EA"></rect>
+  <rect x="116" y="646" width="292" height="460" rx="34" fill="#FFFDF9" stroke="#D7EAE3" stroke-width="3"></rect>
+  <rect x="470" y="646" width="292" height="460" rx="34" fill="#FFFDF9" stroke="#F3DEC8" stroke-width="3"></rect>
+  <rect x="824" y="646" width="292" height="460" rx="34" fill="#FFFDF9" stroke="#D7EAE3" stroke-width="3"></rect>
+  <rect x="108" y="1388" width="1024" height="116" rx="28" fill="#173845"></rect>
+  <circle cx="1120" cy="152" r="150" fill="#E8F7F3"></circle>
+  <circle cx="152" cy="1484" r="190" fill="#D9F0EB"></circle>
+  <text data-slot="eyebrow" x="108" y="176" fill="#173845" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="40" font-weight="700" text-anchor="start">
+    <tspan x="108" dy="0">主要问题</tspan>
+  </text>
+  <text data-slot="title" x="104" y="316" fill="#102C35" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="82" font-weight="800" text-anchor="start">
+    <tspan x="104" dy="0">主要解决什么问题</tspan>
+  </text>
+  <text data-slot="subtitle" x="108" y="478" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="34" font-weight="500" text-anchor="start">
+    <tspan x="108" dy="0">很多人不是不会用 AI 而是不想在安装阶段就被劝退</tspan>
+  </text>
+  <text data-slot="cardA" x="156" y="760" fill="#173845" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="40" font-weight="700" text-anchor="start">
+    <tspan x="156" dy="0">安装难</tspan>
+  </text>
+  <text data-slot="cardAL1" x="156" y="846" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="156" dy="0">先看环境</tspan>
+  </text>
+  <text data-slot="cardAL2" x="156" y="892" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="156" dy="0">再装 CLI</tspan>
+  </text>
+  <text data-slot="cardAL3" x="156" y="938" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="156" dy="0">中间很容易断</tspan>
+  </text>
+  <text data-slot="cardB" x="510" y="760" fill="#173845" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="40" font-weight="700" text-anchor="start">
+    <tspan x="510" dy="0">配置散</tspan>
+  </text>
+  <text data-slot="cardBL1" x="510" y="846" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="510" dy="0">模型入口</tspan>
+  </text>
+  <text data-slot="cardBL2" x="510" y="892" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="510" dy="0">workspace…</tspan>
+  </text>
+  <text data-slot="cardBL3" x="510" y="938" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="510" dy="0">分散在不同位置</tspan>
+  </text>
+  <text data-slot="cardC" x="864" y="760" fill="#173845" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="40" font-weight="700" text-anchor="start">
+    <tspan x="864" dy="0">接入烦</tspan>
+  </text>
+  <text data-slot="cardCL1" x="864" y="846" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="864" dy="0">插件文档长</tspan>
+  </text>
+  <text data-slot="cardCL2" x="864" y="892" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="864" dy="0">状态不清楚</tspan>
+  </text>
+  <text data-slot="cardCL3" x="864" y="938" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="864" dy="0">排错成本高</tspan>
+  </text>
+  <text data-slot="footer" x="128" y="1468" fill="#FFF8EF" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="38" font-weight="700" text-anchor="start">
+    <tspan x="128" dy="0">把第一次装机流程收拢好 传播会顺很多</tspan>
+  </text>
+</svg>

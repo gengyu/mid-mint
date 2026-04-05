@@ -1,0 +1,73 @@
+<svg width="1242" height="1660" viewBox="0 0 1242 1660" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1242" height="1660" rx="60" fill="#102C35"></rect>
+  <rect x="96" y="596" width="1048" height="806" rx="40" fill="#173845" stroke="#2E6070" stroke-width="3"></rect>
+  <rect x="136" y="654" width="264" height="300" rx="30" fill="#FFF8EF"></rect>
+  <rect x="488" y="654" width="264" height="300" rx="30" fill="#FFF8EF"></rect>
+  <rect x="840" y="654" width="264" height="300" rx="30" fill="#FFF8EF"></rect>
+  <rect x="96" y="1450" width="1048" height="104" rx="26" fill="#FF6B3D"></rect>
+  <circle cx="1068" cy="236" r="216" fill="#1D4552"></circle>
+  <circle cx="168" cy="1444" r="246" fill="#173845"></circle>
+  <text data-slot="eyebrow" x="100" y="178" fill="#7EF1E0" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="44" font-weight="700" text-anchor="start">
+    <tspan x="100" dy="0">团队交付场景</tspan>
+  </text>
+  <text data-slot="title" x="96" y="314" fill="#FFF8EF" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="88" font-weight="800" text-anchor="start">
+    <tspan x="96" dy="0">给团队交付 OpenClaw</tspan>
+    <tspan x="96" dy="102">需要一个统一入口</tspan>
+  </text>
+  <text data-slot="subtitle" x="100" y="502" fill="#A8DAD3" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="36" font-weight="500" text-anchor="start">
+    <tspan x="100" dy="0">安装 / 配置 / 插件 / workspace</tspan>
+    <tspan x="100" dy="48">别让每个人各配各的</tspan>
+  </text>
+  <text data-slot="cardA" x="172" y="742" fill="#173845" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="38" font-weight="700" text-anchor="start">
+    <tspan x="172" dy="0">环境统一</tspan>
+  </text>
+  <text data-slot="cardALine1" x="172" y="816" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="172" dy="0">少一些</tspan>
+  </text>
+  <text data-slot="cardALine2" x="172" y="860" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="24" font-weight="400" text-anchor="start">
+    <tspan x="172" dy="0">机器差异带来的</tspan>
+  </text>
+  <text data-slot="cardALine3" x="172" y="904" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="172" dy="0">安装问题</tspan>
+  </text>
+  <text data-slot="cardB" x="524" y="742" fill="#173845" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="38" font-weight="700" text-anchor="start">
+    <tspan x="524" dy="0">流程统一</tspan>
+  </text>
+  <text data-slot="cardBLine1" x="524" y="816" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="524" dy="0">从检测到配置</tspan>
+  </text>
+  <text data-slot="cardBLine2" x="524" y="860" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="524" dy="0">步骤更容易</tspan>
+  </text>
+  <text data-slot="cardBLine3" x="524" y="904" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="524" dy="0">复现</tspan>
+  </text>
+  <text data-slot="cardC" x="876" y="742" fill="#173845" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="38" font-weight="700" text-anchor="start">
+    <tspan x="876" dy="0">状态统一</tspan>
+  </text>
+  <text data-slot="cardCLine1" x="876" y="816" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="876" dy="0">插件安装中</tspan>
+  </text>
+  <text data-slot="cardCLine2" x="876" y="860" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="876" dy="0">成功失败</tspan>
+  </text>
+  <text data-slot="cardCLine3" x="876" y="904" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="876" dy="0">更直观</tspan>
+  </text>
+  <text data-slot="lead" x="140" y="1164" fill="#FF9F5C" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="34" font-weight="700" text-anchor="start">
+    <tspan x="140" dy="0">更适合这些人：</tspan>
+  </text>
+  <text data-slot="bullet1" x="140" y="1244" fill="#FFF8EF" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="32" font-weight="400" text-anchor="start">
+    <tspan x="140" dy="0">- 帮同事搭环境的人</tspan>
+  </text>
+  <text data-slot="bullet2" x="140" y="1310" fill="#FFF8EF" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="32" font-weight="400" text-anchor="start">
+    <tspan x="140" dy="0">- 想做统一安装入口的团队负责人</tspan>
+  </text>
+  <text data-slot="bullet3" x="140" y="1376" fill="#FFF8EF" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="32" font-weight="400" text-anchor="start">
+    <tspan x="140" dy="0">- 需要导入 导出和分享 agent bundle 的场景</tspan>
+  </text>
+  <text data-slot="footer" x="138" y="1518" fill="#FFF8EF" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="38" font-weight="700" text-anchor="start">
+    <tspan x="138" dy="0">桌面安装器的价值 不只是能装上 而是更容易交付给别人</tspan>
+  </text>
+  <path d="M210 1080H1030" stroke="#2E6070" stroke-width="2" stroke-dasharray="10 10"></path>
+</svg>

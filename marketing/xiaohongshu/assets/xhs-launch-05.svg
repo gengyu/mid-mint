@@ -1,0 +1,57 @@
+<svg width="1242" height="1660" viewBox="0 0 1242 1660" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1242" height="1660" rx="60" fill="#F7F2EA"></rect>
+  <rect x="116" y="646" width="292" height="460" rx="34" fill="#FFFDF9" stroke="#D7EAE3" stroke-width="3"></rect>
+  <rect x="470" y="646" width="292" height="460" rx="34" fill="#FFFDF9" stroke="#F3DEC8" stroke-width="3"></rect>
+  <rect x="824" y="646" width="292" height="460" rx="34" fill="#FFFDF9" stroke="#D7EAE3" stroke-width="3"></rect>
+  <rect x="108" y="1388" width="1024" height="116" rx="28" fill="#173845"></rect>
+  <circle cx="1120" cy="152" r="150" fill="#E8F7F3"></circle>
+  <circle cx="152" cy="1484" r="190" fill="#D9F0EB"></circle>
+  <text data-slot="eyebrow" x="108" y="176" fill="#173845" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="40" font-weight="700" text-anchor="start">
+    <tspan x="108" dy="0">适合谁</tspan>
+  </text>
+  <text data-slot="title" x="104" y="316" fill="#102C35" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="82" font-weight="800" text-anchor="start">
+    <tspan x="104" dy="0">这套入口更适合哪些人</tspan>
+  </text>
+  <text data-slot="subtitle" x="108" y="478" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="34" font-weight="500" text-anchor="start">
+    <tspan x="108" dy="0">不是只给工程师准备 而是给想更顺手装起来的人</tspan>
+  </text>
+  <text data-slot="cardA" x="156" y="760" fill="#173845" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="40" font-weight="700" text-anchor="start">
+    <tspan x="156" dy="0">新手用户</tspan>
+  </text>
+  <text data-slot="cardAL1" x="156" y="846" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="156" dy="0">不想碰终端</tspan>
+  </text>
+  <text data-slot="cardAL2" x="156" y="892" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="156" dy="0">想先装起来</tspan>
+  </text>
+  <text data-slot="cardAL3" x="156" y="938" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="156" dy="0">再慢慢熟悉</tspan>
+  </text>
+  <text data-slot="cardB" x="510" y="760" fill="#173845" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="40" font-weight="700" text-anchor="start">
+    <tspan x="510" dy="0">部署的人</tspan>
+  </text>
+  <text data-slot="cardBL1" x="510" y="846" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="510" dy="0">帮朋友搭环境</tspan>
+  </text>
+  <text data-slot="cardBL2" x="510" y="892" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="510" dy="0">不想重复解释</tspan>
+  </text>
+  <text data-slot="cardBL3" x="510" y="938" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="510" dy="0">每一步该点哪</tspan>
+  </text>
+  <text data-slot="cardC" x="864" y="760" fill="#173845" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="40" font-weight="700" text-anchor="start">
+    <tspan x="864" dy="0">团队交付</tspan>
+  </text>
+  <text data-slot="cardCL1" x="864" y="846" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="864" dy="0">希望入口统一</tspan>
+  </text>
+  <text data-slot="cardCL2" x="864" y="892" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="864" dy="0">配置更一致</tspan>
+  </text>
+  <text data-slot="cardCL3" x="864" y="938" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="28" font-weight="400" text-anchor="start">
+    <tspan x="864" dy="0">排查更省事</tspan>
+  </text>
+  <text data-slot="footer" x="128" y="1468" fill="#FFF8EF" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="38" font-weight="700" text-anchor="start">
+    <tspan x="128" dy="0">把使用门槛降下来 才更容易让别人真的开始用</tspan>
+  </text>
+</svg>

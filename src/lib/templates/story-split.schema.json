@@ -1,0 +1,34 @@
+{
+  "meta": {
+    "id": "story-split",
+    "name": "双栏说明",
+    "category": "xiaohongshu-carousel",
+    "description": "适合强调前后对照、概念拆解和入口变化的轮播页。",
+    "supportedSlots": [
+      "eyebrow",
+      "title",
+      "subtitle",
+      "leftLabel",
+      "leftTitle",
+      "leftBody",
+      "rightLabel",
+      "rightTitle",
+      "rightBody",
+      "footer"
+    ],
+    "tags": ["双栏", "说明", "对照"]
+  },
+  "svgFile": "story-split.svg",
+  "slots": [
+    { "id": "eyebrow", "type": "text", "maxLength": 12, "maxLines": 1, "fontSize": 40, "minFontSize": 30, "lineHeight": 48, "x": 108, "y": 170, "width": 280, "height": 48, "textAnchor": "start", "fill": "#7EF1E0", "fontWeight": 700 },
+    { "id": "title", "type": "text", "maxLength": 24, "maxLines": 2, "fontSize": 82, "minFontSize": 58, "lineHeight": 94, "x": 104, "y": 312, "width": 900, "height": 200, "textAnchor": "start", "fill": "#FFF8EF", "fontWeight": 800 },
+    { "id": "subtitle", "type": "text", "maxLength": 30, "maxLines": 2, "fontSize": 34, "minFontSize": 24, "lineHeight": 44, "x": 108, "y": 480, "width": 900, "height": 90, "textAnchor": "start", "fill": "#BFE3DC", "fontWeight": 500 },
+    { "id": "leftLabel", "type": "text", "maxLength": 8, "maxLines": 1, "fontSize": 28, "minFontSize": 22, "lineHeight": 34, "x": 140, "y": 708, "width": 180, "height": 34, "textAnchor": "start", "fill": "#7EF1E0", "fontWeight": 700 },
+    { "id": "leftTitle", "type": "text", "maxLength": 12, "maxLines": 2, "fontSize": 52, "minFontSize": 34, "lineHeight": 62, "x": 140, "y": 798, "width": 380, "height": 140, "textAnchor": "start", "fill": "#FFF8EF", "fontWeight": 800 },
+    { "id": "leftBody", "type": "text", "maxLength": 34, "maxLines": 4, "fontSize": 30, "minFontSize": 22, "lineHeight": 40, "x": 140, "y": 970, "width": 380, "height": 240, "textAnchor": "start", "fill": "#DDEBE6", "fontWeight": 400 },
+    { "id": "rightLabel", "type": "text", "maxLength": 8, "maxLines": 1, "fontSize": 28, "minFontSize": 22, "lineHeight": 34, "x": 712, "y": 708, "width": 180, "height": 34, "textAnchor": "start", "fill": "#FF9F5C", "fontWeight": 700 },
+    { "id": "rightTitle", "type": "text", "maxLength": 12, "maxLines": 2, "fontSize": 52, "minFontSize": 34, "lineHeight": 62, "x": 712, "y": 798, "width": 380, "height": 140, "textAnchor": "start", "fill": "#173845", "fontWeight": 800 },
+    { "id": "rightBody", "type": "text", "maxLength": 34, "maxLines": 4, "fontSize": 30, "minFontSize": 22, "lineHeight": 40, "x": 712, "y": 970, "width": 380, "height": 240, "textAnchor": "start", "fill": "#46626B", "fontWeight": 400 },
+    { "id": "footer", "type": "text", "maxLength": 32, "maxLines": 2, "fontSize": 38, "minFontSize": 28, "lineHeight": 48, "x": 128, "y": 1496, "width": 980, "height": 96, "textAnchor": "start", "fill": "#FFF8EF", "fontWeight": 700 }
+  ]
+}

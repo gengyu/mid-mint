@@ -1,0 +1,146 @@
+[
+  {
+    "campaignId": "launch",
+    "campaignName": "套图 A：首发介绍",
+    "note": "适合第一次发产品介绍，先建立认知。",
+    "fileName": "xhs-launch-01.svg",
+    "templateId": "cover-hero",
+    "prompt": "首发介绍第 1 页封面"
+  },
+  {
+    "campaignId": "launch",
+    "campaignName": "套图 A：首发介绍",
+    "note": "适合第一次发产品介绍，先建立认知。",
+    "fileName": "xhs-launch-02.svg",
+    "templateId": "story-split",
+    "prompt": "首发介绍第 2 页解释定位"
+  },
+  {
+    "campaignId": "launch",
+    "campaignName": "套图 A：首发介绍",
+    "note": "适合第一次发产品介绍，先建立认知。",
+    "fileName": "xhs-launch-03.svg",
+    "templateId": "triple-cards",
+    "prompt": "首发介绍第 3 页痛点"
+  },
+  {
+    "campaignId": "launch",
+    "campaignName": "套图 A：首发介绍",
+    "note": "适合第一次发产品介绍，先建立认知。",
+    "fileName": "xhs-launch-04.svg",
+    "templateId": "step-list",
+    "prompt": "首发介绍第 4 页功能清单"
+  },
+  {
+    "campaignId": "launch",
+    "campaignName": "套图 A：首发介绍",
+    "note": "适合第一次发产品介绍，先建立认知。",
+    "fileName": "xhs-launch-05.svg",
+    "templateId": "triple-cards",
+    "prompt": "首发介绍第 5 页适合谁"
+  },
+  {
+    "campaignId": "launch",
+    "campaignName": "套图 A：首发介绍",
+    "note": "适合第一次发产品介绍，先建立认知。",
+    "fileName": "xhs-launch-06.svg",
+    "templateId": "quote-cta",
+    "prompt": "首发介绍第 6 页收尾 CTA"
+  },
+  {
+    "campaignId": "pain-points",
+    "campaignName": "套图 B：痛点对比",
+    "note": "适合强调不会命令行也能装、也不用手改 JSON。",
+    "fileName": "xhs-pain-01.svg",
+    "templateId": "quote-cta",
+    "prompt": "痛点对比第 1 页封面"
+  },
+  {
+    "campaignId": "pain-points",
+    "campaignName": "套图 B：痛点对比",
+    "note": "适合强调不会命令行也能装、也不用手改 JSON。",
+    "fileName": "xhs-pain-02.svg",
+    "templateId": "step-list",
+    "prompt": "痛点对比第 2 页传统流程"
+  },
+  {
+    "campaignId": "pain-points",
+    "campaignName": "套图 B：痛点对比",
+    "note": "适合强调不会命令行也能装、也不用手改 JSON。",
+    "fileName": "xhs-pain-03.svg",
+    "templateId": "step-list",
+    "prompt": "痛点对比第 3 页现在的流程"
+  },
+  {
+    "campaignId": "pain-points",
+    "campaignName": "套图 B：痛点对比",
+    "note": "适合强调不会命令行也能装、也不用手改 JSON。",
+    "fileName": "xhs-pain-04.svg",
+    "templateId": "triple-cards",
+    "prompt": "痛点对比第 4 页常见卡点"
+  },
+  {
+    "campaignId": "pain-points",
+    "campaignName": "套图 B：痛点对比",
+    "note": "适合强调不会命令行也能装、也不用手改 JSON。",
+    "fileName": "xhs-pain-05.svg",
+    "templateId": "story-split",
+    "prompt": "痛点对比第 5 页为什么图形界面更友好"
+  },
+  {
+    "campaignId": "pain-points",
+    "campaignName": "套图 B：痛点对比",
+    "note": "适合强调不会命令行也能装、也不用手改 JSON。",
+    "fileName": "xhs-pain-06.svg",
+    "templateId": "quote-cta",
+    "prompt": "痛点对比第 6 页收尾"
+  },
+  {
+    "campaignId": "team-delivery",
+    "campaignName": "套图 C：团队交付",
+    "note": "适合发给有部署和交付诉求的团队用户。",
+    "fileName": "xhs-team-01.svg",
+    "templateId": "team-delivery",
+    "prompt": "团队交付第 1 页封面"
+  },
+  {
+    "campaignId": "team-delivery",
+    "campaignName": "套图 C：团队交付",
+    "note": "适合发给有部署和交付诉求的团队用户。",
+    "fileName": "xhs-team-02.svg",
+    "templateId": "triple-cards",
+    "prompt": "团队交付第 2 页为什么难"
+  },
+  {
+    "campaignId": "team-delivery",
+    "campaignName": "套图 C：团队交付",
+    "note": "适合发给有部署和交付诉求的团队用户。",
+    "fileName": "xhs-team-03.svg",
+    "templateId": "story-split",
+    "prompt": "团队交付第 3 页统一入口价值"
+  },
+  {
+    "campaignId": "team-delivery",
+    "campaignName": "套图 C：团队交付",
+    "note": "适合发给有部署和交付诉求的团队用户。",
+    "fileName": "xhs-team-04.svg",
+    "templateId": "triple-cards",
+    "prompt": "团队交付第 4 页更适合谁"
+  },
+  {
+    "campaignId": "team-delivery",
+    "campaignName": "套图 C：团队交付",
+    "note": "适合发给有部署和交付诉求的团队用户。",
+    "fileName": "xhs-team-05.svg",
+    "templateId": "step-list",
+    "prompt": "团队交付第 5 页现在支持"
+  },
+  {
+    "campaignId": "team-delivery",
+    "campaignName": "套图 C：团队交付",
+    "note": "适合发给有部署和交付诉求的团队用户。",
+    "fileName": "xhs-team-06.svg",
+    "templateId": "quote-cta",
+    "prompt": "团队交付第 6 页收尾"
+  }
+]

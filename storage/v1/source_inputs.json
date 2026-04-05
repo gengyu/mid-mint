@@ -1,0 +1,51 @@
+[
+  {
+    "id": "source_inputs-1775381857475-b33t91",
+    "jobId": "job-1775381857475-l8zpso",
+    "versionNumber": 1,
+    "payloadJson": "{\"urls\":[],\"rawText\":\"AI融资的消息\",\"notes\":\"\",\"targetAudience\":\"\",\"contentGoal\":\"\",\"preferredStyle\":\"\"}",
+    "createdAt": "2026-04-05T09:37:37.475Z"
+  },
+  {
+    "id": "source_inputs-1775381844985-tjfxz2",
+    "jobId": "job-1775381844983-8gurap",
+    "versionNumber": 1,
+    "payloadJson": "{\"urls\":[],\"rawText\":\"AI融资的消息\",\"notes\":\"\",\"targetAudience\":\"\",\"contentGoal\":\"\",\"preferredStyle\":\"\"}",
+    "createdAt": "2026-04-05T09:37:24.985Z"
+  },
+  {
+    "id": "source_inputs-1775372008660-sfeqnb",
+    "jobId": "job-1775372008659-ufz9py",
+    "versionNumber": 1,
+    "payloadJson": "{\"urls\":[],\"rawText\":\"验证真实 PNG 输出。\",\"notes\":\"5 页图文。\",\"targetAudience\":\"产品经理\",\"contentGoal\":\"验证 png\",\"preferredStyle\":\"专业\"}",
+    "createdAt": "2026-04-05T06:53:28.660Z"
+  },
+  {
+    "id": "source_inputs-1775371837013-kku9q9",
+    "jobId": "job-1775371837011-6lngn9",
+    "versionNumber": 1,
+    "payloadJson": "{\"urls\":[],\"rawText\":\"测试导出链路。\",\"notes\":\"做成 5 页图文。\",\"targetAudience\":\"产品经理\",\"contentGoal\":\"测试 export\",\"preferredStyle\":\"专业\"}",
+    "createdAt": "2026-04-05T06:50:37.013Z"
+  },
+  {
+    "id": "source_inputs-1775371027602-hxrfw3",
+    "jobId": "job-1775371027590-oqski2",
+    "versionNumber": 2,
+    "payloadJson": "{\"urls\":[],\"rawText\":\"某 AI 产品更新了发布节奏和能力边界。\",\"notes\":\"做成小红书图文；目标是帮助从业者快速判断是否值得跟进。\",\"targetAudience\":\"AI 从业者\",\"contentGoal\":\"快速判断这次更新值不值得跟进\",\"preferredStyle\":\"专业\"}",
+    "createdAt": "2026-04-05T06:37:07.602Z"
+  },
+  {
+    "id": "source_inputs-1775371027590-0d7rem",
+    "jobId": "job-1775371027590-oqski2",
+    "versionNumber": 1,
+    "payloadJson": "{\"urls\":[],\"rawText\":\"某 AI 产品更新了发布节奏和能力边界。\",\"notes\":\"做成小红书图文；目标是帮助从业者快速判断是否值得跟进。\",\"targetAudience\":\"AI 从业者\",\"contentGoal\":\"快速判断这次更新值不值得跟进\",\"preferredStyle\":\"专业\"}",
+    "createdAt": "2026-04-05T06:37:07.590Z"
+  },
+  {
+    "id": "source_inputs-1775371008407-dh9k5n",
+    "jobId": "job-1775371008406-mz12sj",
+    "versionNumber": 1,
+    "payloadJson": "{\"urls\":[],\"rawText\":\"OpenAI 发布了新一轮融资消息，市场关注其产品化能力和商业化路径。\",\"notes\":\"目标读者是关注 AI 产品的从业者；想做成 5 页小红书图文。\",\"targetAudience\":\"AI 产品经理\",\"contentGoal\":\"快速看懂这条融资消息对产品机会的影响\",\"preferredStyle\":\"专业、短句、偏科技\"}",
+    "createdAt": "2026-04-05T06:36:48.407Z"
+  }
+]

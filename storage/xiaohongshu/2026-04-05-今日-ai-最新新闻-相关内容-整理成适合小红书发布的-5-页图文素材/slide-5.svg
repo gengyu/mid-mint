@@ -1,0 +1,23 @@
+<svg width="1242" height="1660" viewBox="0 0 1242 1660" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1242" height="1660" rx="60" fill="#F7F2EA"></rect>
+  <rect x="92" y="92" width="1058" height="1476" rx="44" fill="#FFFDF9"></rect>
+  <rect x="381" y="1140" width="480" height="124" rx="62" fill="#FF6B3D"></rect>
+  <circle cx="228" cy="238" r="168" fill="#D7F3EC"></circle>
+  <circle cx="1038" cy="1424" r="176" fill="#F9E3D4"></circle>
+  <text data-slot="eyebrow" x="621" y="218" fill="#173845" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="38" font-weight="700" text-anchor="middle">
+    <tspan x="621" dy="0">发布建议</tspan>
+  </text>
+  <text data-slot="title" x="621" y="560" fill="#102C35" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="88" font-weight="800" text-anchor="middle">
+    <tspan x="621" dy="0">这组图文适合今天发</tspan>
+  </text>
+  <text data-slot="subtitle" x="621" y="928" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="36" font-weight="500" text-anchor="middle">
+    <tspan x="621" dy="0">用 今日 AI 最新新闻 + 相关内容</tspan>
+    <tspan x="621" dy="46">整理成适合小红书</tspan>
+  </text>
+  <text data-slot="button" x="621" y="1220" fill="#FFF8EF" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="38" font-weight="700" text-anchor="middle">
+    <tspan x="621" dy="0">继续更新下一条</tspan>
+  </text>
+  <text data-slot="footer" x="621" y="1436" fill="#173845" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="34" font-weight="700" text-anchor="middle">
+    <tspan x="621" dy="0">mid-mint x 小红书素材</tspan>
+  </text>
+</svg>

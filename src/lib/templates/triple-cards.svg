@@ -1,0 +1,25 @@
+<svg width="1242" height="1660" viewBox="0 0 1242 1660" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1242" height="1660" rx="60" fill="#F7F2EA"/>
+  <circle cx="1120" cy="152" r="150" fill="#E8F7F3"/>
+  <circle cx="152" cy="1484" r="190" fill="#D9F0EB"/>
+  <text data-slot="eyebrow"/>
+  <text data-slot="title"/>
+  <text data-slot="subtitle"/>
+  <rect x="116" y="646" width="292" height="460" rx="34" fill="#FFFDF9" stroke="#D7EAE3" stroke-width="3"/>
+  <rect x="470" y="646" width="292" height="460" rx="34" fill="#FFFDF9" stroke="#F3DEC8" stroke-width="3"/>
+  <rect x="824" y="646" width="292" height="460" rx="34" fill="#FFFDF9" stroke="#D7EAE3" stroke-width="3"/>
+  <text data-slot="cardA"/>
+  <text data-slot="cardAL1"/>
+  <text data-slot="cardAL2"/>
+  <text data-slot="cardAL3"/>
+  <text data-slot="cardB"/>
+  <text data-slot="cardBL1"/>
+  <text data-slot="cardBL2"/>
+  <text data-slot="cardBL3"/>
+  <text data-slot="cardC"/>
+  <text data-slot="cardCL1"/>
+  <text data-slot="cardCL2"/>
+  <text data-slot="cardCL3"/>
+  <rect x="108" y="1388" width="1024" height="116" rx="28" fill="#173845"/>
+  <text data-slot="footer"/>
+</svg>

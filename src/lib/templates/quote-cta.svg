@@ -1,0 +1,12 @@
+<svg width="1242" height="1660" viewBox="0 0 1242 1660" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1242" height="1660" rx="60" fill="#F7F2EA"/>
+  <circle cx="228" cy="238" r="168" fill="#D7F3EC"/>
+  <circle cx="1038" cy="1424" r="176" fill="#F9E3D4"/>
+  <rect x="92" y="92" width="1058" height="1476" rx="44" fill="#FFFDF9"/>
+  <text data-slot="eyebrow"/>
+  <text data-slot="title"/>
+  <text data-slot="subtitle"/>
+  <rect x="381" y="1140" width="480" height="124" rx="62" fill="#FF6B3D"/>
+  <text data-slot="button"/>
+  <text data-slot="footer"/>
+</svg>

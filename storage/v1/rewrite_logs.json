@@ -1,0 +1,11 @@
+[
+  {
+    "id": "rewrite-log-1775371027602-zujjc8",
+    "createdAt": "2026-04-05T06:37:07.602Z",
+    "jobId": "job-1775371027590-oqski2",
+    "fromVersion": 1,
+    "toVersion": 2,
+    "targetStage": "deck",
+    "reason": "封面钩子不够强"
+  }
+]

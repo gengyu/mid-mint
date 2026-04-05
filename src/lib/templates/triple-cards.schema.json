@@ -1,0 +1,46 @@
+{
+  "meta": {
+    "id": "triple-cards",
+    "name": "三卡片说明",
+    "category": "xiaohongshu-carousel",
+    "description": "适合痛点、受众、收益三列并排表达。",
+    "supportedSlots": [
+      "eyebrow",
+      "title",
+      "subtitle",
+      "cardA",
+      "cardAL1",
+      "cardAL2",
+      "cardAL3",
+      "cardB",
+      "cardBL1",
+      "cardBL2",
+      "cardBL3",
+      "cardC",
+      "cardCL1",
+      "cardCL2",
+      "cardCL3",
+      "footer"
+    ],
+    "tags": ["三列", "卡片", "场景"]
+  },
+  "svgFile": "triple-cards.svg",
+  "slots": [
+    { "id": "eyebrow", "type": "text", "maxLength": 12, "maxLines": 1, "fontSize": 40, "minFontSize": 30, "lineHeight": 48, "x": 108, "y": 176, "width": 280, "height": 48, "textAnchor": "start", "fill": "#173845", "fontWeight": 700 },
+    { "id": "title", "type": "text", "maxLength": 24, "maxLines": 2, "fontSize": 82, "minFontSize": 56, "lineHeight": 92, "x": 104, "y": 316, "width": 980, "height": 190, "textAnchor": "start", "fill": "#102C35", "fontWeight": 800 },
+    { "id": "subtitle", "type": "text", "maxLength": 30, "maxLines": 2, "fontSize": 34, "minFontSize": 24, "lineHeight": 44, "x": 108, "y": 478, "width": 920, "height": 90, "textAnchor": "start", "fill": "#46626B", "fontWeight": 500 },
+    { "id": "cardA", "type": "text", "maxLength": 8, "maxLines": 1, "fontSize": 40, "minFontSize": 30, "lineHeight": 48, "x": 156, "y": 760, "width": 220, "height": 48, "textAnchor": "start", "fill": "#173845", "fontWeight": 700 },
+    { "id": "cardAL1", "type": "text", "maxLength": 10, "maxLines": 1, "fontSize": 28, "minFontSize": 22, "lineHeight": 36, "x": 156, "y": 846, "width": 220, "height": 36, "textAnchor": "start", "fill": "#46626B", "fontWeight": 400 },
+    { "id": "cardAL2", "type": "text", "maxLength": 10, "maxLines": 1, "fontSize": 28, "minFontSize": 22, "lineHeight": 36, "x": 156, "y": 892, "width": 220, "height": 36, "textAnchor": "start", "fill": "#46626B", "fontWeight": 400 },
+    { "id": "cardAL3", "type": "text", "maxLength": 10, "maxLines": 1, "fontSize": 28, "minFontSize": 22, "lineHeight": 36, "x": 156, "y": 938, "width": 220, "height": 36, "textAnchor": "start", "fill": "#46626B", "fontWeight": 400 },
+    { "id": "cardB", "type": "text", "maxLength": 8, "maxLines": 1, "fontSize": 40, "minFontSize": 30, "lineHeight": 48, "x": 510, "y": 760, "width": 220, "height": 48, "textAnchor": "start", "fill": "#173845", "fontWeight": 700 },
+    { "id": "cardBL1", "type": "text", "maxLength": 10, "maxLines": 1, "fontSize": 28, "minFontSize": 22, "lineHeight": 36, "x": 510, "y": 846, "width": 220, "height": 36, "textAnchor": "start", "fill": "#46626B", "fontWeight": 400 },
+    { "id": "cardBL2", "type": "text", "maxLength": 10, "maxLines": 1, "fontSize": 28, "minFontSize": 22, "lineHeight": 36, "x": 510, "y": 892, "width": 220, "height": 36, "textAnchor": "start", "fill": "#46626B", "fontWeight": 400 },
+    { "id": "cardBL3", "type": "text", "maxLength": 10, "maxLines": 1, "fontSize": 28, "minFontSize": 22, "lineHeight": 36, "x": 510, "y": 938, "width": 220, "height": 36, "textAnchor": "start", "fill": "#46626B", "fontWeight": 400 },
+    { "id": "cardC", "type": "text", "maxLength": 8, "maxLines": 1, "fontSize": 40, "minFontSize": 30, "lineHeight": 48, "x": 864, "y": 760, "width": 220, "height": 48, "textAnchor": "start", "fill": "#173845", "fontWeight": 700 },
+    { "id": "cardCL1", "type": "text", "maxLength": 10, "maxLines": 1, "fontSize": 28, "minFontSize": 22, "lineHeight": 36, "x": 864, "y": 846, "width": 220, "height": 36, "textAnchor": "start", "fill": "#46626B", "fontWeight": 400 },
+    { "id": "cardCL2", "type": "text", "maxLength": 10, "maxLines": 1, "fontSize": 28, "minFontSize": 22, "lineHeight": 36, "x": 864, "y": 892, "width": 220, "height": 36, "textAnchor": "start", "fill": "#46626B", "fontWeight": 400 },
+    { "id": "cardCL3", "type": "text", "maxLength": 10, "maxLines": 1, "fontSize": 28, "minFontSize": 22, "lineHeight": 36, "x": 864, "y": 938, "width": 220, "height": 36, "textAnchor": "start", "fill": "#46626B", "fontWeight": 400 },
+    { "id": "footer", "type": "text", "maxLength": 34, "maxLines": 2, "fontSize": 38, "minFontSize": 28, "lineHeight": 48, "x": 128, "y": 1468, "width": 980, "height": 96, "textAnchor": "start", "fill": "#FFF8EF", "fontWeight": 700 }
+  ]
+}

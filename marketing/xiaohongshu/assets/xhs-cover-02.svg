@@ -1,0 +1,66 @@
+<svg width="1242" height="1660" viewBox="0 0 1242 1660" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1242" height="1660" rx="60" fill="#F7F2EA"></rect>
+  <rect x="70" y="70" width="1102" height="1520" rx="44" fill="#FFFDF9"></rect>
+  <rect x="102" y="598" width="470" height="742" rx="36" fill="#173845"></rect>
+  <rect x="670" y="598" width="470" height="742" rx="36" fill="#FFF8EF" stroke="#F0D5C4" stroke-width="3"></rect>
+  <rect x="102" y="1384" width="1038" height="118" rx="28" fill="#102C35"></rect>
+  <text data-slot="eyebrow" x="104" y="180" fill="#173845" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="44" font-weight="700" text-anchor="start">
+    <tspan x="104" dy="0">小龙虾安装器</tspan>
+  </text>
+  <text data-slot="title" x="102" y="312" fill="#102C35" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="70" font-weight="800" text-anchor="start">
+    <tspan x="102" dy="0">别再手改</tspan>
+  </text>
+  <text data-slot="titleAccent" x="102" y="414" fill="#FF6B3D" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="62" font-weight="800" text-anchor="start">
+    <tspan x="102" dy="0">openclaw.json</tspan>
+  </text>
+  <text data-slot="subtitle" x="106" y="504" fill="#46626B" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="36" font-weight="500" text-anchor="start">
+    <tspan x="106" dy="0">把安装和高频配置收成一个图形界面</tspan>
+  </text>
+  <text data-slot="leftTitle" x="142" y="684" fill="#FFF8EF" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="34" font-weight="700" text-anchor="start">
+    <tspan x="142" dy="0">传统流程</tspan>
+  </text>
+  <text data-slot="left1" x="142" y="790" fill="#9FD1C7" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="34" font-weight="400" text-anchor="start">
+    <tspan x="142" dy="0">1. 查环境</tspan>
+  </text>
+  <text data-slot="left2" x="142" y="880" fill="#9FD1C7" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="34" font-weight="400" text-anchor="start">
+    <tspan x="142" dy="0">2. 装 CLI</tspan>
+  </text>
+  <text data-slot="left3" x="142" y="970" fill="#9FD1C7" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="34" font-weight="400" text-anchor="start">
+    <tspan x="142" dy="0">3. 初始化</tspan>
+  </text>
+  <text data-slot="left4" x="142" y="1060" fill="#9FD1C7" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="34" font-weight="400" text-anchor="start">
+    <tspan x="142" dy="0">4. 改配置文件</tspan>
+  </text>
+  <text data-slot="left5" x="142" y="1150" fill="#9FD1C7" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="34" font-weight="400" text-anchor="start">
+    <tspan x="142" dy="0">5. 接模型和插件</tspan>
+  </text>
+  <text data-slot="leftFoot" x="142" y="1268" fill="#FF9F5C" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="30" font-weight="500" text-anchor="start">
+    <tspan x="142" dy="0">容易漏步骤</tspan>
+    <tspan x="142" dy="38">也不容易排错</tspan>
+  </text>
+  <text data-slot="rightTitle" x="710" y="684" fill="#173845" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="34" font-weight="700" text-anchor="start">
+    <tspan x="710" dy="0">现在的流程</tspan>
+  </text>
+  <text data-slot="right1" x="710" y="790" fill="#173845" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="34" font-weight="400" text-anchor="start">
+    <tspan x="710" dy="0">1. 打开安装器</tspan>
+  </text>
+  <text data-slot="right2" x="710" y="880" fill="#173845" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="34" font-weight="400" text-anchor="start">
+    <tspan x="710" dy="0">2. 自动检测状态</tspan>
+  </text>
+  <text data-slot="right3" x="710" y="970" fill="#173845" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="34" font-weight="400" text-anchor="start">
+    <tspan x="710" dy="0">3. 点安装或更新</tspan>
+  </text>
+  <text data-slot="right4" x="710" y="1060" fill="#173845" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="34" font-weight="400" text-anchor="start">
+    <tspan x="710" dy="0">4. 在界面里填配置</tspan>
+  </text>
+  <text data-slot="right5" x="710" y="1150" fill="#173845" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="34" font-weight="400" text-anchor="start">
+    <tspan x="710" dy="0">5. 看插件状态反馈</tspan>
+  </text>
+  <text data-slot="rightFoot" x="710" y="1268" fill="#FF6B3D" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="30" font-weight="500" text-anchor="start">
+    <tspan x="710" dy="0">更适合不想折腾命令行的</tspan>
+    <tspan x="710" dy="38">用户</tspan>
+  </text>
+  <text data-slot="footer" x="144" y="1456" fill="#FFF8EF" font-family="&apos;PingFang SC&apos;, &apos;Microsoft YaHei&apos;, sans-serif" font-size="36" font-weight="700" text-anchor="start">
+    <tspan x="144" dy="0">环境检测 / 图形化配置 / 插件接入 / workspace 管理</tspan>
+  </text>
+</svg>

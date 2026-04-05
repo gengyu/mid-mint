@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "id": "step-list",
+    "name": "步骤清单",
+    "category": "xiaohongshu-carousel",
+    "description": "单列五步流程卡，适合流程介绍和演示说明。",
+    "supportedSlots": [
+      "eyebrow",
+      "title",
+      "subtitle",
+      "step1",
+      "step2",
+      "step3",
+      "step4",
+      "step5",
+      "footer"
+    ],
+    "tags": ["流程", "步骤", "清单"]
+  },
+  "svgFile": "step-list.svg",
+  "slots": [
+    { "id": "eyebrow", "type": "text", "maxLength": 12, "maxLines": 1, "fontSize": 40, "minFontSize": 30, "lineHeight": 48, "x": 104, "y": 176, "width": 300, "height": 48, "textAnchor": "start", "fill": "#7EF1E0", "fontWeight": 700 },
+    { "id": "title", "type": "text", "maxLength": 22, "maxLines": 2, "fontSize": 86, "minFontSize": 58, "lineHeight": 96, "x": 100, "y": 314, "width": 960, "height": 200, "textAnchor": "start", "fill": "#FFF8EF", "fontWeight": 800 },
+    { "id": "subtitle", "type": "text", "maxLength": 28, "maxLines": 2, "fontSize": 34, "minFontSize": 24, "lineHeight": 44, "x": 104, "y": 470, "width": 880, "height": 90, "textAnchor": "start", "fill": "#BDE5DE", "fontWeight": 500 },
+    { "id": "step1", "type": "text", "maxLength": 20, "maxLines": 1, "fontSize": 40, "minFontSize": 28, "lineHeight": 48, "x": 196, "y": 702, "width": 800, "height": 48, "textAnchor": "start", "fill": "#FFF8EF", "fontWeight": 700 },
+    { "id": "step2", "type": "text", "maxLength": 20, "maxLines": 1, "fontSize": 40, "minFontSize": 28, "lineHeight": 48, "x": 196, "y": 852, "width": 800, "height": 48, "textAnchor": "start", "fill": "#FFF8EF", "fontWeight": 700 },
+    { "id": "step3", "type": "text", "maxLength": 20, "maxLines": 1, "fontSize": 40, "minFontSize": 28, "lineHeight": 48, "x": 196, "y": 1002, "width": 800, "height": 48, "textAnchor": "start", "fill": "#FFF8EF", "fontWeight": 700 },
+    { "id": "step4", "type": "text", "maxLength": 20, "maxLines": 1, "fontSize": 40, "minFontSize": 28, "lineHeight": 48, "x": 196, "y": 1152, "width": 800, "height": 48, "textAnchor": "start", "fill": "#FFF8EF", "fontWeight": 700 },
+    { "id": "step5", "type": "text", "maxLength": 20, "maxLines": 1, "fontSize": 40, "minFontSize": 28, "lineHeight": 48, "x": 196, "y": 1302, "width": 800, "height": 48, "textAnchor": "start", "fill": "#FFF8EF", "fontWeight": 700 },
+    { "id": "footer", "type": "text", "maxLength": 34, "maxLines": 2, "fontSize": 36, "minFontSize": 28, "lineHeight": 46, "x": 120, "y": 1492, "width": 980, "height": 92, "textAnchor": "start", "fill": "#173845", "fontWeight": 700 }
+  ]
+}

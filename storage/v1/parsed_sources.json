@@ -1,0 +1,44 @@
+[
+  {
+    "id": "parsed_sources-1775381850474-rb05ko",
+    "jobId": "job-1775381844983-8gurap",
+    "versionNumber": 1,
+    "payloadJson": "{\"title\":\"AI融资的消息\",\"summary\":\"AI融资的消息\",\"keyFacts\":[\"AI融资的消息\"],\"keyPoints\":[\"AI融资的消息\"],\"quotes\":[],\"sourceUrls\":[],\"publishTime\":null,\"riskFlags\":[]}",
+    "createdAt": "2026-04-05T09:37:30.474Z"
+  },
+  {
+    "id": "parsed_sources-1775372008662-5dkc1e",
+    "jobId": "job-1775372008659-ufz9py",
+    "versionNumber": 1,
+    "payloadJson": "{\"title\":\"验证真实 PNG 输出。\",\"summary\":\"验证 png，产品经理，专业，验证真实 PNG 输出\",\"keyFacts\":[\"验证真实 PNG 输出。\",\"页图文。\",\"验证真实 PNG 输出\",\"5 页图文\"],\"keyPoints\":[\"验证真实 PNG 输出\"],\"quotes\":[],\"sourceUrls\":[],\"publishTime\":null,\"riskFlags\":[]}",
+    "createdAt": "2026-04-05T06:53:28.662Z"
+  },
+  {
+    "id": "parsed_sources-1775371837015-gzhm3a",
+    "jobId": "job-1775371837011-6lngn9",
+    "versionNumber": 1,
+    "payloadJson": "{\"title\":\"测试导出链路。\",\"summary\":\"测试 export，产品经理，专业，做成 5 页图文\",\"keyFacts\":[\"测试导出链路。\",\"做成 5 页图文。\",\"测试导出链路\",\"做成 5 页图文\"],\"keyPoints\":[\"做成 5 页图文\"],\"quotes\":[],\"sourceUrls\":[],\"publishTime\":null,\"riskFlags\":[]}",
+    "createdAt": "2026-04-05T06:50:37.015Z"
+  },
+  {
+    "id": "parsed_sources-1775371027602-vprpz0",
+    "jobId": "job-1775371027590-oqski2",
+    "versionNumber": 2,
+    "payloadJson": "{\"title\":\"某 AI 产品更新了发布节奏和能力边界。\",\"summary\":\"快速判断这次更新值不值得跟进，AI 从业者，专业，某 AI 产品更新了发布节奏和能力边界\",\"keyFacts\":[\"某 AI 产品更新了发布节奏和能力边界。\",\"做成小红书图文；目标是帮助从业者快速判断是否值得跟进。\",\"某 AI 产品更新了发布节奏和能力边界\",\"做成小红书图文\",\"目标是帮助从业者快速判断是否值得跟进\"],\"keyPoints\":[\"某 AI 产品更新了发布节奏和能力边界\",\"目标是帮助从业者快速判断是否值得跟进\"],\"quotes\":[],\"sourceUrls\":[],\"publishTime\":null,\"riskFlags\":[]}",
+    "createdAt": "2026-04-05T06:37:07.602Z"
+  },
+  {
+    "id": "parsed_sources-1775371027591-qo15l0",
+    "jobId": "job-1775371027590-oqski2",
+    "versionNumber": 1,
+    "payloadJson": "{\"title\":\"某 AI 产品更新了发布节奏和能力边界。\",\"summary\":\"快速判断这次更新值不值得跟进，AI 从业者，专业，某 AI 产品更新了发布节奏和能力边界\",\"keyFacts\":[\"某 AI 产品更新了发布节奏和能力边界。\",\"做成小红书图文；目标是帮助从业者快速判断是否值得跟进。\",\"某 AI 产品更新了发布节奏和能力边界\",\"做成小红书图文\",\"目标是帮助从业者快速判断是否值得跟进\"],\"keyPoints\":[\"某 AI 产品更新了发布节奏和能力边界\",\"目标是帮助从业者快速判断是否值得跟进\"],\"quotes\":[],\"sourceUrls\":[],\"publishTime\":null,\"riskFlags\":[]}",
+    "createdAt": "2026-04-05T06:37:07.591Z"
+  },
+  {
+    "id": "parsed_sources-1775371008408-8haols",
+    "jobId": "job-1775371008406-mz12sj",
+    "versionNumber": 1,
+    "payloadJson": "{\"title\":\"OpenAI 发布了新一轮融资消息，市场关注其…\",\"summary\":\"快速看懂这条融资消息对产品机会的影响，AI 产品经理，专业、短句、偏科技，OpenAI 发布了新一轮融资消息，市场关注其产品化能力和商业化路径\",\"keyFacts\":[\"OpenAI 发布了新一轮融资消息，市场关注其产品化能力和商业化路径。\",\"目标读者是关注 AI 产品的从业者；想做成 5 页小红书图文。\",\"OpenAI 发布了新一轮融资消息，市场关注其产品化能力和商业化路径\",\"目标读者是关注 AI 产品的从业者\",\"想做成 5 页小红书图文\"],\"keyPoints\":[\"OpenAI 发布了新一轮融资消息，市场关注其产品化能力和商业化路径\",\"目标读者是关注 AI 产品的从业者\",\"想做成 5 页小红书图文\"],\"quotes\":[],\"sourceUrls\":[],\"publishTime\":null,\"riskFlags\":[]}",
+    "createdAt": "2026-04-05T06:36:48.408Z"
+  }
+]

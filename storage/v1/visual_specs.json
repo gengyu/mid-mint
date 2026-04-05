@@ -1,0 +1,44 @@
+[
+  {
+    "id": "visual_specs-1775381850479-2j76mt",
+    "jobId": "job-1775381844983-8gurap",
+    "versionNumber": 1,
+    "payloadJson": "{\"styleName\":\"balanced-editorial\",\"layoutMode\":\"airy\",\"tone\":\"informative\",\"densityLevel\":\"low\",\"warnings\":[]}",
+    "createdAt": "2026-04-05T09:37:30.479Z"
+  },
+  {
+    "id": "visual_specs-1775372008669-pupa0w",
+    "jobId": "job-1775372008659-ufz9py",
+    "versionNumber": 1,
+    "payloadJson": "{\"styleName\":\"专业\",\"layoutMode\":\"airy\",\"tone\":\"professional\",\"densityLevel\":\"low\",\"warnings\":[\"slide_4_highlight_too_long\"]}",
+    "createdAt": "2026-04-05T06:53:28.669Z"
+  },
+  {
+    "id": "visual_specs-1775371837024-srzsch",
+    "jobId": "job-1775371837011-6lngn9",
+    "versionNumber": 1,
+    "payloadJson": "{\"styleName\":\"专业\",\"layoutMode\":\"airy\",\"tone\":\"professional\",\"densityLevel\":\"low\",\"warnings\":[\"slide_4_highlight_too_long\"]}",
+    "createdAt": "2026-04-05T06:50:37.024Z"
+  },
+  {
+    "id": "visual_specs-1775371027603-gxobrr",
+    "jobId": "job-1775371027590-oqski2",
+    "versionNumber": 2,
+    "payloadJson": "{\"styleName\":\"专业\",\"layoutMode\":\"balanced\",\"tone\":\"professional\",\"densityLevel\":\"medium\",\"warnings\":[\"slide_1_title_may_overflow\",\"slide_1_highlight_too_long\",\"slide_2_highlight_too_long\",\"slide_3_highlight_too_long\",\"slide_4_highlight_too_long\",\"slide_5_highlight_too_long\"]}",
+    "createdAt": "2026-04-05T06:37:07.603Z"
+  },
+  {
+    "id": "visual_specs-1775371027594-imhdo1",
+    "jobId": "job-1775371027590-oqski2",
+    "versionNumber": 1,
+    "payloadJson": "{\"styleName\":\"专业\",\"layoutMode\":\"balanced\",\"tone\":\"professional\",\"densityLevel\":\"medium\",\"warnings\":[\"slide_1_title_may_overflow\",\"slide_1_highlight_too_long\",\"slide_2_highlight_too_long\",\"slide_3_highlight_too_long\",\"slide_4_highlight_too_long\",\"slide_5_highlight_too_long\"]}",
+    "createdAt": "2026-04-05T06:37:07.594Z"
+  },
+  {
+    "id": "visual_specs-1775371008410-q69uvz",
+    "jobId": "job-1775371008406-mz12sj",
+    "versionNumber": 1,
+    "payloadJson": "{\"styleName\":\"tech-sharp\",\"layoutMode\":\"compact\",\"tone\":\"professional\",\"densityLevel\":\"high\",\"warnings\":[\"overall_content_density_high\",\"slide_1_title_may_overflow\",\"slide_1_highlight_too_long\",\"slide_2_highlight_too_long\",\"slide_3_highlight_too_long\",\"slide_4_highlight_too_long\",\"slide_5_highlight_too_long\"]}",
+    "createdAt": "2026-04-05T06:36:48.410Z"
+  }
+]
