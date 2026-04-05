@@ -42,12 +42,17 @@ function splitBody(body: string, count: number, maxLength: number) {
   return result;
 }
 
-function slideValuesToTemplateValues(slide: DeckSlide, visualSpec: VisualSpec) {
+function shortBodyLines(body: string, count: number) {
+  return splitBody(body, count, 10);
+}
+
+function slideValuesToTemplateValues(slide: DeckSlide, visualSpec: VisualSpec, deckCta: string) {
   const eyebrow = `0${slide.index}`;
   const subtitle = truncateText(slide.goal || slide.body, 28);
   const footer = truncateText(visualSpec.tone === "professional" ? "信息已结构化，可直接改稿" : "继续优化这页可提升转化", 32);
   const highlights = [...slide.highlights];
   const bodyLines = splitBody(slide.body, 6, 18);
+  const compactBodyLines = shortBodyLines(slide.body, 12);
 
   switch (slide.templateId) {
     case "cover-hero":
@@ -90,11 +95,34 @@ function slideValuesToTemplateValues(slide: DeckSlide, visualSpec: VisualSpec) {
       };
     case "quote-cta":
       return {
-        eyebrow: truncateText(visualSpec.styleName, 12),
+        eyebrow: truncateText(visualSpec.visualFamily, 12),
         title: truncateText(slide.title, 24),
         subtitle: truncateText(slide.body, 28),
         button: truncateText(slide.highlights[0] || "继续改这版", 18),
         footer: truncateText(slide.goal || footer, 22)
+      };
+    case "team-delivery":
+      return {
+        eyebrow,
+        title: truncateText(slide.title, 24),
+        subtitle: truncateText(slide.body, 34),
+        cardA: truncateText(highlights[0] || "角色一", 8),
+        cardALine1: truncateText(compactBodyLines[0] || "信息对齐", 10),
+        cardALine2: truncateText(compactBodyLines[1] || "步骤统一", 10),
+        cardALine3: truncateText(compactBodyLines[2] || "减少返工", 10),
+        cardB: truncateText(highlights[1] || "角色二", 8),
+        cardBLine1: truncateText(compactBodyLines[3] || "入口固定", 10),
+        cardBLine2: truncateText(compactBodyLines[4] || "状态可见", 10),
+        cardBLine3: truncateText(compactBodyLines[5] || "协作更顺", 10),
+        cardC: truncateText(highlights[2] || "角色三", 8),
+        cardCLine1: truncateText(compactBodyLines[6] || "交付提效", 10),
+        cardCLine2: truncateText(compactBodyLines[7] || "配置一致", 10),
+        cardCLine3: truncateText(compactBodyLines[8] || "排查更快", 10),
+        lead: truncateText(slide.goal, 18),
+        bullet1: truncateText(compactBodyLines[9] || "统一说明入口", 20),
+        bullet2: truncateText(compactBodyLines[10] || "减少重复沟通", 26),
+        bullet3: truncateText(compactBodyLines[11] || "让交付更稳定", 30),
+        footer: truncateText(deckCta || slide.goal || footer, 34)
       };
     case "triple-cards":
     default:
@@ -186,7 +214,7 @@ export class Renderer {
 
       const values = compactValues({
         ...slide.values,
-        ...slideValuesToTemplateValues(slide, input.visualSpec)
+        ...slideValuesToTemplateValues(slide, input.visualSpec, input.deckPlan.cta)
       });
       const svg = exportSvg(template, values);
       const overflowDetected = detectOverflow(slide, slide.templateId, values);

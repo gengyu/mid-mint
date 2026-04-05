@@ -86,16 +86,78 @@ Fetch all stage outputs for one version.
 
 ```json
 {
-  "job": {},
-  "sourceInput": {},
+  "job": {
+    "jobId": "string",
+    "status": "string",
+    "rewriteCount": 0,
+    "activeVersion": 1,
+    "createdAt": "string",
+    "updatedAt": "string"
+  },
+  "sourceInput": {
+    "urls": [],
+    "rawText": "",
+    "notes": "",
+    "targetAudience": "",
+    "contentGoal": "",
+    "preferredStyle": ""
+  },
   "parsedSource": {},
-  "contentBrief": {},
-  "deckPlan": {},
-  "visualSpec": {},
+  "contentBrief": {
+    "topic": "string",
+    "angle": "quick_view",
+    "audience": "string",
+    "narrative": "string",
+    "keyTakeaways": ["string"],
+    "mustInclude": [],
+    "avoid": []
+  },
+  "deckPlan": {
+    "summary": "string",
+    "slides": [
+      {
+        "index": 1,
+        "pageType": "cover",
+        "goal": "string",
+        "title": "string",
+        "body": "string",
+        "highlights": ["string"],
+        "templateId": "cover-hero",
+        "values": {},
+        "charCountTitle": 0,
+        "charCountBody": 0
+      }
+    ],
+    "cta": "string"
+  },
+  "visualSpec": {
+    "routeId": "vf-signal-tech-news_flash-medium",
+    "themeCategory": "news_flash",
+    "visualFamily": "signal-tech",
+    "tone": "sharp",
+    "densityLevel": "medium",
+    "layoutMode": "balanced",
+    "paletteKey": "tech-emerald",
+    "typographyMode": "display-sharp",
+    "decorationLevel": "medium",
+    "imageStrategy": "abstract",
+    "routeReasons": [
+      "angle_selected_base_route",
+      "audience_mode_professional",
+      "density_medium_layout_balanced"
+    ],
+    "warnings": []
+  },
   "renderResult": {},
   "reviewResult": {}
 }
 ```
+
+### Rules
+
+* `visualSpec` in this response must follow the domain model exactly
+* `deckPlan.slides[].templateId` is the source of truth for workspace and preview template labels
+* frontend may combine this response with `GET /jobs/:jobId/preview` to render route summary and assets
 
 ## POST `/jobs/:jobId/rewrite`
 

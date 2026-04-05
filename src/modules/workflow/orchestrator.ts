@@ -93,7 +93,12 @@ export type WorkflowModules = {
     run(input: { parsedSource: ParsedSource; contentBrief: ContentBrief }): Promise<DeckPlan>;
   };
   visualMatch: {
-    run(input: { deckPlan: DeckPlan; preferredStyle: string }): Promise<{ deckPlan: DeckPlan; visualSpec: VisualSpec }>;
+    run(input: {
+      parsedSource: ParsedSource;
+      contentBrief: ContentBrief;
+      deckPlan: DeckPlan;
+      preferredStyle: string;
+    }): Promise<{ deckPlan: DeckPlan; visualSpec: VisualSpec }>;
   };
   renderer: {
     run(input: { jobId: string; versionNumber: number; deckPlan: DeckPlan; visualSpec: VisualSpec }): Promise<RenderResult>;
@@ -178,6 +183,8 @@ export class WorkflowOrchestrator {
 
     const visualOutput = await this.runStage("VISUAL_MATCHED", jobId, currentVersion, async () => {
       const result = await this.modules.visualMatch.run({
+        parsedSource,
+        contentBrief,
         deckPlan,
         preferredStyle: sourceInput.preferredStyle
       });

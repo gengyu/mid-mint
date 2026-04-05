@@ -6,6 +6,7 @@ import {
 } from "@/shared/errors/app-error";
 import {
   contentBriefSchema,
+  contentSignalsSchema,
   deckPlanSchema,
   jobSchema,
   jobVersionSchema,
@@ -14,10 +15,12 @@ import {
   reviewResultSchema,
   rewriteRequestSchema,
   sourceInputSchema,
+  templateRouteMetaSchema,
   visualSpecSchema
 } from "./schemas";
 import type {
   ContentBrief,
+  ContentSignals,
   DeckPlan,
   Job,
   JobVersion,
@@ -26,6 +29,7 @@ import type {
   ReviewResult,
   RewriteRequest,
   SourceInput,
+  TemplateRouteMeta,
   VisualSpec
 } from "./types";
 
@@ -196,14 +200,58 @@ export function assertDeckPlan(input: unknown): DeckPlan {
   return result.data;
 }
 
+export function validateContentSignals(input: unknown): ValidationResult<ContentSignals> {
+  return safeParseWithError<ContentSignals>(
+    contentSignalsSchema,
+    input,
+    createAppError("VISUAL_SIGNAL_INVALID", "Derived visual signals are invalid.")
+  );
+}
+
+export function assertContentSignals(input: unknown): ContentSignals {
+  const result = validateContentSignals(input);
+  if (!result.success) {
+    throw new AppValidationError(result.error);
+  }
+
+  return result.data;
+}
+
+export function validateTemplateRouteMeta(input: unknown): ValidationResult<TemplateRouteMeta> {
+  return safeParseWithError<TemplateRouteMeta>(
+    templateRouteMetaSchema,
+    input,
+    createAppError("VISUAL_TEMPLATE_META_INVALID", "Template routing metadata is invalid.")
+  );
+}
+
+export function assertTemplateRouteMeta(input: unknown): TemplateRouteMeta {
+  const result = validateTemplateRouteMeta(input);
+  if (!result.success) {
+    throw new AppValidationError(result.error);
+  }
+
+  return result.data;
+}
+
 export function validateVisualSpec(input: unknown): ValidationResult<VisualSpec> {
   const parsed = safeParseWithError<VisualSpec>(
     visualSpecSchema,
     input,
-    createAppError("VISUAL_INPUT_INVALID", "Visual spec is invalid.")
+    createAppError("VISUAL_SPEC_INVALID", "Visual spec is invalid.")
   );
   if (!parsed.success) {
     return parsed;
+  }
+
+  if (!/^vf-[a-z-]+-[a-z_]+-(low|medium|high)$/.test(parsed.data.routeId)) {
+    return { success: false, error: createAppError("VISUAL_SPEC_INVALID", "Visual routeId is invalid.") };
+  }
+  if (!parsed.data.routeReasons.includes("angle_selected_base_route")) {
+    return { success: false, error: createAppError("VISUAL_SPEC_INVALID", "Visual route reasons are incomplete.") };
+  }
+  if (new Set(parsed.data.routeReasons).size !== parsed.data.routeReasons.length) {
+    return { success: false, error: createAppError("VISUAL_SPEC_INVALID", "Visual route reasons must be unique.") };
   }
 
   return parsed;

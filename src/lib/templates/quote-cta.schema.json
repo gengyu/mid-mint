@@ -11,7 +11,16 @@
       "button",
       "footer"
     ],
-    "tags": ["收尾", "CTA", "结论"]
+    "tags": ["收尾", "CTA", "结论"],
+    "routeMeta": {
+      "supportedPageTypes": ["cta"],
+      "supportedFamilies": ["signal-tech", "clean-method", "proof-compare", "warm-story", "brand-campaign"],
+      "supportedThemes": ["news_flash", "knowledge_explainer", "comparison_analysis", "case_story", "method_guide", "campaign_launch"],
+      "densitySupport": ["low", "medium", "high"],
+      "emphasis": "high",
+      "usagePriority": 100,
+      "phase1Status": "enabled"
+    }
   },
   "svgFile": "quote-cta.svg",
   "slots": [

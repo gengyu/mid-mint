@@ -1,5 +1,26 @@
 [
   {
+    "id": "review_results-1775398924025-e7j6hy",
+    "jobId": "job-1775398907157-2fgdgm",
+    "versionNumber": 1,
+    "payloadJson": "{\"score\":69,\"stageScores\":{\"xiaohongshuFit\":76,\"hookStrength\":64,\"readability\":88,\"densityControl\":76,\"factualSafety\":92,\"originality\":84,\"visualFit\":0},\"issues\":[\"封面钩子偏弱\",\"视觉匹配阶段发出了密度或模板风险警告\"],\"strengths\":[\"页间主题分工清晰\",\"当前模板承载量基本合理\",\"文案相对具体，没有明显空话堆积\"],\"blockingIssues\":[],\"suggestedFixes\":[\"强化封面标题的结论感或问题感\"],\"decision\":\"rewrite\",\"shouldRewrite\":true,\"rewriteStage\":\"deck\"}",
+    "createdAt": "2026-04-05T14:22:04.025Z"
+  },
+  {
+    "id": "review_results-1775398915180-c67qdu",
+    "jobId": "job-1775398907157-2fgdgm",
+    "versionNumber": 1,
+    "payloadJson": "{\"score\":69,\"stageScores\":{\"xiaohongshuFit\":76,\"hookStrength\":64,\"readability\":88,\"densityControl\":76,\"factualSafety\":92,\"originality\":84,\"visualFit\":0},\"issues\":[\"封面钩子偏弱\",\"视觉匹配阶段发出了密度或模板风险警告\"],\"strengths\":[\"页间主题分工清晰\",\"当前模板承载量基本合理\",\"文案相对具体，没有明显空话堆积\"],\"blockingIssues\":[],\"suggestedFixes\":[\"强化封面标题的结论感或问题感\"],\"decision\":\"rewrite\",\"shouldRewrite\":true,\"rewriteStage\":\"deck\"}",
+    "createdAt": "2026-04-05T14:21:55.180Z"
+  },
+  {
+    "id": "review_results-1775398824129-9cfkl0",
+    "jobId": "job-1775398804837-04qd6e",
+    "versionNumber": 1,
+    "payloadJson": "{\"score\":69,\"stageScores\":{\"xiaohongshuFit\":76,\"hookStrength\":64,\"readability\":88,\"densityControl\":76,\"factualSafety\":92,\"originality\":84,\"visualFit\":0},\"issues\":[\"封面钩子偏弱\",\"视觉匹配阶段发出了密度或模板风险警告\"],\"strengths\":[\"页间主题分工清晰\",\"当前模板承载量基本合理\",\"文案相对具体，没有明显空话堆积\"],\"blockingIssues\":[],\"suggestedFixes\":[\"强化封面标题的结论感或问题感\"],\"decision\":\"rewrite\",\"shouldRewrite\":true,\"rewriteStage\":\"deck\"}",
+    "createdAt": "2026-04-05T14:20:24.129Z"
+  },
+  {
     "id": "review_results-1775381857471-llstpn",
     "jobId": "job-1775381844983-8gurap",
     "versionNumber": 1,

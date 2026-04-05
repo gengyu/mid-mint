@@ -36,6 +36,58 @@ export type ContentAngle =
   | "method_summary";
 
 export type DensityLevel = "low" | "medium" | "high";
+export type ThemeCategory =
+  | "news_flash"
+  | "knowledge_explainer"
+  | "comparison_analysis"
+  | "case_story"
+  | "method_guide"
+  | "campaign_launch";
+
+export type ToneMode =
+  | "professional"
+  | "sharp"
+  | "warm"
+  | "practical"
+  | "energetic";
+
+export type ContentIntent =
+  | "inform"
+  | "explain"
+  | "compare"
+  | "convince"
+  | "convert";
+
+export type AudienceMode =
+  | "broad_consumer"
+  | "operator"
+  | "professional"
+  | "founder_team";
+
+export type VisualFamily =
+  | "signal-tech"
+  | "clean-method"
+  | "proof-compare"
+  | "warm-story"
+  | "brand-campaign";
+
+export type LayoutMode = "airy" | "balanced" | "compact";
+
+export type DecorationLevel = "low" | "medium" | "high";
+
+export type ImageStrategy = "none" | "abstract" | "editorial";
+
+export type RouteReasonCode =
+  | "angle_selected_base_route"
+  | "preferred_style_hint_applied"
+  | "preferred_style_hint_ignored"
+  | "audience_mode_broad_consumer"
+  | "audience_mode_operator"
+  | "audience_mode_professional"
+  | "audience_mode_founder_team"
+  | "density_low_layout_airy"
+  | "density_medium_layout_balanced"
+  | "density_high_layout_compact";
 
 export type ReviewDecision = "approve" | "rewrite" | "block";
 
@@ -89,11 +141,36 @@ export type DeckPlan = {
   cta: string;
 };
 
-export type VisualSpec = {
-  styleName: string;
-  layoutMode: string;
-  tone: string;
+export type ContentSignals = {
+  themeCategory: ThemeCategory;
+  tone: ToneMode;
   densityLevel: DensityLevel;
+  contentIntent: ContentIntent;
+  audienceMode: AudienceMode;
+};
+
+export type TemplateRouteMeta = {
+  supportedPageTypes: DeckPageType[];
+  supportedFamilies: VisualFamily[];
+  supportedThemes: ThemeCategory[];
+  densitySupport: DensityLevel[];
+  emphasis: DecorationLevel;
+  usagePriority: number;
+  phase1Status: "enabled" | "excluded";
+};
+
+export type VisualSpec = {
+  routeId: string;
+  themeCategory: ThemeCategory;
+  visualFamily: VisualFamily;
+  tone: ToneMode;
+  densityLevel: DensityLevel;
+  layoutMode: LayoutMode;
+  paletteKey: string;
+  typographyMode: string;
+  decorationLevel: DecorationLevel;
+  imageStrategy: ImageStrategy;
+  routeReasons: RouteReasonCode[];
   warnings: string[];
 };
 

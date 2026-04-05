@@ -44,6 +44,21 @@ type ReviewResult = {
   stageScores: Record<string, number>;
 };
 
+type VisualSpec = {
+  routeId: string;
+  themeCategory: string;
+  visualFamily: string;
+  tone: string;
+  densityLevel: string;
+  layoutMode: string;
+  paletteKey: string;
+  typographyMode: string;
+  decorationLevel: string;
+  imageStrategy: string;
+  routeReasons: string[];
+  warnings: string[];
+};
+
 type VersionPayload = {
   job: JobSummary | null;
   sourceInput: SourceInput | null;
@@ -61,7 +76,7 @@ type VersionPayload = {
     }>;
     cta: string;
   } | null;
-  visualSpec: Record<string, unknown> | null;
+  visualSpec: VisualSpec | null;
   renderResult: {
     htmlPreviewUrl: string;
     pngUrls: string[];
@@ -323,6 +338,9 @@ export function App() {
     }
   }
 
+  const slideTemplateSummary = versionPayload?.deckPlan?.slides ?? [];
+  const visualSpec = versionPayload?.visualSpec;
+
   return (
     <div className="app-shell">
       <aside className="panel hero-panel">
@@ -447,6 +465,37 @@ export function App() {
                 <JsonCard title="Content Brief" data={versionPayload?.contentBrief} />
                 <JsonCard title="Deck Plan" data={versionPayload?.deckPlan} />
                 <JsonCard title="Visual Spec" data={versionPayload?.visualSpec} />
+                <article className="card-block">
+                  <h3>Visual Route Summary</h3>
+                  {visualSpec ? (
+                    <div>
+                      <p>themeCategory: {visualSpec.themeCategory}</p>
+                      <p>visualFamily: {visualSpec.visualFamily}</p>
+                      <p>tone: {visualSpec.tone}</p>
+                      <p>densityLevel: {visualSpec.densityLevel}</p>
+                      <p>layoutMode: {visualSpec.layoutMode}</p>
+                      <p>routeId: {visualSpec.routeId}</p>
+                      <p>routeReasons: {visualSpec.routeReasons.join(", ") || "-"}</p>
+                      <p>warnings: {visualSpec.warnings.join(", ") || "-"}</p>
+                    </div>
+                  ) : (
+                    <p className="empty-copy">No visual route yet.</p>
+                  )}
+                </article>
+                <article className="card-block">
+                  <h3>Resolved Templates</h3>
+                  {slideTemplateSummary.length ? (
+                    <ul>
+                      {slideTemplateSummary.map((slide) => (
+                        <li key={slide.index}>
+                          Slide {slide.index} · {slide.pageType} · {slide.templateId}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="empty-copy">No slide templates yet.</p>
+                  )}
+                </article>
               </div>
               <div className="review-column">
                 <div className="review-badge-large">{versionPayload?.reviewResult?.decision || "-"}</div>
@@ -481,6 +530,15 @@ export function App() {
               </div>
             ) : null}
 
+            <div className="json-grid">
+              <article className="card-block compact">
+                <h3>Deck Route Label</h3>
+                <p>{visualSpec ? `${visualSpec.visualFamily} · ${visualSpec.themeCategory} · ${visualSpec.densityLevel}` : "No route"}</p>
+                <p>tone: {visualSpec?.tone || "-"}</p>
+                <p>warnings: {visualSpec?.warnings.join(", ") || "-"}</p>
+              </article>
+            </div>
+
             {versionPayload?.renderResult?.assets?.length ? (
               <div className="asset-grid">
                 {versionPayload.renderResult.assets.map((asset) => (
@@ -489,6 +547,10 @@ export function App() {
                       <strong>Slide {asset.slideIndex}</strong>
                       {asset.overflowDetected ? <span className="warning-chip">Overflow</span> : null}
                     </div>
+                    <p>
+                      Template:{" "}
+                      {versionPayload.deckPlan?.slides.find((slide) => slide.index === asset.slideIndex)?.templateId || "-"}
+                    </p>
                     <img src={asset.svgUrl} alt={`slide ${asset.slideIndex}`} />
                     <div className="asset-links">
                       <a href={asset.svgUrl} target="_blank" rel="noreferrer">

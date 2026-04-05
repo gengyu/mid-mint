@@ -8,6 +8,7 @@ import storySplitSchema from "./story-split.schema.json";
 import teamDeliverySchema from "./team-delivery.schema.json";
 import tripleCardsSchema from "./triple-cards.schema.json";
 import type { TemplateSchema } from "./types";
+import { assertTemplateRouteMeta } from "@/modules/domain/validation";
 
 export const TEMPLATE_SCHEMAS = [
   coverHeroSchema as TemplateSchema,
@@ -17,7 +18,13 @@ export const TEMPLATE_SCHEMAS = [
   tripleCardsSchema as TemplateSchema,
   stepListSchema as TemplateSchema,
   quoteCtaSchema as TemplateSchema
-];
+].map((schema) => ({
+  ...schema,
+  meta: {
+    ...schema.meta,
+    routeMeta: assertTemplateRouteMeta(schema.meta.routeMeta)
+  }
+}));
 
 function templateDir() {
   return path.join(process.cwd(), "src", "lib", "templates");

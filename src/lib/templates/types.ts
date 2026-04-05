@@ -1,3 +1,5 @@
+import type { TemplateRouteMeta } from "@/modules/domain/types";
+
 export type TemplateMeta = {
   id: string;
   name: string;
@@ -5,6 +7,7 @@ export type TemplateMeta = {
   description: string;
   supportedSlots: string[];
   tags?: string[];
+  routeMeta: TemplateRouteMeta;
 };
 
 export type TemplateSlot = {

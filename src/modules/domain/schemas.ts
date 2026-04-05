@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type {
   ContentBrief,
+  ContentSignals,
   DeckPlan,
   DeckSlide,
   Job,
@@ -12,6 +13,7 @@ import type {
   ReviewStageScores,
   RewriteRequest,
   SourceInput,
+  TemplateRouteMeta,
   VisualSpec
 } from "./types";
 
@@ -42,6 +44,39 @@ export const contentAngleSchema = z.enum([
   "method_summary"
 ]);
 export const densityLevelSchema = z.enum(["low", "medium", "high"]);
+export const themeCategorySchema = z.enum([
+  "news_flash",
+  "knowledge_explainer",
+  "comparison_analysis",
+  "case_story",
+  "method_guide",
+  "campaign_launch"
+]);
+export const toneModeSchema = z.enum(["professional", "sharp", "warm", "practical", "energetic"]);
+export const contentIntentSchema = z.enum(["inform", "explain", "compare", "convince", "convert"]);
+export const audienceModeSchema = z.enum(["broad_consumer", "operator", "professional", "founder_team"]);
+export const visualFamilySchema = z.enum([
+  "signal-tech",
+  "clean-method",
+  "proof-compare",
+  "warm-story",
+  "brand-campaign"
+]);
+export const layoutModeSchema = z.enum(["airy", "balanced", "compact"]);
+export const decorationLevelSchema = z.enum(["low", "medium", "high"]);
+export const imageStrategySchema = z.enum(["none", "abstract", "editorial"]);
+export const routeReasonCodeSchema = z.enum([
+  "angle_selected_base_route",
+  "preferred_style_hint_applied",
+  "preferred_style_hint_ignored",
+  "audience_mode_broad_consumer",
+  "audience_mode_operator",
+  "audience_mode_professional",
+  "audience_mode_founder_team",
+  "density_low_layout_airy",
+  "density_medium_layout_balanced",
+  "density_high_layout_compact"
+]);
 export const reviewDecisionSchema = z.enum(["approve", "rewrite", "block"]);
 
 export const sourceInputSchema = z.object({
@@ -94,11 +129,36 @@ export const deckPlanSchema = z.object({
   cta: z.string()
 }) satisfies z.ZodType<DeckPlan>;
 
-export const visualSpecSchema = z.object({
-  styleName: z.string(),
-  layoutMode: z.string(),
-  tone: z.string(),
+export const contentSignalsSchema = z.object({
+  themeCategory: themeCategorySchema,
+  tone: toneModeSchema,
   densityLevel: densityLevelSchema,
+  contentIntent: contentIntentSchema,
+  audienceMode: audienceModeSchema
+}) satisfies z.ZodType<ContentSignals>;
+
+export const templateRouteMetaSchema = z.object({
+  supportedPageTypes: z.array(deckPageTypeSchema).min(1),
+  supportedFamilies: z.array(visualFamilySchema).min(1),
+  supportedThemes: z.array(themeCategorySchema).min(1),
+  densitySupport: z.array(densityLevelSchema).min(1),
+  emphasis: decorationLevelSchema,
+  usagePriority: z.number().int().nonnegative(),
+  phase1Status: z.enum(["enabled", "excluded"])
+}) satisfies z.ZodType<TemplateRouteMeta>;
+
+export const visualSpecSchema = z.object({
+  routeId: z.string(),
+  themeCategory: themeCategorySchema,
+  visualFamily: visualFamilySchema,
+  tone: toneModeSchema,
+  densityLevel: densityLevelSchema,
+  layoutMode: layoutModeSchema,
+  paletteKey: z.string(),
+  typographyMode: z.string(),
+  decorationLevel: decorationLevelSchema,
+  imageStrategy: imageStrategySchema,
+  routeReasons: z.array(routeReasonCodeSchema),
   warnings: z.array(z.string())
 }) satisfies z.ZodType<VisualSpec>;
 

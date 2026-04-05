@@ -6,6 +6,7 @@
 * this document refines the existing `visual-match` stage only
 * this document does not add a new workflow stage
 * this document should not replace current v1 specs until approved
+* the Phase 1 contract below is written to be implementation-ready and is mirrored in linked domain, module, API, and frontend specs
 
 ## Goal
 
@@ -96,7 +97,7 @@ The system must derive at least:
 * `contentIntent`
 * `audienceMode`
 
-Suggested controlled values for the first milestone:
+Approved controlled values for Phase 1:
 
 ```ts
 type ThemeCategory =
@@ -134,7 +135,7 @@ These values must be closed enums inside the routing logic even if user input re
 
 The system must choose one visual route for the whole deck before choosing per-slide templates.
 
-Suggested controlled values:
+Approved controlled values:
 
 ```ts
 type VisualFamily =
@@ -191,6 +192,7 @@ type TemplateRouteMeta = {
   densitySupport: DensityLevel[];
   emphasis: "low" | "medium" | "high";
   usagePriority: number;
+  phase1Status: "enabled" | "excluded";
 };
 ```
 
@@ -200,7 +202,7 @@ Requirements:
 * every template must declare compatible `VisualFamily`
 * every template must declare supported density range
 * every template must declare routing priority for tie-break
-* templates already in assets but not used by main routing must be classified and either enabled or explicitly deprecated
+* templates already in assets but not used by main routing must be classified and either enabled or explicitly excluded
 
 This is required to make existing assets first-class routing options.
 
@@ -208,10 +210,10 @@ This is required to make existing assets first-class routing options.
 
 The current `VisualSpec` is too small to support explainable theme routing.
 
-Target output shape:
+Approved output shape for Phase 1:
 
 ```ts
-type VisualSpecV2 = {
+type VisualSpec = {
   routeId: string;
   themeCategory: ThemeCategory;
   visualFamily: VisualFamily;
@@ -222,7 +224,7 @@ type VisualSpecV2 = {
   typographyMode: string;
   decorationLevel: "low" | "medium" | "high";
   imageStrategy: "none" | "abstract" | "editorial";
-  routeReasons: string[];
+  routeReasons: RouteReasonCode[];
   warnings: string[];
 };
 ```
@@ -233,6 +235,187 @@ Requirements:
 * output must include machine-readable reasons for route selection
 * reasons must be short and stable enough for frontend display and analytics
 * warnings must continue to capture density and overflow risk
+
+## Phase 1 Implementation Contract
+
+Phase 1 is the minimum scope that must be implemented before any later LLM-assisted classification work.
+
+Phase 1 must:
+
+* update the existing `visual-match` stage only
+* keep render pipeline and workflow stages unchanged
+* work without any LLM dependency
+* emit the approved `VisualSpec` shape
+* expose read-only route information in workspace and preview
+
+Phase 1 must not:
+
+* implement route override UI
+* implement per-slide template override UI
+* invent new slide data structures for custom layouts
+* enable templates whose slot shape cannot be filled from current `DeckSlide`
+
+### Phase 1 Input Contract
+
+The `visual-match` stage must consume:
+
+* `ParsedSource`
+* `ContentBrief`
+* `DeckPlan`
+* `preferredStyle`
+* template catalog metadata
+
+### Phase 1 Deterministic Signal Rules
+
+`densityLevel` must be derived from average per-slide character count:
+
+* `high` when average chars per slide >= 140
+* `medium` when average chars per slide >= 85 and < 140
+* `low` when average chars per slide < 85
+
+`layoutMode` must be derived only from `densityLevel`:
+
+* `low` -> `airy`
+* `medium` -> `balanced`
+* `high` -> `compact`
+
+`audienceMode` must be derived from `ContentBrief.audience` using deterministic keyword rules:
+
+* map to `founder_team` when audience text contains `创始人`, `founder`, `团队`, or `team`
+* map to `operator` when audience text contains `运营`, `增长`, `operator`, or `growth`
+* map to `professional` when audience text contains `专业`, `研究`, `engineer`, `research`, `开发`, or `product`
+* otherwise map to `broad_consumer`
+
+### Phase 1 Base Route Mapping
+
+The base route must be derived from `ContentBrief.angle` before any style hint is considered:
+
+| `ContentAngle` | `themeCategory` | `contentIntent` | `visualFamily` |
+| --- | --- | --- | --- |
+| `quick_view` | `news_flash` | `inform` | `signal-tech` |
+| `key_points` | `knowledge_explainer` | `explain` | `clean-method` |
+| `industry_impact` | `news_flash` | `explain` | `signal-tech` |
+| `practitioner_view` | `case_story` | `convince` | `warm-story` |
+| `product_opportunity` | `campaign_launch` | `convert` | `brand-campaign` |
+| `tool_summary` | `comparison_analysis` | `compare` | `proof-compare` |
+| `pitfall_alert` | `news_flash` | `convince` | `signal-tech` |
+| `experience_breakdown` | `case_story` | `explain` | `warm-story` |
+| `method_summary` | `method_guide` | `explain` | `clean-method` |
+
+### Phase 1 Preferred Style Hint Rules
+
+`preferredStyle` remains a hint only.
+
+The system may map `preferredStyle` keywords to a target family:
+
+* `科技`, `tech`, `未来`, `signal` -> `signal-tech`
+* `极简`, `clean`, `minimal`, `方法` -> `clean-method`
+* `对比`, `compare`, `理性`, `proof` -> `proof-compare`
+* `温和`, `故事`, `warm`, `narrative` -> `warm-story`
+* `品牌`, `campaign`, `发布`, `emotional` -> `brand-campaign`
+
+The style hint may override the base family only when all conditions are true:
+
+* the hint maps to one approved `VisualFamily`
+* the hinted family has at least one compatible Phase 1 enabled template for every slide `pageType` in the deck
+* the hinted family does not increase overflow risk compared with the base family
+
+When any of these conditions is false, the system must keep the base family and emit a route reason indicating the hint was ignored.
+
+### Phase 1 Visual Token Contract
+
+Deck-level visual tokens are fixed by `VisualFamily`:
+
+| `VisualFamily` | `tone` | `paletteKey` | `typographyMode` | `decorationLevel` | `imageStrategy` |
+| --- | --- | --- | --- | --- | --- |
+| `signal-tech` | `sharp` | `tech-emerald` | `display-sharp` | `medium` | `abstract` |
+| `clean-method` | `practical` | `paper-slate` | `sans-clean` | `low` | `none` |
+| `proof-compare` | `professional` | `contrast-copper` | `sans-compact` | `medium` | `abstract` |
+| `warm-story` | `warm` | `sunset-ink` | `serif-warm` | `medium` | `editorial` |
+| `brand-campaign` | `energetic` | `brand-pop` | `display-bold` | `high` | `editorial` |
+
+`preferredStyle` may override `tone` only when it matches one approved tone keyword:
+
+* `专业`, `professional` -> `professional`
+* `锐利`, `sharp` -> `sharp`
+* `温和`, `warm` -> `warm`
+* `务实`, `practical` -> `practical`
+* `活力`, `energetic` -> `energetic`
+
+When no tone keyword matches, use the family default tone.
+
+### Phase 1 Route Id And Reason Codes
+
+`routeId` must use this format:
+
+```text
+vf-{visualFamily}-{themeCategory}-{densityLevel}
+```
+
+`routeReasons` must only use approved codes:
+
+* `angle_selected_base_route`
+* `preferred_style_hint_applied`
+* `preferred_style_hint_ignored`
+* `audience_mode_broad_consumer`
+* `audience_mode_operator`
+* `audience_mode_professional`
+* `audience_mode_founder_team`
+* `density_low_layout_airy`
+* `density_medium_layout_balanced`
+* `density_high_layout_compact`
+
+The emitted reason list must contain:
+
+* exactly one base-route reason: `angle_selected_base_route`
+* exactly one audience reason
+* exactly one density/layout reason
+* zero or one style-hint reason
+
+### Phase 1 Template Classification
+
+The approved Phase 1 template routing table is:
+
+| templateId | supportedPageTypes | supportedFamilies | supportedThemes | densitySupport | emphasis | usagePriority | phase1Status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `cover-hero` | `cover` | `signal-tech`, `warm-story`, `brand-campaign`, `clean-method`, `proof-compare` | `news_flash`, `knowledge_explainer`, `comparison_analysis`, `case_story`, `method_guide`, `campaign_launch` | `low`, `medium` | `high` | `100` | `enabled` |
+| `step-list` | `summary`, `detail`, `checklist` | `clean-method`, `signal-tech` | `knowledge_explainer`, `method_guide`, `news_flash` | `medium`, `high` | `medium` | `84` | `enabled` |
+| `triple-cards` | `summary`, `detail`, `comparison` | `signal-tech`, `clean-method`, `brand-campaign`, `proof-compare` | `knowledge_explainer`, `comparison_analysis`, `campaign_launch`, `news_flash` | `low`, `medium` | `medium` | `78` | `enabled` |
+| `story-split` | `summary`, `detail`, `comparison` | `warm-story`, `proof-compare`, `clean-method`, `signal-tech` | `case_story`, `comparison_analysis`, `knowledge_explainer`, `method_guide`, `news_flash` | `low`, `medium` | `medium` | `82` | `enabled` |
+| `quote-cta` | `cta` | `signal-tech`, `clean-method`, `proof-compare`, `warm-story`, `brand-campaign` | `news_flash`, `knowledge_explainer`, `comparison_analysis`, `case_story`, `method_guide`, `campaign_launch` | `low`, `medium`, `high` | `high` | `100` | `enabled` |
+| `team-delivery` | `summary`, `detail` | `signal-tech`, `clean-method` | `knowledge_explainer`, `method_guide`, `campaign_launch` | `medium` | `medium` | `80` | `enabled` |
+| `feature-compare` | `comparison` | `proof-compare`, `signal-tech` | `comparison_analysis`, `knowledge_explainer` | `medium`, `high` | `high` | `95` | `excluded` |
+
+`feature-compare` is explicitly excluded in Phase 1 because current `DeckSlide` does not contain left-side and right-side comparison fields required for stable slot filling.
+
+`team-delivery` is approved for Phase 1 and must use this slot-filling contract:
+
+* `eyebrow` = `0{slide.index}`
+* `title` = `slide.title`
+* `subtitle` = truncated `slide.body`
+* `cardA`, `cardB`, `cardC` = `slide.highlights[0..2]` with fixed fallbacks
+* `cardALine1..3`, `cardBLine1..3`, `cardCLine1..3` = sequential short body lines
+* `lead` = truncated `slide.goal`
+* `bullet1..3` = remaining short body lines with fixed fallbacks
+* `footer` = truncated `deckPlan.cta` when present, otherwise truncated `slide.goal`
+
+### Phase 1 Template Selection Algorithm
+
+For each slide, the system must:
+
+1. collect templates with `phase1Status = enabled` and matching `supportedPageTypes`
+2. filter by `supportedFamilies`
+3. filter by `supportedThemes`
+4. filter by `densitySupport`
+5. sort by `usagePriority` descending, then `templateId` ascending
+6. choose the first remaining template
+
+Fallback order must be:
+
+1. drop family filter and emit warning `template_family_fallback`
+2. drop theme filter and emit warning `template_theme_fallback`
+3. drop density filter and emit warning `template_density_fallback`
+4. if still empty, return `VISUAL_TEMPLATE_NOT_FOUND`
 
 ## User Experience Requirement
 
@@ -333,7 +516,8 @@ Scope:
 Required outcome:
 
 * the same 7 templates behave like multiple visual families instead of a flat list
-* `feature-compare` and `team-delivery` are either routed in valid scenarios or explicitly excluded by spec
+* `team-delivery` is routed in valid scenarios
+* `feature-compare` is explicitly excluded by spec until deck structure supports side-specific comparison fields
 * preview difference between major content themes becomes obvious
 
 ### Phase 2: Add Structured Classification

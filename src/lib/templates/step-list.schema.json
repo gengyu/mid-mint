@@ -15,7 +15,16 @@
       "step5",
       "footer"
     ],
-    "tags": ["流程", "步骤", "清单"]
+    "tags": ["流程", "步骤", "清单"],
+    "routeMeta": {
+      "supportedPageTypes": ["summary", "detail", "checklist"],
+      "supportedFamilies": ["clean-method", "signal-tech"],
+      "supportedThemes": ["knowledge_explainer", "method_guide", "news_flash"],
+      "densitySupport": ["medium", "high"],
+      "emphasis": "medium",
+      "usagePriority": 84,
+      "phase1Status": "enabled"
+    }
   },
   "svgFile": "step-list.svg",
   "slots": [

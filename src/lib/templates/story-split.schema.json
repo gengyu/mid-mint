@@ -16,7 +16,16 @@
       "rightBody",
       "footer"
     ],
-    "tags": ["双栏", "说明", "对照"]
+    "tags": ["双栏", "说明", "对照"],
+    "routeMeta": {
+      "supportedPageTypes": ["summary", "detail", "comparison"],
+      "supportedFamilies": ["warm-story", "proof-compare", "clean-method", "signal-tech"],
+      "supportedThemes": ["case_story", "comparison_analysis", "knowledge_explainer", "method_guide", "news_flash"],
+      "densitySupport": ["low", "medium"],
+      "emphasis": "medium",
+      "usagePriority": 82,
+      "phase1Status": "enabled"
+    }
   },
   "svgFile": "story-split.svg",
   "slots": [

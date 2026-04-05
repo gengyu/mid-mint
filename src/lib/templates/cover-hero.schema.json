@@ -17,7 +17,16 @@
       "featureC",
       "featureCDesc"
     ],
-    "tags": ["首发", "种草", "封面"]
+    "tags": ["首发", "种草", "封面"],
+    "routeMeta": {
+      "supportedPageTypes": ["cover"],
+      "supportedFamilies": ["signal-tech", "warm-story", "brand-campaign", "clean-method", "proof-compare"],
+      "supportedThemes": ["news_flash", "knowledge_explainer", "comparison_analysis", "case_story", "method_guide", "campaign_launch"],
+      "densitySupport": ["low", "medium"],
+      "emphasis": "high",
+      "usagePriority": 100,
+      "phase1Status": "enabled"
+    }
   },
   "svgFile": "cover-hero.svg",
   "slots": [

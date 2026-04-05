@@ -13,7 +13,7 @@ export function pickTemplate(prompt: string, templates: TemplateSchema[]): Templ
     lowerPrompt.includes("json") ||
     lowerPrompt.includes("命令行")
   ) {
-    return templates.find((template) => template.meta.id === "feature-compare") ?? templates[0];
+    return templates.find((template) => template.meta.id === "story-split") ?? templates[0];
   }
 
   return templates.find((template) => template.meta.id === "cover-hero") ?? templates[0];

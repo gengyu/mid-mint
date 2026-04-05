@@ -26,7 +26,16 @@
       "bullet3",
       "footer"
     ],
-    "tags": ["团队", "交付", "统一入口"]
+    "tags": ["团队", "交付", "统一入口"],
+    "routeMeta": {
+      "supportedPageTypes": ["summary", "detail"],
+      "supportedFamilies": ["signal-tech", "clean-method"],
+      "supportedThemes": ["knowledge_explainer", "method_guide", "campaign_launch"],
+      "densitySupport": ["medium"],
+      "emphasis": "medium",
+      "usagePriority": 80,
+      "phase1Status": "enabled"
+    }
   },
   "svgFile": "team-delivery.svg",
   "slots": [

@@ -6,6 +6,7 @@ import storySplitSchema from "./story-split.schema.json";
 import teamDeliverySchema from "./team-delivery.schema.json";
 import tripleCardsSchema from "./triple-cards.schema.json";
 import type { TemplateSchema } from "./types";
+import { assertTemplateRouteMeta } from "@/modules/domain/validation";
 
 const catalogSchemas = [
   coverHeroSchema as TemplateSchema,
@@ -18,5 +19,8 @@ const catalogSchemas = [
 ];
 
 export const TEMPLATE_CATALOG = catalogSchemas.map((template) => ({
-  meta: template.meta
+  meta: {
+    ...template.meta,
+    routeMeta: assertTemplateRouteMeta(template.meta.routeMeta)
+  }
 }));

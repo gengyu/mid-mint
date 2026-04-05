@@ -42,6 +42,59 @@ type ContentAngle =
 
 type DensityLevel = "low" | "medium" | "high";
 
+type ThemeCategory =
+  | "news_flash"
+  | "knowledge_explainer"
+  | "comparison_analysis"
+  | "case_story"
+  | "method_guide"
+  | "campaign_launch";
+
+type ToneMode =
+  | "professional"
+  | "sharp"
+  | "warm"
+  | "practical"
+  | "energetic";
+
+type ContentIntent =
+  | "inform"
+  | "explain"
+  | "compare"
+  | "convince"
+  | "convert";
+
+type AudienceMode =
+  | "broad_consumer"
+  | "operator"
+  | "professional"
+  | "founder_team";
+
+type VisualFamily =
+  | "signal-tech"
+  | "clean-method"
+  | "proof-compare"
+  | "warm-story"
+  | "brand-campaign";
+
+type LayoutMode = "airy" | "balanced" | "compact";
+
+type DecorationLevel = "low" | "medium" | "high";
+
+type ImageStrategy = "none" | "abstract" | "editorial";
+
+type RouteReasonCode =
+  | "angle_selected_base_route"
+  | "preferred_style_hint_applied"
+  | "preferred_style_hint_ignored"
+  | "audience_mode_broad_consumer"
+  | "audience_mode_operator"
+  | "audience_mode_professional"
+  | "audience_mode_founder_team"
+  | "density_low_layout_airy"
+  | "density_medium_layout_balanced"
+  | "density_high_layout_compact";
+
 type ReviewDecision =
   | "approve"
   | "rewrite"
@@ -100,11 +153,36 @@ type DeckPlan = {
   cta: string;
 };
 
-type VisualSpec = {
-  styleName: string;
-  layoutMode: string;
-  tone: string;
+type ContentSignals = {
+  themeCategory: ThemeCategory;
+  tone: ToneMode;
   densityLevel: DensityLevel;
+  contentIntent: ContentIntent;
+  audienceMode: AudienceMode;
+};
+
+type TemplateRouteMeta = {
+  supportedPageTypes: DeckPageType[];
+  supportedFamilies: VisualFamily[];
+  supportedThemes: ThemeCategory[];
+  densitySupport: DensityLevel[];
+  emphasis: DecorationLevel;
+  usagePriority: number;
+  phase1Status: "enabled" | "excluded";
+};
+
+type VisualSpec = {
+  routeId: string;
+  themeCategory: ThemeCategory;
+  visualFamily: VisualFamily;
+  tone: ToneMode;
+  densityLevel: DensityLevel;
+  layoutMode: LayoutMode;
+  paletteKey: string;
+  typographyMode: string;
+  decorationLevel: DecorationLevel;
+  imageStrategy: ImageStrategy;
+  routeReasons: RouteReasonCode[];
   warnings: string[];
 };
 
@@ -245,6 +323,53 @@ Validation failure codes:
 * `DECK_SLIDE_TITLE_EMPTY`
 * `DECK_SLIDE_BODY_EMPTY`
 * `DECK_TEMPLATE_ID_EMPTY`
+
+### ContentSignals
+
+The system must enforce:
+
+* every field must use the approved enum space only
+
+Validation failure code:
+
+* `VISUAL_SIGNAL_INVALID`
+
+### TemplateRouteMeta
+
+The system must enforce:
+
+* every template must declare at least one `supportedPageTypes`
+* every template must declare at least one `supportedFamilies`
+* every template must declare at least one `supportedThemes`
+* every template must declare at least one `densitySupport`
+* `usagePriority` must be an integer between 0 and 100
+* `phase1Status` must be either `enabled` or `excluded`
+
+Validation failure code:
+
+* `VISUAL_TEMPLATE_META_INVALID`
+
+### VisualSpec
+
+The system must enforce:
+
+* `routeId` must be non-empty
+* `themeCategory` must be one of `ThemeCategory`
+* `visualFamily` must be one of `VisualFamily`
+* `tone` must be one of `ToneMode`
+* `densityLevel` must be one of `DensityLevel`
+* `layoutMode` must be one of `LayoutMode`
+* `paletteKey` must be non-empty
+* `typographyMode` must be non-empty
+* `decorationLevel` must be one of `DecorationLevel`
+* `imageStrategy` must be one of `ImageStrategy`
+* `routeReasons.length` must be between 3 and 4
+* every route reason must be one of `RouteReasonCode`
+* `warnings` may be empty
+
+Validation failure code:
+
+* `VISUAL_SPEC_INVALID`
 
 ### RenderResult
 

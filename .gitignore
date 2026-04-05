@@ -8,3 +8,4 @@ storage/history.json
 public/generated-backgrounds/*
 !public/generated-backgrounds/.gitkeep
 .DS_Store
+storage/

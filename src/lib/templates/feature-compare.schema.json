@@ -25,7 +25,16 @@
       "rightFoot",
       "footer"
     ],
-    "tags": ["对比", "痛点", "流程"]
+    "tags": ["对比", "痛点", "流程"],
+    "routeMeta": {
+      "supportedPageTypes": ["comparison"],
+      "supportedFamilies": ["proof-compare", "signal-tech"],
+      "supportedThemes": ["comparison_analysis", "knowledge_explainer"],
+      "densitySupport": ["medium", "high"],
+      "emphasis": "high",
+      "usagePriority": 95,
+      "phase1Status": "excluded"
+    }
   },
   "svgFile": "feature-compare.svg",
   "slots": [

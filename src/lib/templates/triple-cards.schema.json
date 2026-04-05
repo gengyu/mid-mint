@@ -22,7 +22,16 @@
       "cardCL3",
       "footer"
     ],
-    "tags": ["三列", "卡片", "场景"]
+    "tags": ["三列", "卡片", "场景"],
+    "routeMeta": {
+      "supportedPageTypes": ["summary", "detail", "comparison"],
+      "supportedFamilies": ["signal-tech", "clean-method", "brand-campaign", "proof-compare"],
+      "supportedThemes": ["knowledge_explainer", "comparison_analysis", "campaign_launch", "news_flash"],
+      "densitySupport": ["low", "medium"],
+      "emphasis": "medium",
+      "usagePriority": 78,
+      "phase1Status": "enabled"
+    }
   },
   "svgFile": "triple-cards.svg",
   "slots": [
