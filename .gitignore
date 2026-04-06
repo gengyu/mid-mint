@@ -4,8 +4,8 @@ node_modules
 tsconfig.tsbuildinfo
 .env.local
 dist
-storage/history.json
+
 public/generated-backgrounds/*
 !public/generated-backgrounds/.gitkeep
 .DS_Store
-storage/
+storage/*

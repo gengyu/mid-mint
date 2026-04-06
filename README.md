@@ -1,55 +1,137 @@
 # mid-mint
 
-`mid-mint` 是一个面向小红书图文场景的素材生成平台。
+`mid-mint` 是一个面向小红书图文内容的生成平台，核心目标是把“原始信息输入”变成“可预览、可导出、可复写”的多页图文 deck。
 
-当前产品方向已经收敛为：
+当前仓库的主能力已经收敛为一条 stage-based workflow：
 
-- 接收用户提供的信息输入
-- 解析成结构化内容
-- 生成适合发布的小红书图文脚本
-- 匹配模板并输出最终素材
+1. 接收用户输入的链接、长文本和补充要求
+2. 解析为结构化内容
+3. 生成内容 brief 和 deck 结构
+4. 匹配视觉路线与模板
+5. 渲染 SVG / PNG / HTML 预览
+6. 做 review，并支持从指定阶段 rewrite 重跑
 
-信息输入可以是：
+## 平台怎么用
 
-- 单个链接
-- 多个链接
-- 长文本
-- 用户整理好的要点
-- `主题 + 链接 + 补充要求`
+平台前端分成 4 个页面视图：
 
-平台不把“自动抓取资讯”作为核心产品能力。
+- `Create`
+  填写输入内容，创建一个 job
+- `Workspace`
+  查看各阶段产物、review 结果、stage meta，并发起 rewrite
+- `Preview`
+  查看当前版本的渲染结果
+- `Export`
+  导出当前版本的 `PNG`、`SVG` 或 `HTML`
 
-## 当前技术栈
+典型使用流程：
 
-- `Vite + React + TypeScript`
-- `Express` API server
-- `fast-xml-parser`
-- `OpenAI provider`
-- SVG 模板注入与导出
+1. 在 `Create` 页面输入资料
+   - `URLs`：一行一个链接，可留空
+   - `Raw Text`：粘贴原始资料、会议纪要、采访稿、新闻摘要等
+   - `Notes`：补充限制条件、场景、语气要求
+   - `Target Audience`：目标受众
+   - `Content Goal`：内容目标
+   - `Preferred Style`：偏好的表达风格
+2. 点击 `Create Job`
+3. 进入 `Workspace` 后点击 `Run Workflow`
+4. 等待系统依次跑完 `PARSED -> BRIEFED -> DECK_GENERATED -> VISUAL_MATCHED -> RENDERED -> REVIEWED`
+5. 在 `Preview` 查看页面效果
+6. 如果 review 不满意，在 `Workspace` 里选择 `Rewrite Stage` 并填写原因，然后点击 `Rewrite And Rerun`
+7. 在 `Export` 下载产物
 
-## 运行
+## 本地启动
+
+### 1. 安装依赖
 
 ```bash
 pnpm install
+```
+
+### 2. 配置环境变量
+
+复制 `.env.example` 到 `.env.local`，按需填写：
+
+```bash
+cp .env.example .env.local
+```
+
+可用变量：
+
+- `OPENAI_API_KEY`
+- `OPENAI_BASE_URL`
+- `OPENAI_MODEL`
+- `LOCAL_IMAGE_BASE_URL`
+- `LOCAL_IMAGE_API_KEY`
+- `LOCAL_IMAGE_MODEL`
+
+说明：
+
+- 不填 `OPENAI_API_KEY` 时，文案链路会尽量走 fallback 逻辑，但效果会弱一些
+- 背景图会优先尝试 `LOCAL_IMAGE_BASE_URL` 指向的本地 OpenAI 兼容图片接口
+- 如果本地图片模型不可用，系统会退回程序化背景
+
+### 3. 启动开发环境
+
+```bash
 pnpm dev
 ```
 
-前端默认在 `http://localhost:5173`，API 服务默认在 `http://localhost:3101`。
+默认地址：
 
-## 当前能力边界
+- 前端：`http://localhost:5173`
+- API：`http://localhost:3101`
 
-仓库内已经具备：
+## API 能力
 
-- SVG 模板系统
-- 多页 deck 生成链路
-- 本地存储与历史记录
-- 预览与导出基础能力
+主工作流接口：
 
-接下来的设计与开发基线见 [docs/prd/000-overview.md](/Users/gengyu/code/mid-mint/docs/prd/000-overview.md)。
+- `POST /api/jobs`：创建 job
+- `POST /api/jobs/:jobId/run`：运行当前 job
+- `GET /api/jobs/:jobId`：获取 job 状态
+- `GET /api/jobs/:jobId/versions/:version`：获取指定版本的阶段产物
+- `POST /api/jobs/:jobId/rewrite`：从指定阶段创建新版本并重跑
+- `GET /api/jobs/:jobId/preview`：获取预览信息
+- `POST /api/jobs/:jobId/export`：生成导出链接
 
-## 模板资产
+仓库里还保留了两条补充能力：
 
-批量生成营销素材：
+- `POST /api/generate`
+  单张素材快速生成接口
+- `POST /api/generate-xhs`
+  旧版小红书 deck 快速生成接口
+
+这两条接口仍可用，但当前主入口已经是 `jobs/workflow` 这套 stage-based 工作流。
+
+## 目录说明
+
+核心目录：
+
+- `src/client`
+  前端工作台
+- `src/server`
+  Express 服务入口
+- `src/api`
+  API 路由与 controller
+- `src/modules`
+  source / brief / deck / visual / render / review / workflow 主流程模块
+- `src/lib/templates`
+  SVG 模板与 schema
+- `storage/v1`
+  workflow 的本地数据与产物
+- `docs/prd`
+  当前产品与实现设计文档
+
+常见产物位置：
+
+- job 元数据：`storage/v1/*.json`
+- 渲染输出：`storage/v1/jobs/<jobId>/v<version>/`
+- 导出页：`storage/v1/jobs/<jobId>/v<version>/exports/`
+- 程序化背景图：`public/generated-backgrounds/`
+
+## 可选脚本
+
+如果需要批量生成营销素材，可以运行：
 
 ```bash
 pnpm generate:xhs
@@ -57,10 +139,10 @@ pnpm generate:xhs
 
 生成结果会写入 `marketing/xiaohongshu/assets/`。
 
-## 环境变量
+## 开发备注
 
-复制 `.env.example` 到 `.env.local`。
+- 生产构建命令：`pnpm build`
+- 启动服务端入口：`pnpm start`
+- 代码主要围绕“小红书多页 deck 生成 + review + rewrite”展开
 
-- 如果不填 `OPENAI_API_KEY`，系统会自动走 fallback 文案生成逻辑。
-- 默认会尝试通过 `LOCAL_IMAGE_BASE_URL` 指向的本地 OpenAI 兼容接口生成背景图。
-- 如果本地图片模型不可用，系统会自动生成程序化背景并保留唯一资源地址。
+设计基线见 [docs/prd/000-overview.md](/Users/gengyu/code/mid-mint/docs/prd/000-overview.md)。

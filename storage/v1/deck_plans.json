@@ -1,5 +1,19 @@
 [
   {
+    "id": "deck_plans-1775437398448-7p04jh",
+    "jobId": "job-1775434736665-urhs39",
+    "versionNumber": 1,
+    "payloadJson": "{\"summary\":\"本deck分享如何通过轻柔音乐、亲密喂养和简单游戏，打造温馨有爱的宝宝早晨时光，帮助父母以积极心态开启新的一天，并提供可操作的日常育儿灵感。\",\"slides\":[{\"index\":1,\"pageType\":\"cover\",\"goal\":\"以温馨场景吸引目标父母，引入早晨仪式主题\",\"title\":\"今日早上宝宝：3个瞬间打造温馨早晨\",\"body\":\"轻柔音乐、亲密喂养、躲猫猫游戏——用简单互动开启宝宝充满笑声和亲密感的一天。\",\"highlights\":[\"温馨氛围\",\"亲子联结\",\"轻松日常\"],\"templateId\":\"cover-hero\",\"values\":{},\"charCountTitle\":17,\"charCountBody\":38},{\"index\":2,\"pageType\":\"summary\",\"goal\":\"强调平和环境与灵活流程对宝宝情绪的影响\",\"title\":\"柔和唤醒，减少早晨匆忙\",\"body\":\"选择轻柔音乐或自然声音作为背景，避免急促唤醒。保持喂养和活动流程简单灵活，让宝宝和自己都放松地开始新的一天。\",\"highlights\":[\"柔和声音\",\"无压力节奏\",\"环境营造\"],\"templateId\":\"step-list\",\"values\":{},\"charCountTitle\":11,\"charCountBody\":54},{\"index\":3,\"pageType\":\"detail\",\"goal\":\"突出喂养时刻的情感交流价值\",\"title\":\"喂养时眼神交流，加深亲子情感\",\"body\":\"喂奶或辅食时，与宝宝温柔对视，轻声说话或唱歌。这种专注时刻能增强宝宝的安全感，建立深厚的情感联结。\",\"highlights\":[\"眼神接触\",\"情感联结\",\"专注陪伴\"],\"templateId\":\"step-list\",\"values\":{},\"charCountTitle\":14,\"charCountBody\":49},{\"index\":4,\"pageType\":\"comparison\",\"goal\":\"展示简单游戏对宝宝认知发育的促进\",\"title\":\"躲猫猫游戏：激发认知与欢乐\",\"body\":\"通过简单的躲猫猫游戏，帮助宝宝理解物体恒存概念，同时带来欢笑。每天几分钟，促进大脑发育，增进亲子互动。\",\"highlights\":[\"认知发展\",\"互动游戏\",\"欢乐时光\"],\"templateId\":\"story-split\",\"values\":{},\"charCountTitle\":13,\"charCountBody\":51},{\"index\":5,\"pageType\":\"cta\",\"goal\":\"鼓励父母实践并分享自己的早晨仪式\",\"title\":\"你的早晨，也可以如此温馨简单\",\"body\":\"从明天开始，尝试这些简单建议：用柔和音乐唤醒、喂养时保持眼神交流、加入躲猫猫游戏。拍照或录短视频记录宝宝的笑容，在社交媒体分享你的#宝宝早晨时光，激励更多父母享受育儿点滴。\",\"highlights\":[\"立即行动\",\"记录分享\",\"社区激励\"],\"templateId\":\"quote-cta\",\"values\":{},\"charCountTitle\":14,\"charCountBody\":86}],\"cta\":\"明天早晨，尝试一个小改变：用音乐唤醒宝宝，增加喂养时的眼神交流，或玩一次躲猫猫。拍照记录温馨瞬间，并分享你的#宝宝早晨时光！\"}",
+    "createdAt": "2026-04-06T01:03:18.448Z"
+  },
+  {
+    "id": "deck_plans-1775437390809-uoffqc",
+    "jobId": "job-1775434736665-urhs39",
+    "versionNumber": 1,
+    "payloadJson": "{\"summary\":\"本deck分享如何通过轻柔音乐、亲密喂养和简单游戏，打造温馨有爱的宝宝早晨时光，帮助父母以积极心态开启新的一天，并提供可操作的日常育儿灵感。\",\"slides\":[{\"index\":1,\"pageType\":\"cover\",\"goal\":\"以温馨场景吸引目标父母，引入早晨仪式主题\",\"title\":\"今日早上宝宝：3个瞬间打造温馨早晨\",\"body\":\"轻柔音乐、亲密喂养、躲猫猫游戏——用简单互动开启宝宝充满笑声和亲密感的一天。\",\"highlights\":[\"温馨氛围\",\"亲子联结\",\"轻松日常\"],\"templateId\":\"cover-warm-01\",\"values\":{},\"charCountTitle\":17,\"charCountBody\":38},{\"index\":2,\"pageType\":\"summary\",\"goal\":\"强调平和环境与灵活流程对宝宝情绪的影响\",\"title\":\"柔和唤醒，减少早晨匆忙\",\"body\":\"选择轻柔音乐或自然声音作为背景，避免急促唤醒。保持喂养和活动流程简单灵活，让宝宝和自己都放松地开始新的一天。\",\"highlights\":[\"柔和声音\",\"无压力节奏\",\"环境营造\"],\"templateId\":\"routine-peaceful-02\",\"values\":{},\"charCountTitle\":11,\"charCountBody\":54},{\"index\":3,\"pageType\":\"detail\",\"goal\":\"突出喂养时刻的情感交流价值\",\"title\":\"喂养时眼神交流，加深亲子情感\",\"body\":\"喂奶或辅食时，与宝宝温柔对视，轻声说话或唱歌。这种专注时刻能增强宝宝的安全感，建立深厚的情感联结。\",\"highlights\":[\"眼神接触\",\"情感联结\",\"专注陪伴\"],\"templateId\":\"bonding-feeding-03\",\"values\":{},\"charCountTitle\":14,\"charCountBody\":49},{\"index\":4,\"pageType\":\"comparison\",\"goal\":\"展示简单游戏对宝宝认知发育的促进\",\"title\":\"躲猫猫游戏：激发认知与欢乐\",\"body\":\"通过简单的躲猫猫游戏，帮助宝宝理解物体恒存概念，同时带来欢笑。每天几分钟，促进大脑发育，增进亲子互动。\",\"highlights\":[\"认知发展\",\"互动游戏\",\"欢乐时光\"],\"templateId\":\"play-cognitive-04\",\"values\":{},\"charCountTitle\":13,\"charCountBody\":51},{\"index\":5,\"pageType\":\"cta\",\"goal\":\"鼓励父母实践并分享自己的早晨仪式\",\"title\":\"你的早晨，也可以如此温馨简单\",\"body\":\"从明天开始，尝试这些简单建议：用柔和音乐唤醒、喂养时保持眼神交流、加入躲猫猫游戏。拍照或录短视频记录宝宝的笑容，在社交媒体分享你的#宝宝早晨时光，激励更多父母享受育儿点滴。\",\"highlights\":[\"立即行动\",\"记录分享\",\"社区激励\"],\"templateId\":\"cta-action-05\",\"values\":{},\"charCountTitle\":14,\"charCountBody\":86}],\"cta\":\"明天早晨，尝试一个小改变：用音乐唤醒宝宝，增加喂养时的眼神交流，或玩一次躲猫猫。拍照记录温馨瞬间，并分享你的#宝宝早晨时光！\"}",
+    "createdAt": "2026-04-06T01:03:10.809Z"
+  },
+  {
     "id": "deck_plans-1775434788968-embf38",
     "jobId": "job-1775434736665-urhs39",
     "versionNumber": 1,

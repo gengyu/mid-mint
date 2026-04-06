@@ -1,5 +1,12 @@
 [
   {
+    "id": "visual_specs-1775437398453-2iv9sx",
+    "jobId": "job-1775434736665-urhs39",
+    "versionNumber": 1,
+    "payloadJson": "{\"routeId\":\"vf-signal-tech-news_flash-medium\",\"themeCategory\":\"news_flash\",\"visualFamily\":\"signal-tech\",\"tone\":\"warm\",\"densityLevel\":\"medium\",\"layoutMode\":\"balanced\",\"paletteKey\":\"tech-emerald\",\"typographyMode\":\"display-sharp\",\"decorationLevel\":\"medium\",\"imageStrategy\":\"abstract\",\"routeReasons\":[\"angle_selected_base_route\",\"audience_mode_broad_consumer\",\"density_medium_layout_balanced\"],\"warnings\":[]}",
+    "createdAt": "2026-04-06T01:03:18.453Z"
+  },
+  {
     "id": "visual_specs-1775434788970-vvzys3",
     "jobId": "job-1775434736665-urhs39",
     "versionNumber": 1,

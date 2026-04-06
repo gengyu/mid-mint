@@ -1,11 +1,11 @@
 [
   {
     "id": "job-1775434736665-urhs39",
-    "status": "FAILED",
+    "status": "APPROVED",
     "rewriteCount": 0,
     "activeVersion": 1,
     "createdAt": "2026-04-06T00:18:56.661Z",
-    "updatedAt": "2026-04-06T00:20:19.133Z"
+    "updatedAt": "2026-04-06T01:03:48.305Z"
   },
   {
     "id": "job-1775405602164-hi9nwn",
