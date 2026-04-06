@@ -194,6 +194,12 @@ export const stageLogRepository = {
       stageLogsTable.list().filter((row) => row.jobId === jobId),
       (row) => row.startedAt
     );
+  },
+  listByJobIdAndVersion(jobId: string, versionNumber: number) {
+    return sortByTimestamp(
+      stageLogsTable.list().filter((row) => row.jobId === jobId && row.versionNumber === versionNumber),
+      (row) => row.startedAt
+    );
   }
 };
 

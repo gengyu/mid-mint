@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import type { XhsDeckResult, XhsSlide, XhsLogEntry } from "@/lib/xhs/types";
+import type { XhsSlide, XhsLogEntry } from "@/lib/xhs/types";
 import { ensureDir, projectPath } from "@/lib/utils/fs";
 
 type SaveDeckBundleInput = {
@@ -9,7 +9,6 @@ type SaveDeckBundleInput = {
   slideCount: number;
   summary: string;
   slides: XhsSlide[];
-  sources: XhsDeckResult["sources"];
   createdAt: string;
   logs?: XhsLogEntry[];
 };
@@ -86,29 +85,12 @@ export function saveDeckBundle(result: SaveDeckBundleInput) {
       display: block;
       border-radius: 22px;
     }
-    .sources {
-      margin-top: 16px;
-      display: grid;
-      gap: 8px;
-      color: #4b5563;
-      font-size: 14px;
-    }
   </style>
 </head>
 <body>
   <section class="meta">
     <h1>${escapeHtml(result.topic)}</h1>
     <p>${escapeHtml(result.summary)}</p>
-    <div class="sources">
-      ${result.sources
-        .map(
-          (source) =>
-            `<div>${escapeHtml(source.source)} | ${escapeHtml(source.publishedAt)} | <a href="${escapeHtml(
-              source.link
-            )}">${escapeHtml(source.title)}</a></div>`
-        )
-        .join("")}
-    </div>
   </section>
   <section class="slides">
     ${result.slides
@@ -133,7 +115,6 @@ export function saveDeckBundle(result: SaveDeckBundleInput) {
         summary: result.summary,
         createdAt: result.createdAt,
         logs: result.logs ?? [],
-        sources: result.sources,
         slides: result.slides.map((slide) => ({
           id: slide.id,
           index: slide.index,

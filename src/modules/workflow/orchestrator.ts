@@ -15,10 +15,30 @@ import type {
   ParsedSource,
   RenderResult,
   ReviewResult,
+  StageExecutionMeta,
   SourceInput,
   VisualSpec
 } from "@/modules/domain/types";
+import { createAppError } from "@/shared/errors/app-error";
+import {
+  StageExecutionError,
+  type StageRunResult,
+  createDeterministicStageResult
+} from "@/modules/workflow/stage-execution";
 import type { RunJobOptions } from "@/modules/workflow/workflow.types";
+
+const STAGE_META_ORDER: JobStatus[] = [
+  "INPUT_RECEIVED",
+  "PARSED",
+  "BRIEFED",
+  "DECK_GENERATED",
+  "VISUAL_MATCHED",
+  "RENDERED",
+  "REVIEWED",
+  "APPROVED",
+  "REWRITE_PENDING",
+  "FAILED"
+];
 
 export type WorkflowRepositories = {
   jobs: {
@@ -76,21 +96,37 @@ export type WorkflowRepositories = {
       startedAt: string;
       finishedAt: string;
       status: "success" | "error";
+      model: string | null;
+      usedLlm: boolean;
+      llmAttempted: boolean;
+      retryOccurred: boolean;
+      usedFallback: boolean;
+      durationMs: number;
       errorCode: string | null;
       errorMessage: string | null;
     }): void;
+    listByJobIdAndVersion?(jobId: string, versionNumber: number): Array<{
+      stageName: JobStatus;
+      model: string | null;
+      usedLlm: boolean;
+      llmAttempted: boolean;
+      retryOccurred: boolean;
+      usedFallback: boolean;
+      durationMs: number;
+      errorCode: string | null;
+    }>;
   };
 };
 
 export type WorkflowModules = {
   sourceParser: {
-    run(input: SourceInput): Promise<ParsedSource>;
+    run(input: SourceInput): Promise<StageRunResult<ParsedSource>>;
   };
   briefGenerator: {
-    run(input: ParsedSource & { targetAudience: string; contentGoal: string; preferredStyle: string }): Promise<ContentBrief>;
+    run(input: ParsedSource & { targetAudience: string; contentGoal: string; preferredStyle: string }): Promise<StageRunResult<ContentBrief>>;
   };
   deckGenerator: {
-    run(input: { parsedSource: ParsedSource; contentBrief: ContentBrief }): Promise<DeckPlan>;
+    run(input: { parsedSource: ParsedSource; contentBrief: ContentBrief }): Promise<StageRunResult<DeckPlan>>;
   };
   visualMatch: {
     run(input: {
@@ -98,7 +134,7 @@ export type WorkflowModules = {
       contentBrief: ContentBrief;
       deckPlan: DeckPlan;
       preferredStyle: string;
-    }): Promise<{ deckPlan: DeckPlan; visualSpec: VisualSpec }>;
+    }): Promise<StageRunResult<{ deckPlan: DeckPlan; visualSpec: VisualSpec }>>;
   };
   renderer: {
     run(input: { jobId: string; versionNumber: number; deckPlan: DeckPlan; visualSpec: VisualSpec }): Promise<RenderResult>;
@@ -110,7 +146,7 @@ export type WorkflowModules = {
       deckPlan: DeckPlan;
       visualSpec: VisualSpec;
       renderResult: RenderResult;
-    }): Promise<ReviewResult>;
+    }): Promise<StageRunResult<ReviewResult>>;
   };
 };
 
@@ -145,9 +181,12 @@ export class WorkflowOrchestrator {
         ? this.requireArtifact(this.repositories.parsedSources.get(jobId, currentVersion), "Parsed source not found.")
         : await this.runStage("PARSED", jobId, currentVersion, async () => {
             const result = await this.modules.sourceParser.run(sourceInput);
-            const validated = assertParsedSource(result);
+            const validated = assertParsedSource(result.output);
             this.repositories.parsedSources.save(jobId, currentVersion, validated);
-            return validated;
+            return {
+              output: validated,
+              meta: result.meta
+            };
           });
 
     const contentBrief =
@@ -163,9 +202,12 @@ export class WorkflowOrchestrator {
               contentGoal: sourceInput.contentGoal,
               preferredStyle: sourceInput.preferredStyle
             });
-            const validated = assertContentBrief(result);
+            const validated = assertContentBrief(result.output);
             this.repositories.contentBriefs.save(jobId, currentVersion, validated);
-            return validated;
+            return {
+              output: validated,
+              meta: result.meta
+            };
           });
 
     let deckPlan =
@@ -176,9 +218,12 @@ export class WorkflowOrchestrator {
               parsedSource,
               contentBrief
             });
-            const validated = assertDeckPlan(result);
+            const validated = assertDeckPlan(result.output);
             this.repositories.deckPlans.save(jobId, currentVersion, validated);
-            return validated;
+            return {
+              output: validated,
+              meta: result.meta
+            };
           });
 
     const visualOutput = await this.runStage("VISUAL_MATCHED", jobId, currentVersion, async () => {
@@ -188,13 +233,16 @@ export class WorkflowOrchestrator {
         deckPlan,
         preferredStyle: sourceInput.preferredStyle
       });
-      const validatedDeckPlan = assertDeckPlan(result.deckPlan);
-      const validatedVisualSpec = assertVisualSpec(result.visualSpec);
+      const validatedDeckPlan = assertDeckPlan(result.output.deckPlan);
+      const validatedVisualSpec = assertVisualSpec(result.output.visualSpec);
       this.repositories.deckPlans.save(jobId, currentVersion, validatedDeckPlan);
       this.repositories.visualSpecs.save(jobId, currentVersion, validatedVisualSpec);
       return {
-        deckPlan: validatedDeckPlan,
-        visualSpec: validatedVisualSpec
+        output: {
+          deckPlan: validatedDeckPlan,
+          visualSpec: validatedVisualSpec
+        },
+        meta: result.meta
       };
     });
     deckPlan = visualOutput.deckPlan;
@@ -219,9 +267,12 @@ export class WorkflowOrchestrator {
         visualSpec: visualOutput.visualSpec,
         renderResult
       });
-      const validated = assertReviewResult(result);
+      const validated = assertReviewResult(result.output);
       this.repositories.reviewResults.save(jobId, currentVersion, validated);
-      return validated;
+      return {
+        output: validated,
+        meta: result.meta
+      };
     });
 
     return this.finalizeReview(jobId, reviewResult);
@@ -278,7 +329,8 @@ export class WorkflowOrchestrator {
       deckPlan: this.repositories.deckPlans.get(jobId, versionNumber),
       visualSpec: this.repositories.visualSpecs.get(jobId, versionNumber),
       renderResult: this.repositories.renderResults.get(jobId, versionNumber),
-      reviewResult: this.repositories.reviewResults.get(jobId, versionNumber)
+      reviewResult: this.repositories.reviewResults.get(jobId, versionNumber),
+      stageMeta: this.getStageMeta(jobId, versionNumber)
     };
   }
 
@@ -323,12 +375,13 @@ export class WorkflowOrchestrator {
     stageName: JobStatus,
     jobId: string,
     versionNumber: number,
-    executor: () => Promise<T>
+    executor: () => Promise<T | StageRunResult<T>>
   ): Promise<T> {
     const startedAt = new Date().toISOString();
 
     try {
-      const result = await executor();
+      const rawResult = await executor();
+      const normalizedResult = this.normalizeStageResult(stageName, rawResult);
       const finishedAt = new Date().toISOString();
       this.repositories.stageLogs.create({
         jobId,
@@ -337,13 +390,20 @@ export class WorkflowOrchestrator {
         startedAt,
         finishedAt,
         status: "success",
-        errorCode: null,
+        model: normalizedResult.meta.model,
+        usedLlm: normalizedResult.meta.usedLlm,
+        llmAttempted: normalizedResult.meta.llmAttempted,
+        retryOccurred: normalizedResult.meta.retryOccurred,
+        usedFallback: normalizedResult.meta.usedFallback,
+        durationMs: normalizedResult.meta.durationMs,
+        errorCode: normalizedResult.meta.errorCode,
         errorMessage: null
       });
       this.updateJob(jobId, (job) => ({ ...job, status: stageName }));
-      return result;
+      return normalizedResult.output;
     } catch (error) {
       const finishedAt = new Date().toISOString();
+      const stageError = this.toStageExecutionError(stageName, error);
       this.repositories.stageLogs.create({
         jobId,
         versionNumber,
@@ -351,12 +411,65 @@ export class WorkflowOrchestrator {
         startedAt,
         finishedAt,
         status: "error",
-        errorCode: "STAGE_FAILED",
-        errorMessage: error instanceof Error ? error.message : "Stage failed."
+        model: stageError.meta.model,
+        usedLlm: stageError.meta.usedLlm,
+        llmAttempted: stageError.meta.llmAttempted,
+        retryOccurred: stageError.meta.retryOccurred,
+        usedFallback: stageError.meta.usedFallback,
+        durationMs: stageError.meta.durationMs,
+        errorCode: stageError.meta.errorCode,
+        errorMessage: stageError.error.message
       });
       this.updateJob(jobId, (job) => ({ ...job, status: "FAILED" }));
-      throw error;
+      throw stageError;
     }
+  }
+
+  private normalizeStageResult<T>(stageName: JobStatus, result: T | StageRunResult<T>): StageRunResult<T> {
+    if (typeof result === "object" && result !== null && "output" in result && "meta" in result) {
+      return result as StageRunResult<T>;
+    }
+
+    return createDeterministicStageResult(stageName, result as T);
+  }
+
+  private toStageExecutionError(stageName: JobStatus, error: unknown): StageExecutionError {
+    if (error instanceof StageExecutionError) {
+      return error as StageExecutionError;
+    }
+
+    const message = error instanceof Error ? error.message : "Stage failed.";
+    const errorCode =
+      error instanceof Error && "error" in error && typeof (error as { error?: { code?: string } }).error?.code === "string"
+        ? (error as { error: { code: string } }).error.code
+        : "STAGE_FAILED";
+
+    return new StageExecutionError(createAppError(errorCode, message), {
+        stageName,
+        usedLlm: false,
+        llmAttempted: false,
+        model: null,
+        usedFallback: false,
+        retryOccurred: false,
+        durationMs: 0,
+        errorCode
+      });
+  }
+
+  private getStageMeta(jobId: string, versionNumber: number): StageExecutionMeta[] {
+    const rows = this.repositories.stageLogs.listByJobIdAndVersion?.(jobId, versionNumber) ?? [];
+    return rows
+      .map((row) => ({
+        stageName: row.stageName,
+        usedLlm: row.usedLlm,
+        llmAttempted: row.llmAttempted,
+        model: row.model,
+        usedFallback: row.usedFallback,
+        retryOccurred: row.retryOccurred,
+        durationMs: row.durationMs,
+        errorCode: row.errorCode
+      }))
+      .sort((left, right) => STAGE_META_ORDER.indexOf(left.stageName) - STAGE_META_ORDER.indexOf(right.stageName));
   }
 
   private finalizeReview(jobId: string, reviewResult: ReviewResult) {

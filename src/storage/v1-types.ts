@@ -40,6 +40,12 @@ export type StageLogRecord = {
   startedAt: string;
   finishedAt: string;
   status: "success" | "error";
+  model: string | null;
+  usedLlm: boolean;
+  llmAttempted: boolean;
+  retryOccurred: boolean;
+  usedFallback: boolean;
+  durationMs: number;
   errorCode: string | null;
   errorMessage: string | null;
 };

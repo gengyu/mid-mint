@@ -91,6 +91,14 @@ export type RouteReasonCode =
 
 export type ReviewDecision = "approve" | "rewrite" | "block";
 
+export type LlmErrorCode =
+  | "LLM_REQUEST_FAILED"
+  | "LLM_TIMEOUT"
+  | "LLM_OUTPUT_EMPTY"
+  | "LLM_OUTPUT_PARSE_FAILED"
+  | "LLM_OUTPUT_SCHEMA_INVALID"
+  | "LLM_FALLBACK_EXHAUSTED";
+
 export type SourceInput = {
   urls: string[];
   rawText: string;
@@ -233,4 +241,15 @@ export type RewriteRequest = {
   jobId: string;
   targetStage: RewriteStage;
   reason: string;
+};
+
+export type StageExecutionMeta = {
+  stageName: JobStatus;
+  usedLlm: boolean;
+  llmAttempted: boolean;
+  model: string | null;
+  usedFallback: boolean;
+  retryOccurred: boolean;
+  durationMs: number;
+  errorCode: string | null;
 };

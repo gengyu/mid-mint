@@ -1,4 +1,5 @@
 import type { TemplateSchema } from "@/lib/templates/types";
+import { stripUnsupportedText } from "@/lib/utils/text";
 import { buildSvg, parseSvg } from "./parse-svg";
 import { layoutText } from "./layout-text";
 
@@ -52,7 +53,7 @@ export function injectText(
       continue;
     }
 
-    const layout = layoutText(slot, values[slot.id] ?? "");
+    const layout = layoutText(slot, stripUnsupportedText(values[slot.id] ?? ""));
     node["@_x"] = String(slot.x);
     node["@_y"] = String(slot.y);
     node["@_fill"] = slot.fill ?? "#FFF8EF";

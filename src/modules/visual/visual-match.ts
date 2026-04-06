@@ -1,6 +1,8 @@
+import { z } from "zod";
+import { OpenAiProvider } from "@/lib/llm/openai";
 import { TEMPLATE_REGISTRY } from "@/lib/templates/registry";
 import type { TemplateSchema } from "@/lib/templates/types";
-import { assertContentSignals } from "@/modules/domain/validation";
+import { assertContentBrief, assertContentSignals, assertDeckPlan, assertParsedSource, assertVisualSpec } from "@/modules/domain/validation";
 import type {
   AudienceMode,
   ContentAngle,
@@ -20,6 +22,11 @@ import type {
   VisualSpec
 } from "@/modules/domain/types";
 import { AppValidationError, createAppError } from "@/shared/errors/app-error";
+import {
+  type StageRunResult,
+  type StructuredLlmProvider,
+  runLlmStage
+} from "@/modules/workflow/stage-execution";
 
 type BaseRoute = {
   themeCategory: ThemeCategory;
@@ -112,6 +119,35 @@ const TONE_HINTS: Array<{ tone: ToneMode; keywords: string[] }> = [
   { tone: "practical", keywords: ["务实", "practical"] },
   { tone: "energetic", keywords: ["活力", "energetic"] }
 ];
+
+const visualClassificationSchema = z.object({
+  themeCategory: z.enum([
+    "news_flash",
+    "knowledge_explainer",
+    "comparison_analysis",
+    "case_story",
+    "method_guide",
+    "campaign_launch"
+  ]),
+  tone: z.enum(["professional", "sharp", "warm", "practical", "energetic"]),
+  densityLevel: z.enum(["low", "medium", "high"]),
+  contentIntent: z.enum(["inform", "explain", "compare", "convince", "convert"]),
+  audienceMode: z.enum(["broad_consumer", "operator", "professional", "founder_team"]),
+  routeReasonHints: z.array(z.string()).default([])
+});
+
+const THEME_CATEGORIES = [
+  "news_flash",
+  "knowledge_explainer",
+  "comparison_analysis",
+  "case_story",
+  "method_guide",
+  "campaign_launch"
+] as const;
+const TONE_MODES = ["professional", "sharp", "warm", "practical", "energetic"] as const;
+const DENSITY_LEVELS = ["low", "medium", "high"] as const;
+const CONTENT_INTENTS = ["inform", "explain", "compare", "convince", "convert"] as const;
+const AUDIENCE_MODES = ["broad_consumer", "operator", "professional", "founder_team"] as const;
 
 function inferDensityLevel(deckPlan: DeckPlan): DensityLevel {
   const totalChars = deckPlan.slides.reduce(
@@ -371,84 +407,193 @@ function deriveSignals(contentBrief: ContentBrief, deckPlan: DeckPlan, preferred
   });
 }
 
+function buildPrompt(input: {
+  parsedSource: ParsedSource;
+  contentBrief: ContentBrief;
+  deckPlan: DeckPlan;
+  preferredStyle: string;
+}) {
+  return [
+    "You are the visual-match stage for mid-mint v2.",
+    "Return JSON only.",
+    "Task: classify structured visual signals. Do not choose final templates.",
+    "Rules:",
+    "- classify themeCategory, tone, densityLevel, contentIntent, audienceMode",
+    "- routeReasonHints can be short structured notes but final route is deterministic elsewhere",
+    "- do not mention or pick template IDs",
+    "",
+    "JSON shape:",
+    JSON.stringify({
+      themeCategory: "enum",
+      tone: "enum",
+      densityLevel: "enum",
+      contentIntent: "enum",
+      audienceMode: "enum",
+      routeReasonHints: ["string"]
+    }),
+    "",
+    "Input:",
+    JSON.stringify(input, null, 2)
+  ].join("\n");
+}
+
+function applyDeterministicRoute(input: {
+  contentBrief: ContentBrief;
+  deckPlan: DeckPlan;
+  preferredStyle: string;
+  signals: ContentSignals;
+}) {
+  const baseRoute = BASE_ROUTE_BY_ANGLE[input.contentBrief.angle];
+  if (!baseRoute) {
+    throw new AppValidationError(createAppError("VISUAL_ROUTE_UNRESOLVED", "Visual route cannot be resolved."));
+  }
+
+  const baseDeckRoute = resolveDeckTemplates(input.deckPlan, {
+    visualFamily: baseRoute.visualFamily,
+    themeCategory: input.signals.themeCategory,
+    densityLevel: input.signals.densityLevel
+  });
+
+  const hintedFamily = matchFamilyHint(input.preferredStyle);
+  let visualFamily = baseRoute.visualFamily;
+  let styleReason: RouteReasonCode | null = null;
+  let selectedDeckRoute = baseDeckRoute;
+
+  if (hintedFamily && hintedFamily !== baseRoute.visualFamily) {
+    if (familyHasPageTypeCoverage(input.deckPlan, hintedFamily)) {
+      const hintedDeckRoute = resolveDeckTemplates(input.deckPlan, {
+        visualFamily: hintedFamily,
+        themeCategory: input.signals.themeCategory,
+        densityLevel: input.signals.densityLevel
+      });
+
+      if (hintedDeckRoute.overflowRisk <= baseDeckRoute.overflowRisk) {
+        visualFamily = hintedFamily;
+        selectedDeckRoute = hintedDeckRoute;
+        styleReason = "preferred_style_hint_applied";
+      } else {
+        styleReason = "preferred_style_hint_ignored";
+      }
+    } else {
+      styleReason = "preferred_style_hint_ignored";
+    }
+  }
+
+  const familyTokens = FAMILY_TOKENS[visualFamily];
+  if (!familyTokens) {
+    throw new AppValidationError(createAppError("VISUAL_ROUTE_UNRESOLVED", "Resolved visual family is invalid."));
+  }
+
+  const layoutMode = inferLayoutMode(input.signals.densityLevel);
+  const routeReasons = [
+    "angle_selected_base_route",
+    audienceReason(input.signals.audienceMode),
+    inferDensityReason(input.signals.densityLevel),
+    styleReason
+  ].filter((reason): reason is RouteReasonCode => reason !== null);
+
+  return {
+    deckPlan: {
+      ...input.deckPlan,
+      slides: selectedDeckRoute.slides
+    },
+    visualSpec: assertVisualSpec({
+      routeId: `vf-${visualFamily}-${input.signals.themeCategory}-${input.signals.densityLevel}`,
+      themeCategory: input.signals.themeCategory,
+      visualFamily,
+      tone: input.signals.tone,
+      densityLevel: input.signals.densityLevel,
+      layoutMode,
+      paletteKey: familyTokens.paletteKey,
+      typographyMode: familyTokens.typographyMode,
+      decorationLevel: familyTokens.decorationLevel,
+      imageStrategy: familyTokens.imageStrategy,
+      routeReasons,
+      warnings: [...new Set([...collectWarnings(input.deckPlan, input.signals.densityLevel), ...selectedDeckRoute.warnings])]
+    })
+  };
+}
+
 export class VisualMatch {
+  constructor(private readonly provider: StructuredLlmProvider = new OpenAiProvider()) {}
+
   async run(input: {
     parsedSource: ParsedSource;
     contentBrief: ContentBrief;
     deckPlan: DeckPlan;
     preferredStyle: string;
-  }): Promise<{ deckPlan: DeckPlan; visualSpec: VisualSpec }> {
-    void input.parsedSource;
+  }): Promise<StageRunResult<{ deckPlan: DeckPlan; visualSpec: VisualSpec }>> {
+    assertParsedSource(input.parsedSource);
+    assertContentBrief(input.contentBrief);
+    assertDeckPlan(input.deckPlan);
 
-    const baseRoute = BASE_ROUTE_BY_ANGLE[input.contentBrief.angle];
-    if (!baseRoute) {
-      throw new AppValidationError(createAppError("VISUAL_ROUTE_UNRESOLVED", "Visual route cannot be resolved."));
-    }
-
-    const signals = deriveSignals(input.contentBrief, input.deckPlan, input.preferredStyle);
-    const baseDeckRoute = resolveDeckTemplates(input.deckPlan, {
-      visualFamily: baseRoute.visualFamily,
-      themeCategory: signals.themeCategory,
-      densityLevel: signals.densityLevel
-    });
-
-    const hintedFamily = matchFamilyHint(input.preferredStyle);
-    let visualFamily = baseRoute.visualFamily;
-    let styleReason: RouteReasonCode | null = null;
-    let selectedDeckRoute = baseDeckRoute;
-
-    if (hintedFamily && hintedFamily !== baseRoute.visualFamily) {
-      if (familyHasPageTypeCoverage(input.deckPlan, hintedFamily)) {
-        const hintedDeckRoute = resolveDeckTemplates(input.deckPlan, {
-          visualFamily: hintedFamily,
-          themeCategory: signals.themeCategory,
-          densityLevel: signals.densityLevel
+    return runLlmStage({
+      stageName: "VISUAL_MATCHED",
+      input,
+      prompt: buildPrompt(input),
+      provider: this.provider,
+      responseSchema: visualClassificationSchema,
+      mapParsed: (parsed, currentInput) => {
+        const deterministicSignals = deriveSignals(currentInput.contentBrief, currentInput.deckPlan, currentInput.preferredStyle);
+        const signals = assertContentSignals({
+          themeCategory: parsed.themeCategory,
+          tone: parsed.tone ?? deterministicSignals.tone,
+          densityLevel: parsed.densityLevel ?? deterministicSignals.densityLevel,
+          contentIntent: parsed.contentIntent,
+          audienceMode: parsed.audienceMode
         });
 
-        if (hintedDeckRoute.overflowRisk <= baseDeckRoute.overflowRisk) {
-          visualFamily = hintedFamily;
-          selectedDeckRoute = hintedDeckRoute;
-          styleReason = "preferred_style_hint_applied";
-        } else {
-          styleReason = "preferred_style_hint_ignored";
-        }
-      } else {
-        styleReason = "preferred_style_hint_ignored";
-      }
-    }
-
-    const familyTokens = FAMILY_TOKENS[visualFamily];
-    if (!familyTokens) {
-      throw new AppValidationError(createAppError("VISUAL_ROUTE_UNRESOLVED", "Resolved visual family is invalid."));
-    }
-
-    const layoutMode = inferLayoutMode(signals.densityLevel);
-    const routeReasons = [
-      "angle_selected_base_route",
-      audienceReason(signals.audienceMode),
-      inferDensityReason(signals.densityLevel),
-      styleReason
-    ].filter((reason): reason is RouteReasonCode => reason !== null);
-
-    return {
-      deckPlan: {
-        ...input.deckPlan,
-        slides: selectedDeckRoute.slides
+        return applyDeterministicRoute({
+          contentBrief: currentInput.contentBrief,
+          deckPlan: currentInput.deckPlan,
+          preferredStyle: currentInput.preferredStyle,
+          signals
+        });
       },
-      visualSpec: {
-        routeId: `vf-${visualFamily}-${signals.themeCategory}-${signals.densityLevel}`,
-        themeCategory: signals.themeCategory,
-        visualFamily,
-        tone: matchToneHint(input.preferredStyle) ?? familyTokens.tone,
-        densityLevel: signals.densityLevel,
-        layoutMode,
-        paletteKey: familyTokens.paletteKey,
-        typographyMode: familyTokens.typographyMode,
-        decorationLevel: familyTokens.decorationLevel,
-        imageStrategy: familyTokens.imageStrategy,
-        routeReasons,
-        warnings: [...new Set([...collectWarnings(input.deckPlan, signals.densityLevel), ...selectedDeckRoute.warnings])]
+      validateOutput: (output) => ({
+        deckPlan: assertDeckPlan(output.deckPlan),
+        visualSpec: assertVisualSpec(output.visualSpec)
+      }),
+      repairParsed: (raw, currentInput) => {
+        if (!raw || typeof raw !== "object") {
+          return null;
+        }
+
+        const fallbackSignals = deriveSignals(currentInput.contentBrief, currentInput.deckPlan, currentInput.preferredStyle);
+        const value = raw as Record<string, unknown>;
+        return {
+          themeCategory:
+            typeof value.themeCategory === "string" && THEME_CATEGORIES.includes(value.themeCategory as (typeof THEME_CATEGORIES)[number])
+              ? (value.themeCategory as (typeof THEME_CATEGORIES)[number])
+              : fallbackSignals.themeCategory,
+          tone:
+            typeof value.tone === "string" && TONE_MODES.includes(value.tone as (typeof TONE_MODES)[number])
+              ? (value.tone as (typeof TONE_MODES)[number])
+              : fallbackSignals.tone,
+          densityLevel:
+            typeof value.densityLevel === "string" && DENSITY_LEVELS.includes(value.densityLevel as (typeof DENSITY_LEVELS)[number])
+              ? (value.densityLevel as (typeof DENSITY_LEVELS)[number])
+              : fallbackSignals.densityLevel,
+          contentIntent:
+            typeof value.contentIntent === "string" && CONTENT_INTENTS.includes(value.contentIntent as (typeof CONTENT_INTENTS)[number])
+              ? (value.contentIntent as (typeof CONTENT_INTENTS)[number])
+              : fallbackSignals.contentIntent,
+          audienceMode:
+            typeof value.audienceMode === "string" && AUDIENCE_MODES.includes(value.audienceMode as (typeof AUDIENCE_MODES)[number])
+              ? (value.audienceMode as (typeof AUDIENCE_MODES)[number])
+              : fallbackSignals.audienceMode,
+          routeReasonHints: Array.isArray(value.routeReasonHints) ? value.routeReasonHints.map(String) : []
+        };
+      },
+      fallback: (currentInput) => {
+        const signals = deriveSignals(currentInput.contentBrief, currentInput.deckPlan, currentInput.preferredStyle);
+        return applyDeterministicRoute({
+          contentBrief: currentInput.contentBrief,
+          deckPlan: currentInput.deckPlan,
+          preferredStyle: currentInput.preferredStyle,
+          signals
+        });
       }
-    };
+    });
   }
 }

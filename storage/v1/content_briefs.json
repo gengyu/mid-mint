@@ -1,5 +1,82 @@
 [
   {
+    "id": "content_briefs-1775434769506-3rzsfs",
+    "jobId": "job-1775434736665-urhs39",
+    "versionNumber": 1,
+    "payloadJson": "{\"topic\":\"晨间育儿：让每个早晨充满爱\",\"angle\":\"quick_view\",\"audience\":\"新手妈妈和年轻父母\",\"narrative\":\"今日早上宝宝醒来时甜甜的一笑，让我深刻体会到晨间亲子互动的重要性。作为新手妈妈，我总结了几个简单实用的晨间技巧，帮助您和宝宝开启美好的一天，同时记录这些珍贵瞬间，增进感情。\",\"keyTakeaways\":[\"提前一晚准备宝宝衣物和用品\",\"保持轻松心态，随宝宝节奏调整\",\"用微笑和对话启动宝宝的一天\",\"简短记录晨间美好，如拍照或日记\"],\"mustInclude\":[\"The raw text content is '今日早上宝宝'.\",\"The text is in Chinese.\",\"No URLs are present.\",\"No notes, target audience, content goal, or preferred style are specified.\"],\"avoid\":[\"avoid lengthy morning routines that cause stress\",\"avoid neglecting personal self-care during mornings\",\"avoid using harsh tones with baby in the morning\"],\"contentGoal\":\"\"}",
+    "createdAt": "2026-04-06T00:19:29.506Z"
+  },
+  {
+    "id": "content_briefs-1775405672820-l0os6q",
+    "jobId": "job-1775405602164-hi9nwn",
+    "versionNumber": 1,
+    "payloadJson": "{\"topic\":\"Resolving 'Preview Not Found' Errors on Xiaohongshu\",\"angle\":\"quick_view\",\"audience\":\"Xiaohongshu content creators and active users facing app glitches\",\"narrative\":\"Stuck with the dreaded 'Preview not found.' error when sharing your latest find? It's a total mood-killer, but fret not! I've cracked the code to fix this fast—from quick app checks to simple resets—so you can get your content live and glowing without delay. Let's troubleshoot together and keep your feed flawless! ✨\",\"keyTakeaways\":[\"Verify your internet connection is stable before attempting to share.\",\"Clear the Xiaohongshu app cache via your phone's settings to remove corrupted data.\",\"Update the app to the newest version from the App Store or Google Play for bug fixes.\",\"Restart your device to refresh system processes and resolve temporary glitches.\",\"Contact Xiaohongshu support if the error persists after basic troubleshooting.\"],\"mustInclude\":[\"The error message 'Preview not found.' appears when content previews fail to load during sharing.\"],\"avoid\":[\"Do not repeatedly retry sharing without addressing the root cause, as it may worsen the issue.\",\"Avoid using an outdated app version; always ensure updates are installed promptly.\",\"Skip posting time-sensitive content until the error is fixed to prevent missed opportunities.\"],\"contentGoal\":\"\"}",
+    "createdAt": "2026-04-05T16:14:32.820Z"
+  },
+  {
+    "id": "content_briefs-1775405594127-neildf",
+    "jobId": "job-1775405562302-vsk1gw",
+    "versionNumber": 1,
+    "payloadJson": "{\"topic\":\"Instant Feedback Magic: Review Scores & Issue Lists\",\"angle\":\"quick_view\",\"audience\":\"Xiaohongshu's tech-savvy youth seeking productivity tools\",\"narrative\":\"Every time I finish a run with this tool, I'm greeted with a clear review score and a detailed issue list – it's like getting an instant report card for my work, making improvements so straightforward and fun!\",\"keyTakeaways\":[\"Get immediate review scores post-run\",\"Access a comprehensive issue list for debugging\",\"Enhance efficiency with actionable feedback\",\"Simplify quality checks with visual metrics\",\"Ideal for developers and creatives alike\"],\"mustInclude\":[\"After run, review score is displayed\",\"After run, issue list is displayed\"],\"avoid\":[\"Avoid jargon that alienates non-tech users\",\"Don't exaggerate claims without evidence\",\"Skip unrelated tool features\"],\"contentGoal\":\"\"}",
+    "createdAt": "2026-04-05T16:13:14.127Z"
+  },
+  {
+    "id": "content_briefs-1775405498174-qpybhw",
+    "jobId": "job-1775405463722-msnzny",
+    "versionNumber": 1,
+    "payloadJson": "{\"topic\":\"今天是什么一日之\",\"angle\":\"quick_view\",\"audience\":\"Young Chinese women on Xiaohongshu (aged 18-30) who seek daily inspiration, self-expression, and community through lifestyle content.\",\"narrative\":\"What vibe is your day giving off? 🌟 Tap into the 'what kind of day is it' feeling—whether it's a productive hustle, a cozy chill, or a spontaneous adventure—and let's celebrate its unique energy. Share your #今日份瞬间 with a photo or quick video, connect with others, and turn ordinary moments into shareable stories that spark joy and conversation! 💖📸\",\"keyTakeaways\":[\"Reflect on the emotional tone or theme of your day.\",\"Express it through a visually appealing photo, Reel, or short caption.\",\"Use hashtags like #今天是什么一日之 to join the trend and boost visibility.\",\"Engage with the community by commenting on others' daily posts.\",\"Make daily self-reflection a fun, consistent habit for content creation.\"],\"mustInclude\":[\"今天是什么一日之\"],\"avoid\":[\"Avoid generic posts without a personal touch or clear visual hook.\",\"Don't neglect audience interaction; always respond to comments.\",\"Steer clear of negative or complaining tones without a constructive or uplifting angle.\",\"Avoid overcomplicating the concept; keep it simple and relatable.\"],\"contentGoal\":\"\"}",
+    "createdAt": "2026-04-05T16:11:38.174Z"
+  },
+  {
+    "id": "content_briefs-1775405367568-2l84rh",
+    "jobId": "job-1775405271753-uh1bgo",
+    "versionNumber": 1,
+    "payloadJson": "{\"topic\":\"Unlock Daily Chinese: What '多少度' Really Means\",\"angle\":\"quick_view\",\"audience\":\"Xiaohongshu users learning Chinese or curious about language nuances\",\"narrative\":\"Stumbled upon '多少度' and puzzled by its meaning? This snappy three-character Chinese phrase is your ultimate tool for asking 'how many degrees?'—whether you're curious about the weather, tweaking your oven, or checking body temperature. It's a simple yet powerful question that streamlines daily chats and boosts your cultural fluency. Embrace '多少度' to sound more natural and connected in any Chinese-speaking scene!\",\"keyTakeaways\":[\"Translates directly to 'how many degrees?' in English\",\"Versatile for inquiring about temperature, angles, or any measured quantity\",\"Comprises three characters: 多 (many), 少 (few), 度 (degree), making it easy to recall\",\"Practical for enhancing everyday communication in Chinese contexts\",\"A common, friendly query that fosters smoother conversations\"],\"mustInclude\":[\"Source phrase: '多少度'\",\"Character count: 3\",\"Language: Chinese\",\"Intent: question (interrogative)\"],\"avoid\":[\"Avoid specifying unverified contexts like exact weather or cooking scenarios without evidence\",\"Do not alter the phrase or add extraneous meanings not present in the source\",\"Steer clear of overly technical jargon; keep explanations simple and accessible\"],\"contentGoal\":\"\"}",
+    "createdAt": "2026-04-05T16:09:27.568Z"
+  },
+  {
+    "id": "content_briefs-1775405303243-z5c0um",
+    "jobId": "job-1775405271753-uh1bgo",
+    "versionNumber": 1,
+    "payloadJson": "{\"topic\":\"多少度\",\"angle\":\"quick_view\",\"audience\":\"Xiaohongshu users interested in practical lifestyle tips and weather-related advice\",\"narrative\":\"Ever found yourself staring at a recipe or weather app, wondering '多少度'? This common Chinese phrase, meaning 'how many degrees,' pops up in everyday moments—from setting the oven for a perfect bake to checking if it's jacket weather. On Xiaohongshu, we transform these small queries into big insights, sharing relatable stories and hacks to decode measurements with confidence. Let's turn ambiguity into action, making every degree count in your routine.\",\"keyTakeaways\":[\"'多少度' is a versatile query about numerical measurements, often in degrees for temperature or angles.\",\"Context is crucial: clarify whether it refers to weather, cooking, or other scenarios for accurate understanding.\",\"Xiaohongshu thrives on user-generated tips, so sharing personal experiences with this phrase builds community trust.\",\"Precision in measurements enhances daily efficiency, from cooking to outdoor activities.\",\"Always start with the exact phrase '多少度' to maintain authenticity in discussions.\"],\"mustInclude\":[\"The raw text is exactly '多少度'.\",\"It is a query about a numerical measurement in degrees, possibly temperature or angle.\",\"No additional context is provided in the source, requiring external interpretation for full meaning.\"],\"avoid\":[\"Assuming '多少度' exclusively refers to temperature without acknowledging other interpretations like geometry or physics.\",\"Creating content that is too technical or vague, which may alienate the casual Xiaohongshu audience.\",\"Ignoring the need for clear, actionable advice that resonates with everyday user scenarios.\"],\"contentGoal\":\"\"}",
+    "createdAt": "2026-04-05T16:08:23.243Z"
+  },
+  {
+    "id": "content_briefs-1775405295326-li03ln",
+    "jobId": "job-1775405271753-uh1bgo",
+    "versionNumber": 1,
+    "payloadJson": "{\"topic\":\"Decoding '多少度': Your Essential Guide to This Common Chinese Query on Xiaohongshu\",\"angle\":\"quick_view\",\"audience\":\"Xiaohongshu users, especially expats and Chinese language learners interested in daily life and culture\",\"narrative\":\"Ever stumbled upon the phrase '多少度' in Xiaohongshu posts about weather outfits, fever checks, or recipe tutorials and felt puzzled? This concise Chinese interrogative, meaning 'how many degrees' or 'what temperature,' is a staple in everyday conversations and online content. In this brief, we'll unpack how '多少度' seamlessly fits into lifestyle contexts on the platform, from sharing seasonal fashion tips to discussing health hacks, empowering you to engage more authentically with the community.\",\"keyTakeaways\":[\"'多少度' is a versatile Chinese phrase used to ask about temperature in various scenarios like weather, body heat, or cooking.\",\"On Xiaohongshu, it frequently appears in posts related to outfit planning, wellness advice, and home cooking, reflecting real-life applications.\",\"For non-native speakers, recognizing this phrase boosts comprehension of Chinese lifestyle content and improves interaction.\",\"The exact meaning depends on context—always pair it with surrounding text or images for accurate interpretation.\",\"Mastering such basic phrases enhances your cultural integration and makes your contributions on Xiaohongshu more natural.\"],\"mustInclude\":[\"The original Chinese phrase: '多少度'\",\"Its core function as an interrogative about degrees or temperature\",\"The source's minimal and standalone nature with no additional context\"],\"avoid\":[\"Speculating a fixed context like only weather or only medical use without evidence from the source\",\"Introducing unrelated terms or complex linguistic explanations that deviate from the simple query\",\"Creating lengthy narratives; keep content scannable and aligned with Xiaohongshu's quick-read style\"],\"contentGoal\":\"\"}",
+    "createdAt": "2026-04-05T16:08:15.326Z"
+  },
+  {
+    "id": "content_briefs-1775403821187-tsrqkf",
+    "jobId": "job-1775403790423-7b72ll",
+    "versionNumber": 1,
+    "payloadJson": "{\"topic\":\"OpenAI多模态能力：小红书创作者的效率革命\",\"angle\":\"quick_view\",\"audience\":\"小红书内容创作者与运营者\",\"narrative\":\"OpenAI最新推出的多模态能力，正悄然改变小红书内容创作的生态。这些AI工具不再只是科技新闻，而是能直接嵌入你的工作流：从快速生成爆款文案、智能推荐配图，到辅助视频剪辑，多模态处理让灵感秒变成品。创作者们终于可以摆脱重复劳动，专注于创意与互动，高效打造高互动笔记，抢占流量先机。\",\"keyTakeaways\":[\"多模态AI可同时解析文本、图像等输入，提升内容理解力\",\"专为创作者场景优化，简化笔记制作流程\",\"集成到效率工具中，自动化文案撰写与素材匹配\",\"显著缩短内容产出时间，助力日更与爆款打造\",\"降低技术门槛，让普通创作者也能享受AI红利\"],\"mustInclude\":[\"OpenAI发布了新的多模态能力\",\"这些能力适合做面向创作者的效率工具\"],\"avoid\":[\"避免深奥的AI术语，用小红书用户熟悉的语言解释\",\"避免泛泛而谈，聚焦具体应用如笔记生成、图片优化\",\"忽略平台特性，如视觉优先、社区互动需求\",\"使用冗长段落，保持内容轻快易读\"],\"contentGoal\":\"输出一版小红书拆解\"}",
+    "createdAt": "2026-04-05T15:43:41.187Z"
+  },
+  {
+    "id": "content_briefs-1775403262279-9k6dax",
+    "jobId": "job-1775403228832-8fh39q",
+    "versionNumber": 1,
+    "payloadJson": "{\"topic\":\"OpenAI's Multimodal AI Tools for Xiaohongshu Content Efficiency\",\"angle\":\"quick_view\",\"audience\":\"content operations professionals\",\"narrative\":\"OpenAI's new multimodal AI capabilities are transforming content creation efficiency, specifically tailored for professionals managing Xiaohongshu. These tools integrate text, image, and video processing to streamline workflows, enabling teams to produce high-quality, engaging posts faster and with greater consistency. This breakthrough is essential for content operations aiming to enhance productivity and maintain a competitive edge on lifestyle and social platforms.\",\"keyTakeaways\":[\"Multimodal AI automates and unifies content processing for text, images, and videos.\",\"Specifically boosts efficiency for Xiaohongshu content operations teams.\",\"Helps achieve professional and clear content output with reduced manual effort.\",\"Enables faster content production cycles from ideation to publication.\",\"Critical for staying ahead in dynamic social media marketing landscapes.\"],\"mustInclude\":[\"OpenAI released new multimodal capabilities\",\"Capabilities are suitable for creator efficiency tools\",\"Target audience: content operations professionals\",\"Content goal: output a Xiaohongshu breakdown\"],\"avoid\":[\"Overly technical explanations that alienate non-technical content creators\",\"Speculative features or unverified performance claims\",\"Irrelevant comparisons with other AI platforms not discussed\",\"Ignoring Xiaohongshu-specific context and audience needs\"],\"contentGoal\":\"输出一版小红书拆解\"}",
+    "createdAt": "2026-04-05T15:34:22.279Z"
+  },
+  {
+    "id": "content_briefs-1775402922072-y0b05a",
+    "jobId": "job-1775402915864-ao1siq",
+    "versionNumber": 1,
+    "payloadJson": "{\"topic\":\"OpenAI 发布了新的多模态能力，适合做面向…\",\"angle\":\"tool_summary\",\"audience\":\"内容运营\",\"narrative\":\"这篇内容围绕“输出一版小红书拆解”来讲。 围绕工具、方案或产品做直接总结。 输出一版小红书拆解，内容运营，专业、清晰，OpenAI 发布了新的多模态能力，适合做面向创作者的效… 写法上尽量保持短句、强结论，适合内容运营快速浏览。\",\"keyTakeaways\":[\"OpenAI 发布了新的多模态能力，适合做面向创作者的效率工具\",\"OpenAI 发布了新的多模态能力，适合做面向创作者的效率工具。\",\"输出一版小红书拆解\"],\"mustInclude\":[\"OpenAI 发布了新的多模态能力，适合做面向…\",\"OpenAI 发布了新的多模态能力，适合做面向创作者的效率工具。\",\"OpenAI 发布了新的多模态能力，适合做面向创作者的效率工具\"],\"avoid\":[\"空话堆砌\",\"长段落\",\"新闻播报式\",\"术语堆砌\"],\"contentGoal\":\"输出一版小红书拆解\"}",
+    "createdAt": "2026-04-05T15:28:42.072Z"
+  },
+  {
+    "id": "content_briefs-1775402639408-hpild1",
+    "jobId": "job-1775402639404-l28kqm",
+    "versionNumber": 1,
+    "payloadJson": "{\"topic\":\"OpenAI 发布了新的多模态能力，适合做面向…\",\"angle\":\"tool_summary\",\"audience\":\"内容运营\",\"narrative\":\"这篇内容围绕“输出一版小红书拆解”来讲。 围绕工具、方案或产品做直接总结。 输出一版小红书拆解，内容运营，专业、清晰，OpenAI 发布了新的多模态能力，适合做面向创作者的效… 写法上尽量保持短句、强结论，适合内容运营快速浏览。\",\"keyTakeaways\":[\"OpenAI 发布了新的多模态能力，适合做面向创作者的效率工具\",\"OpenAI 发布了新的多模态能力，适合做面向创作者的效率工具。\",\"输出一版小红书拆解\"],\"mustInclude\":[\"OpenAI 发布了新的多模态能力，适合做面向…\",\"OpenAI 发布了新的多模态能力，适合做面向创作者的效率工具。\",\"OpenAI 发布了新的多模态能力，适合做面向创作者的效率工具\"],\"avoid\":[\"空话堆砌\",\"长段落\",\"新闻播报式\",\"术语堆砌\"],\"contentGoal\":\"输出一版小红书拆解\"}",
+    "createdAt": "2026-04-05T15:23:59.408Z"
+  },
+  {
     "id": "content_briefs-1775398915183-o169db",
     "jobId": "job-1775398907157-2fgdgm",
     "versionNumber": 1,

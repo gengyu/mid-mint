@@ -34,6 +34,7 @@ loadProjectEnv(rootDir);
 
 const app = express();
 const port = resolveApiPort(process.env);
+const llmProvider = new OpenAiProvider();
 
 app.use(cors());
 app.use(express.json({ limit: "8mb" }));
@@ -41,12 +42,12 @@ app.use(express.static(publicDir));
 app.use("/storage", express.static(storageDir));
 
 const workflowOrchestrator = new WorkflowOrchestrator(workflowRepositories, {
-  sourceParser: new SourceParser(),
-  briefGenerator: new BriefGenerator(),
-  deckGenerator: new DeckGenerator(),
-  visualMatch: new VisualMatch(),
+  sourceParser: new SourceParser(llmProvider),
+  briefGenerator: new BriefGenerator(llmProvider),
+  deckGenerator: new DeckGenerator(llmProvider),
+  visualMatch: new VisualMatch(llmProvider),
   renderer: new Renderer(),
-  reviewer: new Reviewer()
+  reviewer: new Reviewer(llmProvider)
 });
 const workflowService = new WorkflowService(workflowOrchestrator, workflowRepositories);
 const jobsController = new JobsController(workflowService);
@@ -66,8 +67,7 @@ app.get("/api/xhs-history", (_req, res) => {
 });
 
 app.get("/api/llm-health", async (_req, res) => {
-  const provider = new OpenAiProvider();
-  const health = await provider.checkHealth();
+  const health = await llmProvider.checkHealth();
   res.status(health.ok ? 200 : 503).json(health);
 });
 
@@ -112,7 +112,6 @@ app.post("/api/generate-xhs", async (req, res) => {
       slideCount: result.slideCount,
       summary: result.summary,
       slides: result.slides,
-      sources: result.sources,
       outputDir: result.outputDir,
       htmlPath: result.htmlPath,
       createdAt: result.createdAt,

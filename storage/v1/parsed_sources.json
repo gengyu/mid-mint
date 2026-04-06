@@ -1,5 +1,82 @@
 [
   {
+    "id": "parsed_sources-1775434758213-zx1eyt",
+    "jobId": "job-1775434736665-urhs39",
+    "versionNumber": 1,
+    "payloadJson": "{\"title\":\"今日早上宝宝\",\"summary\":\"The source consists of a single Chinese phrase: '今日早上宝宝'. No additional context or metadata is provided.\",\"keyFacts\":[\"The raw text content is '今日早上宝宝'.\",\"The text is in Chinese.\",\"No URLs are present.\",\"No notes, target audience, content goal, or preferred style are specified.\"],\"keyPoints\":[\"Content: short Chinese phrase.\",\"Metadata fields are empty.\",\"Source is minimal and may require enrichment.\"],\"quotes\":[\"今日早上宝宝\"],\"sourceUrls\":[],\"publishTime\":null,\"riskFlags\":[]}",
+    "createdAt": "2026-04-06T00:19:18.213Z"
+  },
+  {
+    "id": "parsed_sources-1775405638947-892s7z",
+    "jobId": "job-1775405602164-hi9nwn",
+    "versionNumber": 1,
+    "payloadJson": "{\"title\":\"{\\\"message\\\":\\\"Preview not…\",\"summary\":\"{\\\"message\\\" - \\\"Preview not found.\\\"}\",\"keyFacts\":[\"{\\\"message\\\":\\\"Preview not found.\\\"}\"],\"keyPoints\":[\"{\\\"message\\\" - \\\"Preview not found.\\\"}\"],\"quotes\":[\"message\",\"Preview not found.\"],\"sourceUrls\":[],\"publishTime\":null,\"riskFlags\":[]}",
+    "createdAt": "2026-04-05T16:13:58.947Z"
+  },
+  {
+    "id": "parsed_sources-1775405582817-qkc7wj",
+    "jobId": "job-1775405562302-vsk1gw",
+    "versionNumber": 1,
+    "payloadJson": "{\"title\":\"review score 和问题列表\",\"summary\":\"运行完成后，这里会展示 review score 和问题列表。\",\"keyFacts\":[\"运行完成后这里会展示 review score。\",\"运行完成后这里会展示问题列表。\"],\"keyPoints\":[\"Review score displayed after run\",\"Issue list displayed after run\"],\"quotes\":[\"运行完成后这里会展示 review score 和问题列表。\"],\"sourceUrls\":[],\"publishTime\":null,\"riskFlags\":[]}",
+    "createdAt": "2026-04-05T16:13:02.817Z"
+  },
+  {
+    "id": "parsed_sources-1775405486487-b2o1e1",
+    "jobId": "job-1775405463722-msnzny",
+    "versionNumber": 1,
+    "payloadJson": "{\"title\":\"今天是什么一日之\",\"summary\":\"今天是什么一日之\",\"keyFacts\":[\"今天是什么一日之\"],\"keyPoints\":[\"今天是什么一日之\"],\"quotes\":[],\"sourceUrls\":[],\"publishTime\":null,\"riskFlags\":[]}",
+    "createdAt": "2026-04-05T16:11:26.487Z"
+  },
+  {
+    "id": "parsed_sources-1775405357533-5ew3w8",
+    "jobId": "job-1775405271753-uh1bgo",
+    "versionNumber": 1,
+    "payloadJson": "{\"title\":\"\",\"summary\":\"The source consists of a single Chinese phrase: '多少度', which translates to 'how many degrees?'. No additional context or content is provided.\",\"keyFacts\":[\"The raw text is '多少度'.\",\"The phrase contains three Chinese characters.\",\"The text is written in Chinese.\"],\"keyPoints\":[\"language: zh\",\"char_count: 3\",\"intent: question\"],\"quotes\":[\"多少度\"],\"sourceUrls\":[],\"publishTime\":null,\"riskFlags\":[]}",
+    "createdAt": "2026-04-05T16:09:17.533Z"
+  },
+  {
+    "id": "parsed_sources-1775405293183-9kof88",
+    "jobId": "job-1775405271753-uh1bgo",
+    "versionNumber": 1,
+    "payloadJson": "{\"title\":\"多少度\",\"summary\":\"The source consists of a single Chinese phrase '多少度' meaning 'how many degrees', with no additional context, metadata, or supporting content provided.\",\"keyFacts\":[\"The raw text is exactly '多少度' in Chinese.\",\"No other textual content, URLs, notes, or audience information is present in the source.\",\"The phrase appears to be a query about a numerical measurement in degrees, possibly temperature or angle.\"],\"keyPoints\":[\"Content is a minimal text fragment requiring external context for full interpretation.\",\"Lack of metadata or supplementary details limits analytical depth.\",\"Downstream processing may need clarification on the intended subject of the degree inquiry.\"],\"quotes\":[\"多少度\"],\"sourceUrls\":[],\"publishTime\":null,\"riskFlags\":[]}",
+    "createdAt": "2026-04-05T16:08:13.183Z"
+  },
+  {
+    "id": "parsed_sources-1775405285156-7nfm0b",
+    "jobId": "job-1775405271753-uh1bgo",
+    "versionNumber": 1,
+    "payloadJson": "{\"title\":\"\",\"summary\":\"The source consists solely of the Chinese phrase '多少度', meaning 'how many degrees' or 'what temperature', indicating a simple query about temperature or measurement without further elaboration.\",\"keyFacts\":[\"The raw text is in Chinese.\",\"The text is an interrogative phrase asking about degrees.\",\"No other text or metadata is provided in the source.\"],\"keyPoints\":[\"Interrogative phrase about degrees/temperature\",\"Chinese language\",\"Minimal content with no context\"],\"quotes\":[\"多少度\"],\"sourceUrls\":[],\"publishTime\":null,\"riskFlags\":[]}",
+    "createdAt": "2026-04-05T16:08:05.156Z"
+  },
+  {
+    "id": "parsed_sources-1775403812429-taujqw",
+    "jobId": "job-1775403790423-7b72ll",
+    "versionNumber": 1,
+    "payloadJson": "{\"title\":\"OpenAI 发布新多模态能力适用于创作者效率工具\",\"summary\":\"OpenAI 已发布新的多模态能力，这些能力特别适合开发面向内容创作者的效率工具。\",\"keyFacts\":[\"OpenAI 发布了新的多模态能力\",\"这些能力适合做面向创作者的效率工具\"],\"keyPoints\":[\"多模态 AI 功能\",\"创作者工具应用\"],\"quotes\":[],\"sourceUrls\":[],\"publishTime\":null,\"riskFlags\":[]}",
+    "createdAt": "2026-04-05T15:43:32.429Z"
+  },
+  {
+    "id": "parsed_sources-1775403252242-d393by",
+    "jobId": "job-1775403228832-8fh39q",
+    "versionNumber": 1,
+    "payloadJson": "{\"title\":\"OpenAI Releases Multimodal Capabilities for Creator Efficiency Tools\",\"summary\":\"OpenAI has announced new multimodal capabilities designed to support the development of efficiency tools for content creators, with a focus on professional and clear content operations for platforms like Xiaohongshu.\",\"keyFacts\":[\"OpenAI released new multimodal capabilities\",\"The capabilities are suitable for creator efficiency tools\"],\"keyPoints\":[\"Feature: OpenAI's multimodal AI capabilities\",\"Application: Efficiency tools for content creators\",\"Target audience: Content operations professionals\",\"Content goal: Output a Xiaohongshu breakdown\"],\"quotes\":[],\"sourceUrls\":[],\"publishTime\":null,\"riskFlags\":[]}",
+    "createdAt": "2026-04-05T15:34:12.242Z"
+  },
+  {
+    "id": "parsed_sources-1775402922033-itqq0d",
+    "jobId": "job-1775402915864-ao1siq",
+    "versionNumber": 1,
+    "payloadJson": "{\"title\":\"OpenAI 发布了新的多模态能力，适合做面向…\",\"summary\":\"输出一版小红书拆解，内容运营，专业、清晰，OpenAI 发布了新的多模态能力，适合做面向创作者的效率工具\",\"keyFacts\":[\"OpenAI 发布了新的多模态能力，适合做面向创作者的效率工具。\",\"OpenAI 发布了新的多模态能力，适合做面向创作者的效率工具\"],\"keyPoints\":[\"OpenAI 发布了新的多模态能力，适合做面向创作者的效率工具\"],\"quotes\":[],\"sourceUrls\":[],\"publishTime\":null,\"riskFlags\":[]}",
+    "createdAt": "2026-04-05T15:28:42.033Z"
+  },
+  {
+    "id": "parsed_sources-1775402639406-zico9o",
+    "jobId": "job-1775402639404-l28kqm",
+    "versionNumber": 1,
+    "payloadJson": "{\"title\":\"OpenAI 发布了新的多模态能力，适合做面向…\",\"summary\":\"输出一版小红书拆解，内容运营，专业、清晰，OpenAI 发布了新的多模态能力，适合做面向创作者的效率工具\",\"keyFacts\":[\"OpenAI 发布了新的多模态能力，适合做面向创作者的效率工具。\",\"OpenAI 发布了新的多模态能力，适合做面向创作者的效率工具\"],\"keyPoints\":[\"OpenAI 发布了新的多模态能力，适合做面向创作者的效率工具\"],\"quotes\":[],\"sourceUrls\":[],\"publishTime\":null,\"riskFlags\":[]}",
+    "createdAt": "2026-04-05T15:23:59.406Z"
+  },
+  {
     "id": "parsed_sources-1775398915182-4eom7c",
     "jobId": "job-1775398907157-2fgdgm",
     "versionNumber": 1,

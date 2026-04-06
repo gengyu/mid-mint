@@ -89,6 +89,14 @@ type VersionPayload = {
     }>;
   } | null;
   reviewResult: ReviewResult | null;
+  stageMeta?: Array<{
+    stageName: JobStatus;
+    usedLlm: boolean;
+    model: string | null;
+    usedFallback: boolean;
+    durationMs: number;
+    errorCode: string | null;
+  }>;
 };
 
 type PreviewPayload = {
@@ -115,6 +123,13 @@ const stageOrder: JobStatus[] = [
   "RENDERED",
   "REVIEWED",
   "APPROVED"
+];
+
+const previewReadyStatuses: JobStatus[] = [
+  "RENDERED",
+  "REVIEWED",
+  "APPROVED",
+  "REWRITE_PENDING"
 ];
 
 const pages: Array<{ id: AppPage; label: string }> = [
@@ -152,6 +167,10 @@ function derivePageFromHash(): AppPage {
   return pages.some((page) => page.id === hash) ? (hash as AppPage) : "create";
 }
 
+function canFetchPreview(status: JobStatus | null | undefined) {
+  return Boolean(status && previewReadyStatuses.includes(status));
+}
+
 export function App() {
   const [page, setPage] = useState<AppPage>(() => derivePageFromHash());
   const [form, setForm] = useState(initialForm);
@@ -164,6 +183,9 @@ export function App() {
   const [rewriteReason, setRewriteReason] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isRunningWorkflow, setIsRunningWorkflow] = useState(false);
+  const [runStartedAt, setRunStartedAt] = useState<number | null>(null);
+  const [runElapsedSeconds, setRunElapsedSeconds] = useState(0);
   const [isPending, startTransition] = useTransition();
 
   const versionOptions = useMemo(() => {
@@ -180,6 +202,10 @@ export function App() {
     }
 
     return stageOrder.indexOf(job.status === "REWRITE_PENDING" ? "REVIEWED" : job.status);
+  }, [job]);
+
+  const isWorkflowActive = useMemo(() => {
+    return Boolean(job && ["INPUT_RECEIVED", "PARSED", "BRIEFED", "DECK_GENERATED", "VISUAL_MATCHED", "RENDERED"].includes(job.status));
   }, [job]);
 
   useEffect(() => {
@@ -205,6 +231,11 @@ export function App() {
     setJob(jobSummary);
     setVersionPayload(versionData);
 
+    if (!canFetchPreview(jobSummary.status)) {
+      setPreview(null);
+      return;
+    }
+
     try {
       const previewData = await readJson<PreviewPayload>(`/api/jobs/${jobId}/preview`);
       setPreview(previewData);
@@ -226,6 +257,41 @@ export function App() {
       }
     })();
   }, [job?.jobId, refreshJob, selectedVersion]);
+
+  useEffect(() => {
+    if (!isRunningWorkflow || !job?.jobId) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      void refreshJob(job.jobId, selectedVersion).catch(() => undefined);
+    }, 1500);
+
+    return () => window.clearInterval(timer);
+  }, [isRunningWorkflow, job?.jobId, refreshJob, selectedVersion]);
+
+  useEffect(() => {
+    if (!isRunningWorkflow || !job) {
+      return;
+    }
+
+    if (!isWorkflowActive) {
+      setIsRunningWorkflow(false);
+      setRunStartedAt(null);
+    }
+  }, [isRunningWorkflow, isWorkflowActive, job]);
+
+  useEffect(() => {
+    if (!isRunningWorkflow || !runStartedAt) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      setRunElapsedSeconds(Math.max(0, Math.round((Date.now() - runStartedAt) / 1000)));
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [isRunningWorkflow, runStartedAt]);
 
   function updateField(name: keyof typeof form, value: string) {
     setForm((current) => ({ ...current, [name]: value }));
@@ -270,7 +336,11 @@ export function App() {
     }
 
     setError(null);
-    setMessage(null);
+    setMessage("Workflow is running. Stage outputs will refresh automatically.");
+    setIsRunningWorkflow(true);
+    setRunStartedAt(Date.now());
+    setRunElapsedSeconds(0);
+    navigate("workspace");
     startTransition(() => {
       void (async () => {
         try {
@@ -279,6 +349,10 @@ export function App() {
           setMessage("Workflow completed for current version.");
         } catch (requestError) {
           setError(requestError instanceof Error ? requestError.message : "Run failed.");
+        } finally {
+          setIsRunningWorkflow(false);
+          setRunStartedAt(null);
+          setRunElapsedSeconds(0);
         }
       })();
     });
@@ -303,6 +377,10 @@ export function App() {
             })
           });
 
+          setIsRunningWorkflow(true);
+          setRunStartedAt(Date.now());
+          setRunElapsedSeconds(0);
+          setMessage(`Rewrite started for version ${rewriteResponse.nextVersion}. Running workflow now.`);
           await readJson(`/api/jobs/${job.jobId}/run`, { method: "POST" });
           setSelectedVersion(rewriteResponse.nextVersion);
           await refreshJob(job.jobId, rewriteResponse.nextVersion);
@@ -310,6 +388,10 @@ export function App() {
           navigate("workspace");
         } catch (requestError) {
           setError(requestError instanceof Error ? requestError.message : "Rewrite failed.");
+        } finally {
+          setIsRunningWorkflow(false);
+          setRunStartedAt(null);
+          setRunElapsedSeconds(0);
         }
       })();
     });
@@ -340,6 +422,12 @@ export function App() {
 
   const slideTemplateSummary = versionPayload?.deckPlan?.slides ?? [];
   const visualSpec = versionPayload?.visualSpec;
+  const latestStageMeta = versionPayload?.stageMeta?.[versionPayload.stageMeta.length - 1] ?? null;
+  const runStatusLabel = isRunningWorkflow
+    ? `Running ${job?.status || "workflow"}${runStartedAt ? ` · ${runElapsedSeconds}s` : ""}`
+    : job?.status
+      ? `Ready · ${job.status}`
+      : "No active workflow";
 
   return (
     <div className="app-shell">
@@ -369,9 +457,25 @@ export function App() {
           <span>Version: {job?.activeVersion || "-"}</span>
         </div>
 
+        <div className={classNames("run-status-card", isRunningWorkflow && "running")}>
+          <strong>{runStatusLabel}</strong>
+          <span>
+            Current stage: {job?.status || "-"}
+          </span>
+          {latestStageMeta ? (
+            <span>
+              Last completed: {latestStageMeta.stageName}
+              {latestStageMeta.model ? ` · ${latestStageMeta.model}` : ""}
+              {latestStageMeta.usedFallback ? " · fallback" : ""}
+            </span>
+          ) : (
+            <span>Click Run Workflow to start processing.</span>
+          )}
+        </div>
+
         <div className="button-row">
-          <button className="primary" type="button" onClick={handleRunJob} disabled={!job || isPending}>
-            Run Workflow
+          <button className="primary" type="button" onClick={handleRunJob} disabled={!job || isPending || isRunningWorkflow}>
+            {isRunningWorkflow ? "Running Workflow..." : "Run Workflow"}
           </button>
           <button className="ghost" type="button" onClick={() => navigate("preview")} disabled={!preview}>
             Open Preview
@@ -426,11 +530,30 @@ export function App() {
 
             <div className="stage-track">
               {stageOrder.map((stage, index) => (
-                <div key={stage} className={classNames("stage-pill", index <= activeStageIndex && "active")}>
+                <div
+                  key={stage}
+                  className={classNames(
+                    "stage-pill",
+                    index <= activeStageIndex && "active",
+                    isRunningWorkflow && job?.status === stage && "live"
+                  )}
+                >
                   {stage}
                 </div>
               ))}
             </div>
+
+            {isRunningWorkflow ? (
+              <div className="progress-banner">
+                <div className="progress-dot" aria-hidden="true" />
+                <div>
+                  <strong>Workflow in progress</strong>
+                  <p>
+                    We are running stage <code>{job?.status || "INPUT_RECEIVED"}</code> and auto-refreshing the workspace.
+                  </p>
+                </div>
+              </div>
+            ) : null}
 
             <div className="toolbar">
               <label>
@@ -494,6 +617,24 @@ export function App() {
                     </ul>
                   ) : (
                     <p className="empty-copy">No slide templates yet.</p>
+                  )}
+                </article>
+                <article className="card-block">
+                  <h3>Stage Meta</h3>
+                  {versionPayload?.stageMeta?.length ? (
+                    <ul className="meta-list">
+                      {versionPayload.stageMeta.map((meta) => (
+                        <li key={meta.stageName}>
+                          <strong>{meta.stageName}</strong>
+                          <span>{meta.model || "deterministic"}</span>
+                          <span>{meta.usedFallback ? "fallback" : meta.usedLlm ? "llm" : "local"}</span>
+                          <span>{meta.durationMs}ms</span>
+                          <span>{meta.errorCode || "ok"}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="empty-copy">No stage execution metadata yet.</p>
                   )}
                 </article>
               </div>

@@ -1,5 +1,68 @@
 [
   {
+    "id": "source_inputs-1775434736667-a5ohzw",
+    "jobId": "job-1775434736665-urhs39",
+    "versionNumber": 1,
+    "payloadJson": "{\"urls\":[],\"rawText\":\"今日早上宝宝\",\"notes\":\"\",\"targetAudience\":\"\",\"contentGoal\":\"\",\"preferredStyle\":\"\"}",
+    "createdAt": "2026-04-06T00:18:56.667Z"
+  },
+  {
+    "id": "source_inputs-1775405602166-5b10oh",
+    "jobId": "job-1775405602164-hi9nwn",
+    "versionNumber": 1,
+    "payloadJson": "{\"urls\":[],\"rawText\":\"{\\\"message\\\":\\\"Preview not found.\\\"}\",\"notes\":\"\",\"targetAudience\":\"\",\"contentGoal\":\"\",\"preferredStyle\":\"\"}",
+    "createdAt": "2026-04-05T16:13:22.166Z"
+  },
+  {
+    "id": "source_inputs-1775405562308-f7s8fx",
+    "jobId": "job-1775405562302-vsk1gw",
+    "versionNumber": 1,
+    "payloadJson": "{\"urls\":[],\"rawText\":\"运行完成后这里会展示 review score 和问题列表。\",\"notes\":\"\",\"targetAudience\":\"\",\"contentGoal\":\"\",\"preferredStyle\":\"\"}",
+    "createdAt": "2026-04-05T16:12:42.308Z"
+  },
+  {
+    "id": "source_inputs-1775405463725-5q93gc",
+    "jobId": "job-1775405463722-msnzny",
+    "versionNumber": 1,
+    "payloadJson": "{\"urls\":[],\"rawText\":\"今天是什么一日之\",\"notes\":\"\",\"targetAudience\":\"\",\"contentGoal\":\"\",\"preferredStyle\":\"\"}",
+    "createdAt": "2026-04-05T16:11:03.725Z"
+  },
+  {
+    "id": "source_inputs-1775405271754-0o8i1g",
+    "jobId": "job-1775405271753-uh1bgo",
+    "versionNumber": 1,
+    "payloadJson": "{\"urls\":[],\"rawText\":\"多少度\",\"notes\":\"\",\"targetAudience\":\"\",\"contentGoal\":\"\",\"preferredStyle\":\"\"}",
+    "createdAt": "2026-04-05T16:07:51.754Z"
+  },
+  {
+    "id": "source_inputs-1775403790424-iddnbr",
+    "jobId": "job-1775403790423-7b72ll",
+    "versionNumber": 1,
+    "payloadJson": "{\"urls\":[],\"rawText\":\"OpenAI 发布了新的多模态能力，适合做面向创作者的效率工具。\",\"notes\":\"\",\"targetAudience\":\"内容运营\",\"contentGoal\":\"输出一版小红书拆解\",\"preferredStyle\":\"专业、清晰\"}",
+    "createdAt": "2026-04-05T15:43:10.424Z"
+  },
+  {
+    "id": "source_inputs-1775403228833-iagfi3",
+    "jobId": "job-1775403228832-8fh39q",
+    "versionNumber": 1,
+    "payloadJson": "{\"urls\":[],\"rawText\":\"OpenAI 发布了新的多模态能力，适合做面向创作者的效率工具。\",\"notes\":\"\",\"targetAudience\":\"内容运营\",\"contentGoal\":\"输出一版小红书拆解\",\"preferredStyle\":\"专业、清晰\"}",
+    "createdAt": "2026-04-05T15:33:48.833Z"
+  },
+  {
+    "id": "source_inputs-1775402915865-08rt3m",
+    "jobId": "job-1775402915864-ao1siq",
+    "versionNumber": 1,
+    "payloadJson": "{\"urls\":[],\"rawText\":\"OpenAI 发布了新的多模态能力，适合做面向创作者的效率工具。\",\"notes\":\"\",\"targetAudience\":\"内容运营\",\"contentGoal\":\"输出一版小红书拆解\",\"preferredStyle\":\"专业、清晰\"}",
+    "createdAt": "2026-04-05T15:28:35.865Z"
+  },
+  {
+    "id": "source_inputs-1775402639405-em4ip7",
+    "jobId": "job-1775402639404-l28kqm",
+    "versionNumber": 1,
+    "payloadJson": "{\"urls\":[],\"rawText\":\"OpenAI 发布了新的多模态能力，适合做面向创作者的效率工具。\",\"notes\":\"\",\"targetAudience\":\"内容运营\",\"contentGoal\":\"输出一版小红书拆解\",\"preferredStyle\":\"专业、清晰\"}",
+    "createdAt": "2026-04-05T15:23:59.405Z"
+  },
+  {
     "id": "source_inputs-1775398907161-ko5hop",
     "jobId": "job-1775398907157-2fgdgm",
     "versionNumber": 1,

@@ -41,6 +41,23 @@ async function withTimeout<T>(task: Promise<T>, ms: number, label: string) {
   }
 }
 
+function extractMessageText(content: unknown) {
+  if (typeof content === "string") {
+    return content;
+  }
+
+  if (Array.isArray(content)) {
+    return content
+      .map((item) =>
+        item && typeof item === "object" && "text" in item && typeof item.text === "string" ? item.text : ""
+      )
+      .join("")
+      .trim();
+  }
+
+  return "";
+}
+
 export class OpenAiProvider implements LlmProvider {
   private client: OpenAI | null;
   private model: string;
@@ -69,18 +86,57 @@ export class OpenAiProvider implements LlmProvider {
     };
   }
 
+  getDefaultModel() {
+    return this.client ? this.model : null;
+  }
+
+  private async createChatTextCompletion(
+    prompt: string,
+    options?: {
+      timeoutMs?: number;
+      systemPrompt?: string;
+    }
+  ) {
+    if (!this.client) {
+      throw new Error("OPENAI_API_KEY is not configured.");
+    }
+
+    const response = await withTimeout(
+      this.client.chat.completions.create({
+        model: this.model,
+        messages: [
+          {
+            role: "system",
+            content:
+              options?.systemPrompt ??
+              "You are a precise structured-output assistant. Follow the user's output format exactly."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ]
+      }),
+      options?.timeoutMs ?? 20000,
+      "LLM request"
+    );
+
+    return {
+      text: extractMessageText(response.choices[0]?.message?.content),
+      model: response.model || this.model
+    };
+  }
+
   async generateCopy(request: GenerateRequest, template: TemplateSchema): Promise<GeneratedCopy> {
     if (!this.client) {
       return fallbackGenerateCopy(request.prompt, template);
     }
 
     try {
-      const response = await this.client.responses.create({
-        model: this.model,
-        input: buildCopyPrompt(request.prompt, template)
+      const response = await this.createChatTextCompletion(buildCopyPrompt(request.prompt, template), {
+        systemPrompt: "You generate concise Xiaohongshu copy JSON for template slots. Return valid JSON only."
       });
-
-      const text = response.output_text;
+      const text = response.text;
       const parsed = generatedCopySchema.parse(safeJsonParse(text));
       return parsed;
     } catch {
@@ -88,21 +144,13 @@ export class OpenAiProvider implements LlmProvider {
     }
   }
 
-  async generateStructuredText(prompt: string): Promise<string> {
-    if (!this.client) {
-      throw new Error("OPENAI_API_KEY is not configured.");
+  async generateStructuredText(
+    prompt: string,
+    options?: {
+      timeoutMs?: number;
     }
-
-    const response = await withTimeout(
-      this.client.responses.create({
-        model: this.model,
-        input: prompt
-      }),
-      20000,
-      "LLM request"
-    );
-
-    return response.output_text;
+  ): Promise<{ text: string; model: string }> {
+    return this.createChatTextCompletion(prompt, options);
   }
 
   async checkHealth() {
@@ -117,20 +165,16 @@ export class OpenAiProvider implements LlmProvider {
 
     const startedAt = Date.now();
     try {
-      const response = await withTimeout(
-        this.client.responses.create({
-          model: this.model,
-          input: "Reply with OK"
-        }),
-        15000,
-        "LLM health check"
-      );
+      const response = await this.createChatTextCompletion("Reply with OK", {
+        timeoutMs: 15000,
+        systemPrompt: "Reply with OK."
+      });
 
       return {
         ok: true,
         ...config,
         latencyMs: Date.now() - startedAt,
-        message: response.output_text.trim() || "Provider responded successfully."
+        message: response.text.trim() || "Provider responded successfully."
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : "Health check failed.";

@@ -1,5 +1,82 @@
 [
   {
+    "id": "visual_specs-1775434788970-vvzys3",
+    "jobId": "job-1775434736665-urhs39",
+    "versionNumber": 1,
+    "payloadJson": "{\"routeId\":\"vf-signal-tech-news_flash-low\",\"themeCategory\":\"news_flash\",\"visualFamily\":\"signal-tech\",\"tone\":\"warm\",\"densityLevel\":\"low\",\"layoutMode\":\"airy\",\"paletteKey\":\"tech-emerald\",\"typographyMode\":\"display-sharp\",\"decorationLevel\":\"medium\",\"imageStrategy\":\"abstract\",\"routeReasons\":[\"angle_selected_base_route\",\"audience_mode_broad_consumer\",\"density_low_layout_airy\"],\"warnings\":[]}",
+    "createdAt": "2026-04-06T00:19:48.970Z"
+  },
+  {
+    "id": "visual_specs-1775405692295-p4v6jx",
+    "jobId": "job-1775405602164-hi9nwn",
+    "versionNumber": 1,
+    "payloadJson": "{\"routeId\":\"vf-signal-tech-news_flash-high\",\"themeCategory\":\"news_flash\",\"visualFamily\":\"signal-tech\",\"tone\":\"sharp\",\"densityLevel\":\"high\",\"layoutMode\":\"compact\",\"paletteKey\":\"tech-emerald\",\"typographyMode\":\"display-sharp\",\"decorationLevel\":\"medium\",\"imageStrategy\":\"abstract\",\"routeReasons\":[\"angle_selected_base_route\",\"audience_mode_broad_consumer\",\"density_high_layout_compact\"],\"warnings\":[\"overall_content_density_high\",\"slide_1_title_may_overflow\",\"slide_1_highlight_too_long\",\"slide_2_title_may_overflow\",\"slide_2_highlight_too_long\",\"slide_3_title_may_overflow\",\"slide_3_highlight_too_long\",\"slide_4_title_may_overflow\",\"slide_4_highlight_too_long\",\"slide_5_title_may_overflow\",\"slide_5_highlight_too_long\",\"template_family_fallback\",\"template_theme_fallback\",\"template_density_fallback\"]}",
+    "createdAt": "2026-04-05T16:14:52.295Z"
+  },
+  {
+    "id": "visual_specs-1775405615940-dyvw4g",
+    "jobId": "job-1775405562302-vsk1gw",
+    "versionNumber": 1,
+    "payloadJson": "{\"routeId\":\"vf-signal-tech-news_flash-low\",\"themeCategory\":\"news_flash\",\"visualFamily\":\"signal-tech\",\"tone\":\"sharp\",\"densityLevel\":\"low\",\"layoutMode\":\"airy\",\"paletteKey\":\"tech-emerald\",\"typographyMode\":\"display-sharp\",\"decorationLevel\":\"medium\",\"imageStrategy\":\"abstract\",\"routeReasons\":[\"angle_selected_base_route\",\"audience_mode_professional\",\"density_low_layout_airy\"],\"warnings\":[\"slide_1_highlight_too_long\",\"slide_2_title_may_overflow\",\"slide_3_title_may_overflow\",\"slide_3_highlight_too_long\",\"slide_4_title_may_overflow\",\"slide_4_highlight_too_long\",\"slide_5_title_may_overflow\",\"slide_5_highlight_too_long\"]}",
+    "createdAt": "2026-04-05T16:13:35.940Z"
+  },
+  {
+    "id": "visual_specs-1775405516947-ghq0r3",
+    "jobId": "job-1775405463722-msnzny",
+    "versionNumber": 1,
+    "payloadJson": "{\"routeId\":\"vf-signal-tech-news_flash-low\",\"themeCategory\":\"news_flash\",\"visualFamily\":\"signal-tech\",\"tone\":\"sharp\",\"densityLevel\":\"low\",\"layoutMode\":\"airy\",\"paletteKey\":\"tech-emerald\",\"typographyMode\":\"display-sharp\",\"decorationLevel\":\"medium\",\"imageStrategy\":\"abstract\",\"routeReasons\":[\"angle_selected_base_route\",\"audience_mode_broad_consumer\",\"density_low_layout_airy\"],\"warnings\":[\"slide_1_highlight_too_long\",\"slide_2_title_may_overflow\",\"slide_2_highlight_too_long\",\"slide_3_title_may_overflow\",\"slide_3_highlight_too_long\",\"slide_4_highlight_too_long\",\"slide_5_highlight_too_long\"]}",
+    "createdAt": "2026-04-05T16:11:56.947Z"
+  },
+  {
+    "id": "visual_specs-1775405384685-sbeviu",
+    "jobId": "job-1775405271753-uh1bgo",
+    "versionNumber": 1,
+    "payloadJson": "{\"routeId\":\"vf-signal-tech-news_flash-high\",\"themeCategory\":\"news_flash\",\"visualFamily\":\"signal-tech\",\"tone\":\"sharp\",\"densityLevel\":\"high\",\"layoutMode\":\"compact\",\"paletteKey\":\"tech-emerald\",\"typographyMode\":\"display-sharp\",\"decorationLevel\":\"medium\",\"imageStrategy\":\"abstract\",\"routeReasons\":[\"angle_selected_base_route\",\"audience_mode_broad_consumer\",\"density_high_layout_compact\"],\"warnings\":[\"overall_content_density_high\",\"slide_1_title_may_overflow\",\"slide_1_highlight_too_long\",\"slide_2_title_may_overflow\",\"slide_2_highlight_too_long\",\"slide_3_title_may_overflow\",\"slide_3_highlight_too_long\",\"slide_4_title_may_overflow\",\"slide_4_highlight_too_long\",\"slide_5_title_may_overflow\",\"slide_5_highlight_too_long\",\"template_family_fallback\",\"template_theme_fallback\",\"template_density_fallback\"]}",
+    "createdAt": "2026-04-05T16:09:44.685Z"
+  },
+  {
+    "id": "visual_specs-1775405325368-pjixwi",
+    "jobId": "job-1775405271753-uh1bgo",
+    "versionNumber": 1,
+    "payloadJson": "{\"routeId\":\"vf-signal-tech-news_flash-medium\",\"themeCategory\":\"news_flash\",\"visualFamily\":\"signal-tech\",\"tone\":\"sharp\",\"densityLevel\":\"medium\",\"layoutMode\":\"balanced\",\"paletteKey\":\"tech-emerald\",\"typographyMode\":\"display-sharp\",\"decorationLevel\":\"medium\",\"imageStrategy\":\"abstract\",\"routeReasons\":[\"angle_selected_base_route\",\"audience_mode_broad_consumer\",\"density_medium_layout_balanced\"],\"warnings\":[\"slide_1_highlight_too_long\",\"slide_2_highlight_too_long\",\"slide_3_highlight_too_long\",\"slide_4_title_may_overflow\",\"slide_4_highlight_too_long\",\"slide_5_highlight_too_long\"]}",
+    "createdAt": "2026-04-05T16:08:45.368Z"
+  },
+  {
+    "id": "visual_specs-1775405315080-d098x7",
+    "jobId": "job-1775405271753-uh1bgo",
+    "versionNumber": 1,
+    "payloadJson": "{\"routeId\":\"vf-signal-tech-news_flash-low\",\"themeCategory\":\"news_flash\",\"visualFamily\":\"signal-tech\",\"tone\":\"sharp\",\"densityLevel\":\"low\",\"layoutMode\":\"airy\",\"paletteKey\":\"tech-emerald\",\"typographyMode\":\"display-sharp\",\"decorationLevel\":\"medium\",\"imageStrategy\":\"abstract\",\"routeReasons\":[\"angle_selected_base_route\",\"audience_mode_broad_consumer\",\"density_low_layout_airy\"],\"warnings\":[\"slide_1_title_may_overflow\",\"slide_1_highlight_too_long\",\"slide_2_highlight_too_long\",\"slide_3_highlight_too_long\",\"slide_4_title_may_overflow\",\"slide_4_highlight_too_long\",\"slide_5_title_may_overflow\",\"slide_5_highlight_too_long\"]}",
+    "createdAt": "2026-04-05T16:08:35.080Z"
+  },
+  {
+    "id": "visual_specs-1775403843201-e27ju3",
+    "jobId": "job-1775403790423-7b72ll",
+    "versionNumber": 1,
+    "payloadJson": "{\"routeId\":\"vf-signal-tech-news_flash-low\",\"themeCategory\":\"news_flash\",\"visualFamily\":\"signal-tech\",\"tone\":\"professional\",\"densityLevel\":\"low\",\"layoutMode\":\"airy\",\"paletteKey\":\"tech-emerald\",\"typographyMode\":\"display-sharp\",\"decorationLevel\":\"medium\",\"imageStrategy\":\"abstract\",\"routeReasons\":[\"angle_selected_base_route\",\"audience_mode_operator\",\"density_low_layout_airy\"],\"warnings\":[]}",
+    "createdAt": "2026-04-05T15:44:03.201Z"
+  },
+  {
+    "id": "visual_specs-1775403282772-g45gal",
+    "jobId": "job-1775403228832-8fh39q",
+    "versionNumber": 1,
+    "payloadJson": "{\"routeId\":\"vf-signal-tech-news_flash-high\",\"themeCategory\":\"news_flash\",\"visualFamily\":\"signal-tech\",\"tone\":\"professional\",\"densityLevel\":\"high\",\"layoutMode\":\"compact\",\"paletteKey\":\"tech-emerald\",\"typographyMode\":\"display-sharp\",\"decorationLevel\":\"medium\",\"imageStrategy\":\"abstract\",\"routeReasons\":[\"angle_selected_base_route\",\"audience_mode_broad_consumer\",\"density_high_layout_compact\"],\"warnings\":[\"overall_content_density_high\",\"slide_1_title_may_overflow\",\"slide_1_highlight_too_long\",\"slide_2_title_may_overflow\",\"slide_3_title_may_overflow\",\"slide_3_highlight_too_long\",\"slide_4_title_may_overflow\",\"slide_4_highlight_too_long\",\"slide_5_title_may_overflow\",\"slide_5_highlight_too_long\",\"template_family_fallback\",\"template_theme_fallback\",\"template_density_fallback\"]}",
+    "createdAt": "2026-04-05T15:34:42.772Z"
+  },
+  {
+    "id": "visual_specs-1775402922139-e5pk68",
+    "jobId": "job-1775402915864-ao1siq",
+    "versionNumber": 1,
+    "payloadJson": "{\"routeId\":\"vf-proof-compare-comparison_analysis-medium\",\"themeCategory\":\"comparison_analysis\",\"visualFamily\":\"proof-compare\",\"tone\":\"professional\",\"densityLevel\":\"medium\",\"layoutMode\":\"balanced\",\"paletteKey\":\"contrast-copper\",\"typographyMode\":\"sans-compact\",\"decorationLevel\":\"medium\",\"imageStrategy\":\"abstract\",\"routeReasons\":[\"angle_selected_base_route\",\"audience_mode_operator\",\"density_medium_layout_balanced\"],\"warnings\":[\"slide_1_title_may_overflow\",\"slide_1_highlight_too_long\",\"slide_2_highlight_too_long\",\"slide_3_highlight_too_long\",\"slide_4_highlight_too_long\",\"slide_5_highlight_too_long\"]}",
+    "createdAt": "2026-04-05T15:28:42.139Z"
+  },
+  {
+    "id": "visual_specs-1775402639413-cc2r98",
+    "jobId": "job-1775402639404-l28kqm",
+    "versionNumber": 1,
+    "payloadJson": "{\"routeId\":\"vf-proof-compare-comparison_analysis-medium\",\"themeCategory\":\"comparison_analysis\",\"visualFamily\":\"proof-compare\",\"tone\":\"professional\",\"densityLevel\":\"medium\",\"layoutMode\":\"balanced\",\"paletteKey\":\"contrast-copper\",\"typographyMode\":\"sans-compact\",\"decorationLevel\":\"medium\",\"imageStrategy\":\"abstract\",\"routeReasons\":[\"angle_selected_base_route\",\"audience_mode_operator\",\"density_medium_layout_balanced\"],\"warnings\":[\"slide_1_title_may_overflow\",\"slide_1_highlight_too_long\",\"slide_2_highlight_too_long\",\"slide_3_highlight_too_long\",\"slide_4_highlight_too_long\",\"slide_5_highlight_too_long\"]}",
+    "createdAt": "2026-04-05T15:23:59.413Z"
+  },
+  {
     "id": "visual_specs-1775398915185-h13xys",
     "jobId": "job-1775398907157-2fgdgm",
     "versionNumber": 1,
