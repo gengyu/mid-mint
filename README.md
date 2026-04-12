@@ -64,12 +64,17 @@ cp .env.example .env.local
 - `LOCAL_IMAGE_BASE_URL`
 - `LOCAL_IMAGE_API_KEY`
 - `LOCAL_IMAGE_MODEL`
+- `TEMPORAL_ENABLED`
+- `TEMPORAL_ADDRESS`
+- `TEMPORAL_NAMESPACE`
+- `TEMPORAL_TASK_QUEUE`
 
 说明：
 
 - 不填 `OPENAI_API_KEY` 时，文案链路会尽量走 fallback 逻辑，但效果会弱一些
 - 背景图会优先尝试 `LOCAL_IMAGE_BASE_URL` 指向的本地 OpenAI 兼容图片接口
 - 如果本地图片模型不可用，系统会退回程序化背景
+- `TEMPORAL_ENABLED=true` 时会启用 Temporal worker 与 durable workflow；未开启或初始化失败时会自动回退到当前内置编排器
 
 ### 3. 启动开发环境
 
@@ -109,10 +114,8 @@ pnpm dev
 
 - `src/client`
   前端工作台
-- `src/server`
-  Express 服务入口
-- `src/api`
-  API 路由与 controller
+- `src/jobs`
+  Jobs API controller 与模块装配
 - `src/modules`
   source / brief / deck / visual / render / review / workflow 主流程模块
 - `src/lib/templates`

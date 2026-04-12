@@ -10,6 +10,7 @@ import { VisualMatch } from "../modules/visual/visual-match";
 import { WorkflowOrchestrator } from "../modules/workflow/orchestrator";
 import { workflowRepositories } from "../modules/workflow/workflow.repositories";
 import { WorkflowService } from "../modules/workflow/workflow.service";
+import { TemporalWorkflowRuntime } from "../temporal/temporal.runtime";
 
 const WORKFLOW_REPOSITORIES = "WORKFLOW_REPOSITORIES";
 
@@ -54,10 +55,46 @@ const WORKFLOW_REPOSITORIES = "WORKFLOW_REPOSITORIES";
         })
     },
     {
+      provide: TemporalWorkflowRuntime,
+      inject: [
+        WORKFLOW_REPOSITORIES,
+        SourceParser,
+        BriefGenerator,
+        DeckGenerator,
+        VisualMatch,
+        Renderer,
+        Reviewer
+      ],
+      useFactory: async (
+        repositories: typeof workflowRepositories,
+        sourceParser: SourceParser,
+        briefGenerator: BriefGenerator,
+        deckGenerator: DeckGenerator,
+        visualMatch: VisualMatch,
+        renderer: Renderer,
+        reviewer: Reviewer
+      ) => {
+        const runtime = new TemporalWorkflowRuntime(repositories, {
+          sourceParser,
+          briefGenerator,
+          deckGenerator,
+          visualMatch,
+          renderer,
+          reviewer
+        });
+        await runtime.init();
+        return runtime;
+      }
+    },
+    {
       provide: WorkflowService,
-      inject: [WorkflowOrchestrator, WORKFLOW_REPOSITORIES],
-      useFactory: (orchestrator: WorkflowOrchestrator, repositories: typeof workflowRepositories) =>
-        new WorkflowService(orchestrator, repositories)
+      inject: [WorkflowOrchestrator, WORKFLOW_REPOSITORIES, TemporalWorkflowRuntime],
+      useFactory: (
+        orchestrator: WorkflowOrchestrator,
+        repositories: typeof workflowRepositories,
+        temporalRuntime: TemporalWorkflowRuntime
+      ) =>
+        new WorkflowService(orchestrator, repositories, temporalRuntime)
     }
   ],
 })

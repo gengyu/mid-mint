@@ -31,6 +31,11 @@ type JobSummary = {
   activeVersion: number;
   createdAt: string;
   updatedAt: string;
+  runtimeStatus?: "running" | "waiting_signal" | "completed" | "failed" | "legacy_fallback" | null;
+  currentStage?: JobStatus | null;
+  runtimeVersion?: number | null;
+  temporalMode?: "disabled" | "ready" | "error";
+  temporalError?: string | null;
 };
 
 type ReviewResult = {
@@ -201,11 +206,20 @@ export function App() {
       return -1;
     }
 
-    return stageOrder.indexOf(job.status === "REWRITE_PENDING" ? "REVIEWED" : job.status);
+    const stage = job.currentStage ?? (job.status === "REWRITE_PENDING" ? "REVIEWED" : job.status);
+    return stageOrder.indexOf(stage);
   }, [job]);
 
   const isWorkflowActive = useMemo(() => {
-    return Boolean(job && ["INPUT_RECEIVED", "PARSED", "BRIEFED", "DECK_GENERATED", "VISUAL_MATCHED", "RENDERED"].includes(job.status));
+    if (!job) {
+      return false;
+    }
+
+    if (job.runtimeStatus) {
+      return job.runtimeStatus === "running";
+    }
+
+    return ["INPUT_RECEIVED", "PARSED", "BRIEFED", "DECK_GENERATED", "VISUAL_MATCHED", "RENDERED"].includes(job.status);
   }, [job]);
 
   useEffect(() => {
@@ -421,10 +435,12 @@ export function App() {
   const slideTemplateSummary = versionPayload?.deckPlan?.slides ?? [];
   const visualSpec = versionPayload?.visualSpec;
   const latestStageMeta = versionPayload?.stageMeta?.[versionPayload.stageMeta.length - 1] ?? null;
+  const currentStageLabel = job?.currentStage || job?.status || "-";
+  const runtimeStatusText = job?.runtimeStatus ? job.runtimeStatus.replace(/_/g, " ") : "unknown";
   const runStatusLabel = isRunningWorkflow
-    ? `Running ${job?.status || "workflow"}${runStartedAt ? ` · ${runElapsedSeconds}s` : ""}`
+    ? `Running ${currentStageLabel}${runStartedAt ? ` · ${runElapsedSeconds}s` : ""}`
     : job?.status
-      ? `Ready · ${job.status}`
+      ? `Ready · ${job.status}${job.runtimeStatus ? ` · ${runtimeStatusText}` : ""}`
       : "No active workflow";
 
   return (
@@ -452,14 +468,17 @@ export function App() {
         <div className="job-summary-card">
           <strong>{job?.jobId || "No active job"}</strong>
           <span>Status: {job?.status || "-"}</span>
+          <span>Runtime: {job?.runtimeStatus || "-"}</span>
+          <span>Current stage: {job?.currentStage || "-"}</span>
           <span>Version: {job?.activeVersion || "-"}</span>
         </div>
 
         <div className={classNames("run-status-card", isRunningWorkflow && "running")}>
           <strong>{runStatusLabel}</strong>
           <span>
-            Current stage: {job?.status || "-"}
+            Current stage: {currentStageLabel}
           </span>
+          <span>Temporal mode: {job?.temporalMode || "-"}</span>
           {latestStageMeta ? (
             <span>
               Last completed: {latestStageMeta.stageName}
@@ -469,6 +488,7 @@ export function App() {
           ) : (
             <span>Click Run Workflow to start processing.</span>
           )}
+          {job?.temporalError ? <span>Runtime note: {job.temporalError}</span> : null}
         </div>
 
         <div className="button-row">
@@ -533,7 +553,7 @@ export function App() {
                   className={classNames(
                     "stage-pill",
                     index <= activeStageIndex && "active",
-                    isRunningWorkflow && job?.status === stage && "live"
+                    isRunningWorkflow && currentStageLabel === stage && "live"
                   )}
                 >
                   {stage}
@@ -547,11 +567,19 @@ export function App() {
                 <div>
                   <strong>Workflow in progress</strong>
                   <p>
-                    We are running stage <code>{job?.status || "INPUT_RECEIVED"}</code> and auto-refreshing the workspace.
+                    We are running stage <code>{currentStageLabel || "INPUT_RECEIVED"}</code> and auto-refreshing the workspace.
                   </p>
                 </div>
               </div>
             ) : null}
+
+            <article className="card-block compact">
+              <h3>Runtime State</h3>
+              <p>runtimeStatus: {job?.runtimeStatus || "-"}</p>
+              <p>currentStage: {job?.currentStage || "-"}</p>
+              <p>runtimeVersion: {job?.runtimeVersion || "-"}</p>
+              <p>temporalMode: {job?.temporalMode || "-"}</p>
+            </article>
 
             <div className="toolbar">
               <label>

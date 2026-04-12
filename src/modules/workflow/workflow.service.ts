@@ -5,13 +5,15 @@ import type { Job, SourceInput } from "@/modules/domain/types";
 import type { WorkflowOrchestrator, WorkflowRepositories } from "@/modules/workflow/orchestrator";
 import type { CreateJobInput, RewriteJobInput, RunJobOptions } from "@/modules/workflow/workflow.types";
 import { ensureDir, projectPath } from "@/lib/utils/fs";
+import { TemporalWorkflowRuntime } from "@/temporal/temporal.runtime";
 
 export class WorkflowService {
   private readonly activeRuns = new Map<string, Promise<Job>>();
 
   constructor(
     private readonly orchestrator: WorkflowOrchestrator,
-    private readonly repositories: WorkflowRepositories
+    private readonly repositories: WorkflowRepositories,
+    private readonly temporalRuntime: TemporalWorkflowRuntime
   ) {}
 
   createJob(input: CreateJobInput) {
@@ -41,6 +43,20 @@ export class WorkflowService {
   }
 
   async runJob(jobId: string, options?: RunJobOptions) {
+    if (this.temporalRuntime.isReady()) {
+      const runtimeState = await this.temporalRuntime.startOrReuse(jobId);
+      const job = this.orchestrator.getJob(jobId);
+      if (!job) {
+        throw new Error(`Job not found: ${jobId}`);
+      }
+      return {
+        jobId: job.id,
+        status: job.status,
+        runtimeStatus: runtimeState?.runtimeStatus ?? null,
+        currentStage: runtimeState?.currentStage ?? null
+      };
+    }
+
     const job = await this.orchestrator.run(jobId, options);
     return {
       jobId: job.id,
@@ -48,7 +64,22 @@ export class WorkflowService {
     };
   }
 
-  startRun(jobId: string, options?: RunJobOptions) {
+  async startRun(jobId: string, options?: RunJobOptions) {
+    if (this.temporalRuntime.isReady()) {
+      const runtimeState = await this.temporalRuntime.startOrReuse(jobId);
+      const job = this.orchestrator.getJob(jobId);
+      if (!job) {
+        throw new Error(`Job not found: ${jobId}`);
+      }
+
+      return {
+        jobId: job.id,
+        status: job.status,
+        runtimeStatus: runtimeState?.runtimeStatus ?? null,
+        currentStage: runtimeState?.currentStage ?? null
+      };
+    }
+
     const existingRun = this.activeRuns.get(jobId);
     if (!existingRun) {
       const runPromise = this.orchestrator
@@ -70,8 +101,25 @@ export class WorkflowService {
     };
   }
 
-  getJob(jobId: string) {
-    return this.orchestrator.getJob(jobId);
+  async getJob(jobId: string) {
+    const job = this.orchestrator.getJob(jobId);
+    if (!job) {
+      return null;
+    }
+
+    const runtimeState = this.temporalRuntime.isReady()
+      ? await this.temporalRuntime.getRuntimeState(jobId)
+      : null;
+
+    return {
+      ...job,
+      jobId: job.id,
+      runtimeStatus: runtimeState?.runtimeStatus ?? (this.temporalRuntime.getMode() === "error" ? "legacy_fallback" : null),
+      currentStage: runtimeState?.currentStage ?? null,
+      runtimeVersion: runtimeState?.currentVersion ?? null,
+      temporalMode: this.temporalRuntime.getMode(),
+      temporalError: this.temporalRuntime.getLastError()
+    };
   }
 
   getJobVersion(jobId: string, versionNumber: number) {
@@ -79,6 +127,34 @@ export class WorkflowService {
   }
 
   async rewriteJob(jobId: string, input: RewriteJobInput) {
+    if (this.temporalRuntime.isReady()) {
+      const currentJob = this.orchestrator.getJob(jobId);
+      if (!currentJob) {
+        throw new Error(`Job not found: ${jobId}`);
+      }
+
+      const expectedVersion = currentJob.activeVersion + 1;
+      const runtimeState = await this.temporalRuntime.getRuntimeState(jobId);
+      if (runtimeState) {
+        await this.temporalRuntime.requestRewrite(jobId, input.targetStage, input.reason);
+        await this.temporalRuntime.waitForVersion(jobId, expectedVersion);
+      } else {
+        await this.temporalRuntime.getActivities().createRewriteVersion(jobId, input.targetStage, input.reason);
+      }
+
+      const jobAfterRewrite = this.orchestrator.getJob(jobId);
+      if (!jobAfterRewrite) {
+        throw new Error(`Job not found: ${jobId}`);
+      }
+
+      return {
+        jobId: jobAfterRewrite.id,
+        status: jobAfterRewrite.status,
+        nextVersion: jobAfterRewrite.activeVersion,
+        targetStage: input.targetStage
+      };
+    }
+
     const job = await this.orchestrator.rewrite(jobId, input.targetStage, input.reason);
     return {
       jobId: job.id,

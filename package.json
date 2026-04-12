@@ -12,6 +12,9 @@
     "lint": "pnpm exec eslint src scripts --ext .ts,.tsx --max-warnings=0"
   },
   "dependencies": {
+    "@temporalio/client": "^1.11.5",
+    "@temporalio/worker": "^1.11.5",
+    "@temporalio/workflow": "^1.11.5",
     "@nestjs/common": "^11.1.18",
     "@nestjs/core": "^11.1.18",
     "@nestjs/platform-express": "^11.1.18",
