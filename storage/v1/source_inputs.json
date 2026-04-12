@@ -1,5 +1,47 @@
 [
   {
+    "id": "source_inputs-1775973545131-8p2ywt",
+    "jobId": "job-1775973545130-ebruyp",
+    "versionNumber": 1,
+    "payloadJson": "{\"urls\":[],\"rawText\":\"async run test\",\"notes\":\"\",\"targetAudience\":\"\",\"contentGoal\":\"\",\"preferredStyle\":\"\"}",
+    "createdAt": "2026-04-12T05:59:05.131Z"
+  },
+  {
+    "id": "source_inputs-1775973335722-gdkjr5",
+    "jobId": "job-1775973335721-mcij0b",
+    "versionNumber": 1,
+    "payloadJson": "{\"urls\":[],\"rawText\":\"test run\",\"notes\":\"\",\"targetAudience\":\"\",\"contentGoal\":\"\",\"preferredStyle\":\"\"}",
+    "createdAt": "2026-04-12T05:55:35.722Z"
+  },
+  {
+    "id": "source_inputs-1775973292967-5dk5hf",
+    "jobId": "job-1775973292966-kfi5k2",
+    "versionNumber": 1,
+    "payloadJson": "{\"urls\":[],\"rawText\":\"test run\",\"notes\":\"\",\"targetAudience\":\"\",\"contentGoal\":\"\",\"preferredStyle\":\"\"}",
+    "createdAt": "2026-04-12T05:54:52.967Z"
+  },
+  {
+    "id": "source_inputs-1775973185021-c4irgc",
+    "jobId": "job-1775973185021-qwr4j3",
+    "versionNumber": 1,
+    "payloadJson": "{\"urls\":[],\"rawText\":\"test run\",\"notes\":\"\",\"targetAudience\":\"\",\"contentGoal\":\"\",\"preferredStyle\":\"\"}",
+    "createdAt": "2026-04-12T05:53:05.021Z"
+  },
+  {
+    "id": "source_inputs-1775971243864-0lbone",
+    "jobId": "job-1775971243863-osu5em",
+    "versionNumber": 1,
+    "payloadJson": "{\"urls\":[],\"rawText\":\"test\",\"notes\":\"\",\"targetAudience\":\"\",\"contentGoal\":\"\",\"preferredStyle\":\"\"}",
+    "createdAt": "2026-04-12T05:20:43.864Z"
+  },
+  {
+    "id": "source_inputs-1775971239068-mqv7sl",
+    "jobId": "job-1775971239067-3215k0",
+    "versionNumber": 1,
+    "payloadJson": "{\"urls\":[],\"rawText\":\"蒸馏张雪峰之后：\\n\\n用户      ❯ 家里条件一般，孩子想学金融，去不了顶尖学校，该不该报？\\n\\n张雪峰    ❯ 千万别报。我说过多少遍了，金融不是你学出来的，金融是\\n            你爹妈给你带出来的。顶尖学校的金融，人家同学是行长的\\n            儿子、基金经理的女儿，人脉就是资源。你普通家庭去个普通\\n            学校学金融，毕业出来干什么？卖保险、跑银行柜台、做电销。\\n            先谋生再谋爱，家里没矿就选技术类专业，学个硬本事，靠\\n            自己吃饭。金融这碗饭，不是谁都端得起的。\\n这不是角色扮演。乔布斯用的是「聚焦即说不」和「端到端控制」心智模型，Naval用的是「欲望即合同」，马斯克用的是「渐近极限法」，张雪峰用的是「ROI教育观」和「阶层流动现实主义」。它们不是在复读名人语录，是在用名人的认知框架帮你分析。\",\"notes\":\"\",\"targetAudience\":\"\",\"contentGoal\":\"\",\"preferredStyle\":\"\"}",
+    "createdAt": "2026-04-12T05:20:39.068Z"
+  },
+  {
     "id": "source_inputs-1775434736667-a5ohzw",
     "jobId": "job-1775434736665-urhs39",
     "versionNumber": 1,

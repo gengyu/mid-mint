@@ -1,8 +1,6 @@
-# mid-mint Storage Spec
+# mid-mint 存储规范
 
-## Required Tables
-
-The system must use these logical tables or collections:
+## 必需逻辑表
 
 * `jobs`
 * `job_versions`
@@ -16,81 +14,14 @@ The system must use these logical tables or collections:
 * `stage_logs`
 * `rewrite_logs`
 
-No additional persistence model should be introduced in v1 unless necessary.
+## 核心要求
 
-## jobs
+* 所有阶段产物必须按 `job_id + version_number` 保存
+* 历史版本必须可查询且不可变
+* `stage_logs` 必须记录开始、结束、状态、错误码和错误信息
+* LLM 驱动阶段日志还应记录模型、重试、fallback 和耗时
 
-Required fields:
-
-* `id`
-* `status`
-* `rewrite_count`
-* `active_version`
-* `created_at`
-* `updated_at`
-
-## job_versions
-
-Required fields:
-
-* `id`
-* `job_id`
-* `version_number`
-* `trigger`
-* `rewrite_stage`
-* `created_at`
-
-## Stage Artifact Tables
-
-Each artifact table must include:
-
-* `id`
-* `job_id`
-* `version_number`
-* `payload_json`
-* `created_at`
-
-Applies to:
-
-* `source_inputs`
-* `parsed_sources`
-* `content_briefs`
-* `deck_plans`
-* `visual_specs`
-* `render_results`
-* `review_results`
-
-## stage_logs
-
-Required fields:
-
-* `id`
-* `job_id`
-* `version_number`
-* `stage_name`
-* `started_at`
-* `finished_at`
-* `status`
-* `error_code`
-* `error_message`
-
-## rewrite_logs
-
-Required fields:
-
-* `id`
-* `job_id`
-* `from_version`
-* `to_version`
-* `target_stage`
-* `reason`
-* `created_at`
-
-## Error Model
-
-### Error Shape
-
-All typed errors must follow this shape:
+## 错误模型
 
 ```ts
 type AppError = {
@@ -99,39 +30,3 @@ type AppError = {
   details?: Record<string, unknown>;
 };
 ```
-
-### Required Error Codes
-
-* `SOURCE_INPUT_EMPTY`
-* `SOURCE_PARSE_NO_USABLE_CONTENT`
-* `PARSED_SOURCE_SUMMARY_EMPTY`
-* `PARSED_SOURCE_KEY_FACTS_EMPTY`
-* `PARSED_SOURCE_KEY_POINTS_EMPTY`
-* `BRIEF_INPUT_INVALID`
-* `BRIEF_TOPIC_EMPTY`
-* `BRIEF_AUDIENCE_EMPTY`
-* `BRIEF_NARRATIVE_EMPTY`
-* `BRIEF_KEY_TAKEAWAYS_INVALID`
-* `DECK_INPUT_INVALID`
-* `DECK_SLIDE_COUNT_INVALID`
-* `DECK_COVER_MISSING`
-* `DECK_CTA_MISSING`
-* `DECK_SLIDE_INDEX_INVALID`
-* `DECK_SLIDE_TITLE_EMPTY`
-* `DECK_SLIDE_BODY_EMPTY`
-* `DECK_TEMPLATE_ID_EMPTY`
-* `VISUAL_INPUT_INVALID`
-* `VISUAL_TEMPLATE_NOT_FOUND`
-* `VISUAL_SPEC_INVALID`
-* `RENDER_INPUT_INVALID`
-* `RENDER_TEMPLATE_MISSING`
-* `RENDER_ASSET_COUNT_INVALID`
-* `RENDER_PNG_MISSING`
-* `RENDER_SVG_MISSING`
-* `RENDER_HTML_PREVIEW_MISSING`
-* `REVIEW_INPUT_INVALID`
-* `REVIEW_SCORE_INVALID`
-* `REVIEW_DECISION_INVALID`
-* `REWRITE_STAGE_INVALID`
-* `REWRITE_LIMIT_REACHED`
-* `REWRITE_JOB_STATE_INVALID`

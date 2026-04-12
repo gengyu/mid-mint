@@ -1,58 +1,54 @@
-# Module Spec: deck-generator
+# 模块规范: deck-generator
 
-## Goal
+## 目标
 
-Generate a 4-5 slide `DeckPlan` from `ParsedSource` and `ContentBrief`.
+根据 `ParsedSource` 和 `ContentBrief` 生成可渲染的 `DeckPlan`。
 
-## Input
+## 输入
 
 * `ParsedSource`
 * `ContentBrief`
 
-## Output
+## 输出
 
 * `DeckPlan`
 
-## Rules
+## LLM 责任
 
-* slide count must be 4 or 5
-* first slide must be `cover`
-* last slide must be `cta`
-* each slide must have a clear page goal
-* cover slide must contain a hook-like title
-* middle slides must not duplicate the same point
-* body text should be concise
-* slide templateId may be provisional before visual match
-* `charCountTitle` and `charCountBody` must be calculated
-* `cta` must be aligned with content goal
+* 生成 4 或 5 页卡片结构
+* 为每页定义清晰目标
+* 生成更强的封面 hook
+* 减少中间页重复
+* 保持正文简洁
+* 让 CTA 与内容目标一致
 
-## Failure
+## 确定性责任
 
-Return typed error when:
+* 强制页数为 4 或 5
+* 强制第一页为 `cover`
+* 强制最后一页为 `cta`
+* 计算 `charCountTitle`
+* 计算 `charCountBody`
+* 确保每页存在 `templateId`
+* 校验最终结构
 
-* input parsed source invalid
-* input brief invalid
-* generated deck fails validation
+## 规则
 
-## Error Codes
+* `templateId` 在 `visual-match` 前可为临时值
+* 中间页不允许浅层改写重复同一观点
+* 封面标题必须具备 hook
+
+## 错误码
 
 * `DECK_INPUT_INVALID`
 * `DECK_SLIDE_COUNT_INVALID`
 * `DECK_COVER_MISSING`
 * `DECK_CTA_MISSING`
+* `DECK_SLIDE_INDEX_INVALID`
 * `DECK_SLIDE_TITLE_EMPTY`
 * `DECK_SLIDE_BODY_EMPTY`
 * `DECK_TEMPLATE_ID_EMPTY`
-
-## Side Effects
-
-* persist deck result
-* create stage log
-* update job status to `DECK_GENERATED`
-
-## Acceptance
-
-* output slide count is 4 or 5
-* output contains one cover and one cta
-* every slide has title, body, templateId
-* output passes schema validation
+* `LLM_REQUEST_FAILED`
+* `LLM_TIMEOUT`
+* `LLM_OUTPUT_PARSE_FAILED`
+* `LLM_OUTPUT_SCHEMA_INVALID`

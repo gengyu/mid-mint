@@ -1,129 +1,38 @@
-# mid-mint Implementation Guide
+# mid-mint 任务拆解
 
-## Suggested v1 File Structure
+## 阶段 0: 基础契约
 
-```text
-src/
-  modules/
-    source/
-      source-parser.ts
-      source.types.ts
-      source.schema.ts
-      source.repository.ts
-    brief/
-      brief-generator.ts
-      brief.types.ts
-      brief.schema.ts
-      brief.repository.ts
-    deck/
-      deck-generator.ts
-      deck.types.ts
-      deck.schema.ts
-      deck.repository.ts
-    visual/
-      visual-match.ts
-      visual.types.ts
-      visual.schema.ts
-      visual.repository.ts
-    render/
-      renderer.ts
-      render.types.ts
-      render.schema.ts
-      render.repository.ts
-    review/
-      reviewer.ts
-      review.types.ts
-      review.schema.ts
-      review.repository.ts
-    workflow/
-      orchestrator.ts
-      workflow.types.ts
-      workflow.service.ts
-  api/
-    jobs.controller.ts
-    jobs.routes.ts
-    dto/
-  storage/
-    db.ts
-    migrations/
-  shared/
-    errors/
-    logger/
-    utils/
-```
+* 完成领域模型与 schema
+* 完成工作流状态
+* 完成 API 基础结构
+* 完成存储结构
 
-Rules:
+## 阶段 1: 编排器与版本
 
-* do not merge all modules into one file
-* each module must own schema, types, service, repository
-* orchestrator must live under `modules/workflow`
+* 实现任务创建与版本初始化
+* 实现固定阶段编排器
+* 实现阶段状态推进
+* 实现阶段日志记录
 
-## v1 Implementation Order
+## 阶段 2: 核心模块
 
-Implement in this exact order:
+* 实现 `source-parser`
+* 实现 `brief-generator`
+* 实现 `deck-generator`
+* 实现 `visual-match`
+* 实现 `renderer`
+* 实现 `reviewer`
 
-1. domain types and schemas
-2. storage tables and repositories
-3. source-parser
-4. brief-generator
-5. deck-generator
-6. visual-match
-7. renderer
-8. reviewer
-9. orchestrator
-10. API routes
-11. frontend pages
-12. export actions
+## 阶段 3: LLM 增强
 
-Do not change implementation order unless blocked by dependency issues.
+* 接入 Prompt 组装
+* 接入结构化输出解析与 schema 校验
+* 实现超时、重试与 fallback
+* 落地阶段元数据日志
 
-## Constraints For AI Coding Tools
+## 阶段 4: 重写与前端闭环
 
-When using this spec with an AI coding tool, enforce these constraints:
-
-* do not add new stages
-* do not rename existing types
-* do not invent new enum values
-* do not skip persistence
-* do not skip validation
-* do not skip typed errors
-* do not skip versioning
-* do not replace stage modules with a single monolithic service
-* do not add extra abstraction layers unless explicitly requested
-* do not implement features outside this spec in the same task
-
-## First Task Block
-
-Implement:
-
-* all enums
-* all core types
-* all zod schemas
-* validation functions
-* typed error model
-* storage table definitions for `jobs`
-* storage table definitions for `job_versions`
-* storage table definitions for `source_inputs`
-* storage table definitions for `parsed_sources`
-* storage table definitions for `content_briefs`
-* storage table definitions for `deck_plans`
-* storage table definitions for `visual_specs`
-* storage table definitions for `render_results`
-* storage table definitions for `review_results`
-* storage table definitions for `stage_logs`
-* storage table definitions for `rewrite_logs`
-
-Constraints:
-
-* do not implement URL fetching yet
-* do not implement frontend yet
-* do not implement controllers yet
-* do not add new business fields
-* do not add new statuses
-
-Acceptance:
-
-* types compile
-* schemas validate sample payloads
-* invalid payloads return typed error codes
-* storage layer can save and read stage artifacts by `jobId` and `versionNumber`
+* 实现局部重写
+* 实现版本切换与查看
+* 实现任务工作台
+* 实现预览页与导出面板

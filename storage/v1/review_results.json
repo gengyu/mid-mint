@@ -1,5 +1,19 @@
 [
   {
+    "id": "review_results-1775973411661-ro42mb",
+    "jobId": "job-1775973335721-mcij0b",
+    "versionNumber": 1,
+    "payloadJson": "{\"score\":69,\"stageScores\":{\"xiaohongshuFit\":76,\"hookStrength\":64,\"readability\":88,\"densityControl\":76,\"factualSafety\":92,\"originality\":84,\"visualFit\":0},\"issues\":[\"封面钩子偏弱\",\"视觉匹配阶段发出了密度或模板风险警告\"],\"strengths\":[\"页间主题分工清晰\",\"当前模板承载量基本合理\",\"文案相对具体，没有明显空话堆积\"],\"blockingIssues\":[],\"suggestedFixes\":[\"强化封面标题的结论感或问题感\"],\"decision\":\"rewrite\",\"shouldRewrite\":true,\"rewriteStage\":\"deck\"}",
+    "createdAt": "2026-04-12T05:56:51.661Z"
+  },
+  {
+    "id": "review_results-1775973286067-1wd3n7",
+    "jobId": "job-1775973185021-qwr4j3",
+    "versionNumber": 1,
+    "payloadJson": "{\"score\":78,\"stageScores\":{\"xiaohongshuFit\":76,\"hookStrength\":64,\"readability\":88,\"densityControl\":86,\"factualSafety\":92,\"originality\":84,\"visualFit\":56},\"issues\":[\"封面钩子偏弱\",\"视觉匹配阶段发出了密度或模板风险警告\"],\"strengths\":[\"页间主题分工清晰\",\"当前模板承载量基本合理\",\"文案相对具体，没有明显空话堆积\"],\"blockingIssues\":[],\"suggestedFixes\":[\"强化封面标题的结论感或问题感\"],\"decision\":\"rewrite\",\"shouldRewrite\":true,\"rewriteStage\":\"deck\"}",
+    "createdAt": "2026-04-12T05:54:46.067Z"
+  },
+  {
     "id": "review_results-1775437428301-hhktft",
     "jobId": "job-1775434736665-urhs39",
     "versionNumber": 1,

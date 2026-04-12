@@ -1,249 +1,42 @@
-# mid-mint API Spec
+# mid-mint API 规范
 
-## POST `/jobs`
+## 兼容性原则
 
-### Goal
+API 保持 v1 的基础形状，但必须吸收 v2 的阶段元数据能力。
 
-Create a new job.
+## 核心接口
 
-### Request
+* `POST /jobs`
+* `POST /jobs/:jobId/run`
+* `GET /jobs/:jobId`
+* `GET /jobs/:jobId/versions/:version`
+* `POST /jobs/:jobId/rewrite`
+* `GET /jobs/:jobId/preview`
+* `POST /jobs/:jobId/export`
 
-```json
-{
-  "urls": [],
-  "rawText": "",
-  "notes": "",
-  "targetAudience": "",
-  "contentGoal": "",
-  "preferredStyle": ""
-}
-```
+## 版本详情扩展
 
-### Response
+`GET /jobs/:jobId/versions/:version` 必须返回完整阶段结果，并应额外包含 `stageMeta[]`。
 
-```json
-{
-  "jobId": "string",
-  "status": "INPUT_RECEIVED",
-  "activeVersion": 1
-}
-```
+`stageMeta[]` 至少包括：
 
-### Errors
+* `stageName`
+* `usedLlm`
+* `model`
+* `usedFallback`
+* `durationMs`
+* `errorCode`
 
-* `SOURCE_INPUT_EMPTY`
+## 导出格式
 
-## POST `/jobs/:jobId/run`
-
-### Goal
-
-Start workflow for an existing job.
-
-### Request
-
-No body required.
-
-### Response
-
-```json
-{
-  "jobId": "string",
-  "status": "PARSED | BRIEFED | DECK_GENERATED | VISUAL_MATCHED | RENDERED | REVIEWED | APPROVED | FAILED | REWRITE_PENDING"
-}
-```
-
-### Rules
-
-* this endpoint starts or resumes workflow
-* if job already approved, return current state without rerun
-
-## GET `/jobs/:jobId`
-
-### Goal
-
-Fetch job summary.
-
-### Response
-
-```json
-{
-  "jobId": "string",
-  "status": "string",
-  "rewriteCount": 0,
-  "activeVersion": 1,
-  "createdAt": "string",
-  "updatedAt": "string"
-}
-```
-
-## GET `/jobs/:jobId/versions/:version`
-
-### Goal
-
-Fetch all stage outputs for one version.
-
-### Response
-
-```json
-{
-  "job": {
-    "jobId": "string",
-    "status": "string",
-    "rewriteCount": 0,
-    "activeVersion": 1,
-    "createdAt": "string",
-    "updatedAt": "string"
-  },
-  "sourceInput": {
-    "urls": [],
-    "rawText": "",
-    "notes": "",
-    "targetAudience": "",
-    "contentGoal": "",
-    "preferredStyle": ""
-  },
-  "parsedSource": {},
-  "contentBrief": {
-    "topic": "string",
-    "angle": "quick_view",
-    "audience": "string",
-    "narrative": "string",
-    "keyTakeaways": ["string"],
-    "mustInclude": [],
-    "avoid": []
-  },
-  "deckPlan": {
-    "summary": "string",
-    "slides": [
-      {
-        "index": 1,
-        "pageType": "cover",
-        "goal": "string",
-        "title": "string",
-        "body": "string",
-        "highlights": ["string"],
-        "templateId": "cover-hero",
-        "values": {},
-        "charCountTitle": 0,
-        "charCountBody": 0
-      }
-    ],
-    "cta": "string"
-  },
-  "visualSpec": {
-    "routeId": "vf-signal-tech-news_flash-medium",
-    "themeCategory": "news_flash",
-    "visualFamily": "signal-tech",
-    "tone": "sharp",
-    "densityLevel": "medium",
-    "layoutMode": "balanced",
-    "paletteKey": "tech-emerald",
-    "typographyMode": "display-sharp",
-    "decorationLevel": "medium",
-    "imageStrategy": "abstract",
-    "routeReasons": [
-      "angle_selected_base_route",
-      "audience_mode_professional",
-      "density_medium_layout_balanced"
-    ],
-    "warnings": []
-  },
-  "renderResult": {},
-  "reviewResult": {}
-}
-```
-
-### Rules
-
-* `visualSpec` in this response must follow the domain model exactly
-* `deckPlan.slides[].templateId` is the source of truth for workspace and preview template labels
-* frontend may combine this response with `GET /jobs/:jobId/preview` to render route summary and assets
-
-## POST `/jobs/:jobId/rewrite`
-
-### Goal
-
-Request partial rewrite.
-
-### Request
-
-```json
-{
-  "targetStage": "brief",
-  "reason": "cover hook too weak"
-}
-```
-
-### Rules
-
-* `targetStage` must be one of allowed rewrite stages
-* must fail if job is not in `REVIEWED`, `REWRITE_PENDING`, or `FAILED`
-* must fail if rewrite count >= 3
-
-### Response
-
-```json
-{
-  "jobId": "string",
-  "status": "REWRITE_PENDING",
-  "nextVersion": 2,
-  "targetStage": "brief"
-}
-```
-
-### Errors
-
-* `REWRITE_STAGE_INVALID`
-* `REWRITE_LIMIT_REACHED`
-* `REWRITE_JOB_STATE_INVALID`
-
-## GET `/jobs/:jobId/preview`
-
-### Goal
-
-Fetch active preview result.
-
-### Response
-
-```json
-{
-  "jobId": "string",
-  "activeVersion": 1,
-  "htmlPreviewUrl": "string",
-  "pngUrls": ["string"],
-  "svgUrls": ["string"]
-}
-```
-
-## POST `/jobs/:jobId/export`
-
-### Goal
-
-Export active version.
-
-### Request
-
-```json
-{
-  "format": "png"
-}
-```
-
-### Rules
-
-Allowed export formats:
+允许导出：
 
 * `png`
 * `svg`
 * `html`
 
-### Response
+## 重写接口约束
 
-```json
-{
-  "jobId": "string",
-  "activeVersion": 1,
-  "format": "png",
-  "downloadUrl": "string"
-}
-```
+* `targetStage` 必须属于允许的重写阶段
+* 仅当任务处于 `REVIEWED`、`REWRITE_PENDING` 或 `FAILED` 时允许请求
+* 当 `rewriteCount >= 3` 时必须失败

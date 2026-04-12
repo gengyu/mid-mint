@@ -346,10 +346,9 @@ export function App() {
         try {
           await readJson(`/api/jobs/${job.jobId}/run`, { method: "POST" });
           await refreshJob(job.jobId, job.activeVersion);
-          setMessage("Workflow completed for current version.");
+          setMessage("Workflow started. Stage outputs will keep refreshing.");
         } catch (requestError) {
           setError(requestError instanceof Error ? requestError.message : "Run failed.");
-        } finally {
           setIsRunningWorkflow(false);
           setRunStartedAt(null);
           setRunElapsedSeconds(0);
@@ -380,15 +379,14 @@ export function App() {
           setIsRunningWorkflow(true);
           setRunStartedAt(Date.now());
           setRunElapsedSeconds(0);
-          setMessage(`Rewrite started for version ${rewriteResponse.nextVersion}. Running workflow now.`);
+          setMessage(`Rewrite started for version ${rewriteResponse.nextVersion}. Stage outputs will keep refreshing.`);
           await readJson(`/api/jobs/${job.jobId}/run`, { method: "POST" });
           setSelectedVersion(rewriteResponse.nextVersion);
           await refreshJob(job.jobId, rewriteResponse.nextVersion);
-          setMessage(`Rewrite finished for version ${rewriteResponse.nextVersion}.`);
+          setMessage(`Rewrite is running for version ${rewriteResponse.nextVersion}.`);
           navigate("workspace");
         } catch (requestError) {
           setError(requestError instanceof Error ? requestError.message : "Rewrite failed.");
-        } finally {
           setIsRunningWorkflow(false);
           setRunStartedAt(null);
           setRunElapsedSeconds(0);

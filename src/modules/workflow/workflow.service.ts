@@ -1,12 +1,14 @@
 import fs from "fs";
 import path from "path";
 import { assertSourceInput } from "@/modules/domain/validation";
-import type { SourceInput } from "@/modules/domain/types";
+import type { Job, SourceInput } from "@/modules/domain/types";
 import type { WorkflowOrchestrator, WorkflowRepositories } from "@/modules/workflow/orchestrator";
 import type { CreateJobInput, RewriteJobInput, RunJobOptions } from "@/modules/workflow/workflow.types";
 import { ensureDir, projectPath } from "@/lib/utils/fs";
 
 export class WorkflowService {
+  private readonly activeRuns = new Map<string, Promise<Job>>();
+
   constructor(
     private readonly orchestrator: WorkflowOrchestrator,
     private readonly repositories: WorkflowRepositories
@@ -40,6 +42,28 @@ export class WorkflowService {
 
   async runJob(jobId: string, options?: RunJobOptions) {
     const job = await this.orchestrator.run(jobId, options);
+    return {
+      jobId: job.id,
+      status: job.status
+    };
+  }
+
+  startRun(jobId: string, options?: RunJobOptions) {
+    const existingRun = this.activeRuns.get(jobId);
+    if (!existingRun) {
+      const runPromise = this.orchestrator
+        .run(jobId, options)
+        .finally(() => {
+          this.activeRuns.delete(jobId);
+        });
+      this.activeRuns.set(jobId, runPromise);
+    }
+
+    const job = this.orchestrator.getJob(jobId);
+    if (!job) {
+      throw new Error(`Job not found: ${jobId}`);
+    }
+
     return {
       jobId: job.id,
       status: job.status

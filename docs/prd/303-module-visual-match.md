@@ -1,66 +1,47 @@
-# Module Spec: visual-match
+# 模块规范: visual-match
 
-## Goal
+## 目标
 
-Assign templates and visual rules to the generated deck.
+完成主题视觉识别、整套 Deck 的视觉路线选择和每页模板映射。
 
-## Input
+## 输入
 
 * `ParsedSource`
 * `ContentBrief`
 * `DeckPlan`
 * `preferredStyle`
-* template metadata
+* 模板元数据
 
-## Output
+## 输出
 
-* updated `DeckPlan`
+* 更新后的 `DeckPlan`
 * `VisualSpec`
 
-## Rules
+## LLM 责任
 
-* system must derive `themeCategory`, `tone`, `densityLevel`, `contentIntent`, and `audienceMode` in fixed enum space
-* system must choose exactly one deck-level `VisualFamily` before selecting slide templates
-* each slide must have a resolved templateId
-* template selection must consider `pageType`
-* template selection must consider `themeCategory`
-* template selection must consider `VisualFamily`
-* template selection must consider content density
-* template selection must use template metadata and deterministic tie-break rules
-* system must flag probable overflow
-* system must flag overly dense layouts
-* visual spec must include `routeId`, `themeCategory`, `visualFamily`, `tone`, `densityLevel`, `layoutMode`, `paletteKey`, `typographyMode`, `decorationLevel`, `imageStrategy`, `routeReasons`, and `warnings`
-* route reasons must use approved stable codes only
-* template matching may replace provisional templateId values
-* routing must be deterministic under the same structured inputs and template catalog version
-* Phase 1 implementation must work without LLM classification
-* later phases may use LLM classification, but final route and template choice must still pass deterministic rules
-* when no family-compatible template exists, system must fall back in this order: drop family, then theme, then density
-* excluded templates must never be selected
+* 分类 `themeCategory`
+* 分类 `tone`
+* 分类 `densityLevel`
+* 分类 `contentIntent`
+* 分类 `audienceMode`
+* 生成结构化路由理由候选
 
-## Phase 1 Contract
+## 确定性责任
 
-Phase 1 must implement these concrete behaviors:
+* 选择唯一 Deck 级 `VisualFamily`
+* 为每页解析最终 `templateId`
+* 执行模板兼容性校验
+* 执行 tie-break 与 fallback
+* 生成稳定 `routeReasons` 与 `warnings`
 
-* derive base route from `ContentBrief.angle`
-* treat `preferredStyle` as a hint only
-* emit `routeId` using `vf-{visualFamily}-{themeCategory}-{densityLevel}`
-* route `team-delivery` in valid `summary` and `detail` cases
-* explicitly exclude `feature-compare` until deck generator exposes stable left-side and right-side comparison fields
-* keep workspace and preview display read-only
+## 规则
 
-## Failure
+* 相同结构化输入和相同模板目录版本下，最终路由必须保持确定性
+* 模型分类结果不能绕过模板约束
+* 不允许模型直接选择被排除的模板
+* 路由原因必须是稳定代码集合
 
-Return typed error when:
-
-* no template is available for a page type
-* deck input invalid
-* derived signals invalid
-* template metadata invalid
-* route cannot be resolved
-* visual spec invalid
-
-## Error Codes
+## 错误码
 
 * `VISUAL_INPUT_INVALID`
 * `VISUAL_TEMPLATE_NOT_FOUND`
@@ -68,20 +49,7 @@ Return typed error when:
 * `VISUAL_TEMPLATE_META_INVALID`
 * `VISUAL_ROUTE_UNRESOLVED`
 * `VISUAL_SPEC_INVALID`
-
-## Side Effects
-
-* persist visual result
-* create stage log
-* update job status to `VISUAL_MATCHED`
-
-## Acceptance
-
-* every slide has resolved templateId
-* visual spec is valid
-* one deck-level `VisualFamily` is selected
-* route reasons are emitted using approved codes
-* `team-delivery` can be selected in Phase 1 valid scenarios
-* `feature-compare` is not selected in Phase 1
-* warnings are emitted for dense or overflow-prone slides
-* same structured input and same template catalog version produce the same output
+* `LLM_REQUEST_FAILED`
+* `LLM_TIMEOUT`
+* `LLM_OUTPUT_PARSE_FAILED`
+* `LLM_OUTPUT_SCHEMA_INVALID`

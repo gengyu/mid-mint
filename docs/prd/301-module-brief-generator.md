@@ -1,54 +1,50 @@
-# Module Spec: brief-generator
+# 模块规范: brief-generator
 
-## Goal
+## 目标
 
-Generate `ContentBrief` from `ParsedSource` and user preferences.
+根据 `ParsedSource`、目标受众、内容目标和风格偏好，生成 `ContentBrief`。
 
-## Input
+## 输入
 
 * `ParsedSource`
 * `targetAudience`
 * `contentGoal`
 * `preferredStyle`
 
-## Output
+## 输出
 
 * `ContentBrief`
 
-## Rules
+## LLM 责任
 
-* must return exactly one `angle`
-* `audience` must not be empty
-* `narrative` must be exactly one paragraph
-* `keyTakeaways` must contain 3 to 5 items
-* `mustInclude` must include critical facts when present
-* `avoid` must include styles or expressions to avoid when necessary
-* brief must optimize for Xiaohongshu readability, not source fidelity alone
+* 选择唯一 `angle`
+* 按目标受众重写叙事方向
+* 生成更具体的 takeaway
+* 提取必须保留的关键信息
+* 给出需要避免的表达
 
-## Failure
+## 确定性责任
 
-Return typed error when:
+* 校验上游结果
+* 校验枚举合法性
+* 校验 takeaway 数量
+* 校验最终结构
 
-* parsed source summary is empty
-* parsed source has zero key facts
-* generated brief fails validation
+## 规则
 
-## Error Codes
+* `narrative` 必须是一段
+* `keyTakeaways` 必须为 3 到 5 条
+* `mustInclude` 必须保留上游关键事实
+* `avoid` 必须足够具体
+
+## 错误码
 
 * `BRIEF_INPUT_INVALID`
 * `BRIEF_TOPIC_EMPTY`
 * `BRIEF_AUDIENCE_EMPTY`
 * `BRIEF_NARRATIVE_EMPTY`
 * `BRIEF_KEY_TAKEAWAYS_INVALID`
-
-## Side Effects
-
-* persist brief result
-* create stage log
-* update job status to `BRIEFED`
-
-## Acceptance
-
-* valid parsed source returns valid `ContentBrief`
-* output angle is one of allowed enum values
-* output passes schema validation
+* `LLM_REQUEST_FAILED`
+* `LLM_TIMEOUT`
+* `LLM_OUTPUT_PARSE_FAILED`
+* `LLM_OUTPUT_SCHEMA_INVALID`

@@ -1,111 +1,33 @@
-# mid-mint Frontend Spec
+# mid-mint 前端规范
 
-## Required Pages
+## 必需页面
 
-The frontend must implement exactly these pages in v1:
+* 任务创建页
+* 任务工作台
+* 预览页
+* 导出面板
 
-* job creation page
-* job workspace page
-* preview page
-* export panel
+## 工作台必须支持
 
-## Job Creation Page
+* 查看任务摘要与当前状态
+* 查看阶段进度与版本列表
+* 查看各阶段结构化结果
+* 查看视觉路线摘要
+* 查看每页模板选择结果
+* 查看评审分数、问题与建议
+* 在允许时发起重写
+* 展示 `stageMeta` 中的模型与 fallback 信息
 
-### Required Fields
+## 预览页必须支持
 
-* URLs input
-* raw text input
-* notes input
-* target audience input
-* content goal input
-* preferred style input
+* 展示每页 PNG 预览
+* 展示整套 Deck 的 `visualFamily`
+* 展示每页的 `templateId`
+* 展示 overflow 告警
+* 展示 HTML 预览链接
 
-### Required Actions
+## 阶段一约束
 
-* create job
-* validate at least one source field is filled
-
-## Job Workspace Page
-
-### Required Sections
-
-* job summary
-* current status
-* stage progress
-* version list
-* visual route summary
-* stage output viewer
-* review result panel
-* rewrite action panel
-
-### Required Behavior
-
-* show current active version
-* allow switching between versions
-* show stage output JSON or formatted view
-* show `themeCategory`, `visualFamily`, `tone`, `densityLevel`, and `layoutMode`
-* show `routeReasons` and `warnings`
-* show resolved `templateId` for every slide
-* show review scores and issues
-* allow rewrite requests when eligible
-
-The workspace may satisfy these requirements with a compact formatted card plus raw JSON.
-
-## Preview Page
-
-### Required Sections
-
-* deck route label
-* slide list
-* per-slide preview
-* html preview link
-* overflow indicator
-* template info
-* deck warnings
-
-### Required Behavior
-
-* show all slide PNG previews
-* show selected `visualFamily` for the deck
-* show `templateId` for each rendered slide
-* show overflow warning per slide when present
-
-## Phase 1 Frontend Scope Lock
-
-Phase 1 frontend must:
-
-* display visual route information as read-only data
-* reuse existing job version payload for `visualSpec` and slide template labels
-
-Phase 1 frontend must not:
-
-* implement route override controls
-* implement per-slide template override controls
-* require a new workflow stage
-
-## Export Panel
-
-### Required Actions
-
-* export PNG
-* export SVG
-* export HTML
-
-### Required Behavior
-
-* export only active version
-* show export status
-* show download link
-
-## Frontend Acceptance
-
-Frontend implementation is acceptable only if:
-
-* all required pages exist
-* user can inspect stage outputs
-* user can inspect deck-level route information
-* user can inspect per-slide template selection
-* user can inspect review results
-* user can trigger rewrite
-* user can preview assets
-* user can export assets
+* 只读展示视觉路由与模板选择
+* 不实现 route override
+* 不实现 per-slide template override

@@ -1,38 +1,30 @@
-# Module Spec: renderer
+# 模块规范: renderer
 
-## Goal
+## 目标
 
-Render `DeckPlan` plus `VisualSpec` into exportable assets.
+把 `DeckPlan` 与 `VisualSpec` 渲染为可导出的正式资产。
 
-## Input
+## 输入
 
 * `DeckPlan`
 * `VisualSpec`
-* template definitions
+* 模板定义
 
-## Output
+## 输出
 
 * `RenderResult`
 
-## Rules
+## 规则
 
-* render one asset set per slide
-* output PNG and SVG for every slide
-* output one HTML preview URL per job version
-* detect overflow at slide level
-* do not silently drop content
-* if overflow exists, mark asset `overflowDetected = true`
-* rendered asset count must equal slide count
+* 每页必须产出一组渲染资产
+* 每页都必须输出 PNG 与 SVG
+* 每个版本必须输出一个 HTML 预览地址
+* 必须在页级别检测溢出
+* 不允许静默丢弃内容
+* 存在溢出时必须设置 `overflowDetected = true`
+* 资产数必须与 slide 数一致
 
-## Failure
-
-Return typed error when:
-
-* template definition missing
-* render asset count mismatches slide count
-* one or more required output files missing
-
-## Error Codes
+## 错误码
 
 * `RENDER_INPUT_INVALID`
 * `RENDER_TEMPLATE_MISSING`
@@ -40,15 +32,3 @@ Return typed error when:
 * `RENDER_PNG_MISSING`
 * `RENDER_SVG_MISSING`
 * `RENDER_HTML_PREVIEW_MISSING`
-
-## Side Effects
-
-* persist render result
-* create stage log
-* update job status to `RENDERED`
-
-## Acceptance
-
-* all slides have PNG and SVG
-* html preview exists
-* overflow is explicitly marked, not ignored

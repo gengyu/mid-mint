@@ -1,8 +1,6 @@
-# mid-mint Workflow Spec
+# mid-mint 工作流规范
 
-## Stage List
-
-The workflow must contain exactly these stages:
+## 固定阶段列表
 
 1. `INPUT_RECEIVED`
 2. `PARSED`
@@ -15,9 +13,9 @@ The workflow must contain exactly these stages:
 9. `REWRITE_PENDING`
 10. `FAILED`
 
-No additional stage may be introduced in v1 without updating this spec.
+不允许为 LLM 调用新增额外阶段。
 
-## Stage Order
+## 主流程
 
 ```text
 INPUT_RECEIVED
@@ -30,119 +28,61 @@ INPUT_RECEIVED
 -> APPROVED
 ```
 
-If review fails and rewrite is allowed:
+## LLM 驱动阶段执行模型
 
 ```text
-REVIEWED
--> REWRITE_PENDING
--> rerun target stage
--> rerun all downstream stages
--> REVIEWED
+1. 校验类型化输入
+2. 组装 Prompt payload
+3. 调用 LLM
+4. 解析结构化结果
+5. 校验结构化结果
+6. 必要时 repair 或 fallback
+7. 持久化最终有效输出
+8. 更新任务状态
+9. 写入阶段日志
 ```
 
-## Rewrite Rules
+## 重写规则
 
-The system must support rewrite at these target stages only:
+允许的重写阶段：
 
 * `source-parse`
 * `brief`
 * `deck`
 * `visual`
 
-Rewrite behavior:
+规则：
 
-* rewrite always targets exactly one stage
-* rewriting one stage must rerun that stage and all downstream stages
-* upstream stages must remain unchanged
-* each rewrite must create a new version set
-* maximum rewrite rounds per job: `3`
+* 每次只能指定一个目标阶段
+* 重写时必须重跑目标阶段及所有下游阶段
+* 上游阶段结果必须保持不变
+* 每次重写必须创建新版本
+* 每个任务最多重写 `3` 次
 
-## Stop Rules
+## 停止规则
 
-Generation must stop when one of these is true:
+满足任一条件时必须停止：
 
-* review score reaches approval threshold
-* rewrite count reaches 3
-* blocking risk is detected
-* two consecutive review rounds improve by less than 3 points
-* required stage output is invalid
+* 评审达到批准阈值
+* 重写次数达到 3 次
+* 检测到阻断性风险
+* 连续两次评审提升小于 3 分
+* 必需阶段输出无效
+* LLM 输出在允许重试和 fallback 后仍无效
 
-## Orchestrator
+## 编排器职责
 
-### Goal
+编排器必须：
 
-Run stages in fixed order and manage rewrite loops.
+* 创建初始版本
+* 按顺序调用各阶段
+* 校验并持久化每个阶段输出
+* 更新任务状态
+* 决定停止、批准或重写
+* 记录耗时与错误
 
-### Responsibilities
+编排器不得：
 
-The orchestrator must:
-
-* create initial version
-* call each stage in order
-* validate each stage output
-* persist each stage output
-* update job status after each stage
-* stop on failure
-* read review result
-* decide whether to stop or rewrite
-* enforce rewrite limit
-
-### Workflow Logic
-
-```text
-1. validate SourceInput
-2. run source-parser
-3. run brief-generator
-4. run deck-generator
-5. run visual-match
-6. run renderer
-7. run reviewer
-8. if decision = approve -> end
-9. if decision = block -> end
-10. if decision = rewrite and rewriteCount < 3 -> create new version and rerun target stage + downstream
-11. else -> end
-```
-
-### Constraints
-
-* orchestrator must not perform content generation logic itself
-* orchestrator only coordinates modules
-* orchestrator must not mutate persisted outputs from older versions
-* orchestrator must record run time per stage
-* orchestrator must record errors per stage
-
-## Acceptance Criteria
-
-### Workflow Acceptance
-
-The implementation is acceptable only if all conditions are true:
-
-* a user can create a job with valid source input
-* the system can run the full stage pipeline
-* the system persists every stage output
-* the system can return current job status
-* the system can fetch any stored version
-* the system can request partial rewrite
-* the system reruns only target stage plus downstream
-* the system blocks rewrite after 3 rounds
-* the system can export active version assets
-
-### Stage Acceptance
-
-Each stage is acceptable only if:
-
-* input validation exists
-* output validation exists
-* typed error codes exist
-* persistence exists
-* stage log exists
-* status update exists
-
-### Review Acceptance
-
-Review implementation is acceptable only if:
-
-* score is 0 to 100
-* decision is one of allowed values
-* approve and rewrite rules follow threshold contract
-* block decision is returned when blocking issue exists
+* 承担内容生成逻辑
+* 直接拼接业务 Prompt
+* 覆盖历史版本结果

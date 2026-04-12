@@ -1,10 +1,10 @@
-# Module Spec: reviewer
+# 模块规范: reviewer
 
-## Goal
+## 目标
 
-Evaluate renderable output and decide whether to approve, rewrite, or block.
+生成结构化 `ReviewResult`，评估内容质量、视觉契合度与是否需要重写。
 
-## Input
+## 输入
 
 * `ParsedSource`
 * `ContentBrief`
@@ -12,57 +12,38 @@ Evaluate renderable output and decide whether to approve, rewrite, or block.
 * `VisualSpec`
 * `RenderResult`
 
-## Output
+## 输出
 
 * `ReviewResult`
 
-## Rules
+## LLM 责任
 
-* return total score between 0 and 100
-* return all stage scores between 0 and 100
-* return one `decision`
-* if decision is `rewrite`, `rewriteStage` must not be null
-* if decision is `approve`, `rewriteStage` must be null
-* if blocking issue exists, decision must be `block`
-* review must detect weak cover hook
-* review must detect slide repetition
-* review must detect density overload
-* review must detect visual mismatch
-* review must detect factual risk
-* review must detect overly generic phrasing
-* review must detect `news搬运感`
+* 评估封面吸引力
+* 评估页间重复度
+* 评估信息密度是否过载
+* 评估视觉路线与内容是否匹配
+* 评估事实风险
+* 评估表达是否通用、是否有“搬运感”
 
-## Thresholds
+## 确定性责任
 
-* `approve` when score >= 80 and `blockingIssues.length = 0`
-* `rewrite` when score >= 50 and score < 80 and `blockingIssues.length = 0`
-* `block` when score < 50 or `blockingIssues.length > 0`
+* 校验总分范围为 0 到 100
+* 校验分项分数范围为 0 到 100
+* 执行固定决策阈值
+* 校验 `decision` 与 `rewriteStage` 一致性
 
-## Failure
+## 决策阈值
 
-Return typed error when:
+* `approve` 当 `score >= 80` 且 `blockingIssues.length = 0`
+* `rewrite` 当 `score >= 50` 且 `score < 80` 且 `blockingIssues.length = 0`
+* `block` 当 `score < 50` 或 `blockingIssues.length > 0`
 
-* one or more required stage artifacts are missing
-* score output invalid
-* decision and rewriteStage conflict
-
-## Error Codes
+## 错误码
 
 * `REVIEW_INPUT_INVALID`
 * `REVIEW_SCORE_INVALID`
 * `REVIEW_DECISION_INVALID`
-
-## Side Effects
-
-* persist review result
-* create stage log
-* update job status to `REVIEWED`
-* if decision is approve, update job status to `APPROVED`
-* if decision is rewrite, update job status to `REWRITE_PENDING`
-* if decision is block, update job status to `FAILED`
-
-## Acceptance
-
-* valid stage inputs return valid review result
-* decision follows threshold rules
-* rewrite decisions always include rewrite stage
+* `LLM_REQUEST_FAILED`
+* `LLM_TIMEOUT`
+* `LLM_OUTPUT_PARSE_FAILED`
+* `LLM_OUTPUT_SCHEMA_INVALID`

@@ -1,127 +1,55 @@
-# mid-mint Overview
+# mid-mint PRD 总览
 
-## Assessment
+## 文档定位
 
-`mid-mint PRD V1.md` is strong on implementation rigor but weak on document boundaries.
+本目录为 `mid-mint` 的最新中文 PRD 文档集，是当前实现阶段唯一有效的产品与技术契约来源。
 
-What works:
+本次重构目标：
 
-* the workflow is explicit instead of agent-black-box
-* every stage has typed input, output, validation, persistence, and errors
-* rewrite, versioning, and review rules are concrete enough to implement
+* 用一套拆分后的中文文档替换旧的 `prd` 与 `prd-v2`
+* 合并 v1 的阶段化架构约束与 v2 的 LLM 集成能力
+* 避免“基础规范”和“增量规范”并存导致的规则分叉
 
-What needed to change:
+## 产品目标
 
-* product scope, architecture, API, storage, frontend, and AI task instructions were mixed in one file
-* the file was too large to maintain safely as a single source
-* implementation sequencing and module contracts were hard to reference independently
+`mid-mint` 是一个分阶段内容生成系统，用于把用户提供的 URL、长文本、笔记、目标受众、内容目标与风格偏好，转换为适合小红书图文卡片的 4 至 5 页内容 Deck，并产出可评审、可预览、可导出的素材。
 
-This split keeps the original v1 contract but separates it by concern.
-
-## Purpose
-
-These files define the implementation contract for `mid-mint`.
-
-Use this spec set as the source of truth for:
-
-* backend implementation
-* frontend implementation
-* workflow orchestration
-* schema design
-* API design
-* storage design
-* task breakdown
-
-## Writing Rules
-
-All future docs derived from this set must follow these rules:
-
-* use explicit requirements
-* use typed input and output
-* use fixed enum values
-* use concrete failure rules
-* use concrete acceptance criteria
-* avoid product storytelling
-* avoid motivational explanation
-* avoid introducing modules not already defined in this spec set unless the spec set is updated first
-
-## Project Definition
-
-### Goal
-
-Build a stage-based content generation system that converts user-provided source material into a 4-5 page Xiaohongshu image-post deck.
-
-### Required Outcome
+核心流程：
 
 ```text
-source input
--> source parse
--> brief generate
--> deck generate
--> visual match
--> render
--> review
--> approve or rewrite
+SourceInput
+-> source-parser
+-> brief-generator
+-> deck-generator
+-> visual-match
+-> renderer
+-> reviewer
+-> approve 或 rewrite
 ```
 
-The system must produce:
+## 文档索引
 
-* structured intermediate outputs at every stage
-* renderable 4-5 page deck assets
-* review scores and issue lists
-* versioned artifacts
-* partial rewrite support
+* [050-architecture.md](/Users/gengyu/code/mid-mint/docs/prd/050-architecture.md)
+* [100-domain-model.md](/Users/gengyu/code/mid-mint/docs/prd/100-domain-model.md)
+* [150-llm-integration-spec.md](/Users/gengyu/code/mid-mint/docs/prd/150-llm-integration-spec.md)
+* [200-workflow-spec.md](/Users/gengyu/code/mid-mint/docs/prd/200-workflow-spec.md)
+* [300-module-source-parser.md](/Users/gengyu/code/mid-mint/docs/prd/300-module-source-parser.md)
+* [301-module-brief-generator.md](/Users/gengyu/code/mid-mint/docs/prd/301-module-brief-generator.md)
+* [302-module-deck-generator.md](/Users/gengyu/code/mid-mint/docs/prd/302-module-deck-generator.md)
+* [303-module-visual-match.md](/Users/gengyu/code/mid-mint/docs/prd/303-module-visual-match.md)
+* [304-module-renderer.md](/Users/gengyu/code/mid-mint/docs/prd/304-module-renderer.md)
+* [305-module-reviewer.md](/Users/gengyu/code/mid-mint/docs/prd/305-module-reviewer.md)
+* [306-theme-adaptive-visual-system.md](/Users/gengyu/code/mid-mint/docs/prd/306-theme-adaptive-visual-system.md)
+* [400-api-spec.md](/Users/gengyu/code/mid-mint/docs/prd/400-api-spec.md)
+* [500-storage-spec.md](/Users/gengyu/code/mid-mint/docs/prd/500-storage-spec.md)
+* [600-frontend-spec.md](/Users/gengyu/code/mid-mint/docs/prd/600-frontend-spec.md)
+* [700-task-breakdown.md](/Users/gengyu/code/mid-mint/docs/prd/700-task-breakdown.md)
 
-### Primary Constraint
+## 总体原则
 
-The system must not behave as one opaque agent call.
-
-The system must implement explicit stages. Each stage must:
-
-* accept typed input
-* return typed output
-* persist result
-* update job status
-* emit stage log
-
-## System Scope
-
-### Supported Input Types
-
-The system must accept:
-
-* one URL
-* multiple URLs
-* long text
-* bullet notes
-* mixed input: topic + URLs + notes
-* target audience
-* content goal
-* preferred style
-
-### Supported Output Types
-
-The system must produce:
-
-* structured parsed source
-* structured content brief
-* 4-5 page deck plan
-* template mapping
-* rendered assets
-* review result
-* exportable PNG assets
-* exportable SVG assets
-* exportable HTML preview bundle
-
-### Supported User Actions
-
-The system must allow the user to:
-
-* create a job
-* submit source material
-* start generation
-* inspect stage outputs
-* inspect review results
-* request partial rewrite
-* compare versions
-* export final assets
+* 必须使用固定阶段流水线，不能退化为一次黑盒 Agent 调用
+* 每个阶段必须具备类型化输入、输出、校验、持久化与阶段日志
+* 编排器只负责调度，不负责内容生成
+* LLM 只能生成结构化候选结果，不能绕过 schema 校验
+* 渲染与导出必须保持确定性
+* 历史版本不可被覆盖

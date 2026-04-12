@@ -1,53 +1,51 @@
-# Module Spec: source-parser
+# 模块规范: source-parser
 
-## Goal
+## 目标
 
-Convert `SourceInput` into `ParsedSource`.
+将混合输入源转换为有效的 `ParsedSource`。
 
-## Input
+## 输入
 
 * `SourceInput`
+* 可选的 URL 抓取补充内容
 
-## Output
+## 输出
 
 * `ParsedSource`
 
-## Rules
+## LLM 责任
 
-* parse raw text first
-* if URLs exist, URL fetch support may be implemented later
-* current version must support `rawText` and `notes`
-* title may be inferred
-* summary must describe the source in one paragraph
-* keyFacts must contain concrete facts
-* keyPoints must contain extractive or normalized points
-* quotes must contain direct phrases when available
-* riskFlags must contain explicit risk hints
+* 生成简洁标题
+* 生成一段式摘要
+* 提取关键事实
+* 归一化关键观点
+* 提取直接引用
+* 识别事实风险
 
-## Failure
+## 确定性责任
 
-Return typed error when:
+* 校验输入
+* URL 去重
+* 限制列表长度
+* 校验最终输出
+* 必要时执行 fallback
 
-* source input validation fails
-* parsed output validation fails
-* no usable content can be extracted
+## 规则
 
-## Error Codes
+* 必须支持 `rawText`、`notes` 和 URLs
+* `summary` 不可为空
+* `keyFacts` 必须是具体事实
+* `keyPoints` 必须适合下游直接消费
+* 无法提取发布时间时返回 `null`
+
+## 错误码
 
 * `SOURCE_INPUT_EMPTY`
 * `SOURCE_PARSE_NO_USABLE_CONTENT`
 * `PARSED_SOURCE_SUMMARY_EMPTY`
 * `PARSED_SOURCE_KEY_FACTS_EMPTY`
 * `PARSED_SOURCE_KEY_POINTS_EMPTY`
-
-## Side Effects
-
-* persist parsed result
-* create stage log
-* update job status to `PARSED`
-
-## Acceptance
-
-* valid source input returns valid `ParsedSource`
-* invalid empty input returns typed error
-* parsed result is persisted under current version
+* `LLM_REQUEST_FAILED`
+* `LLM_TIMEOUT`
+* `LLM_OUTPUT_PARSE_FAILED`
+* `LLM_OUTPUT_SCHEMA_INVALID`

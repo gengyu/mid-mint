@@ -1,5 +1,19 @@
 [
   {
+    "id": "visual_specs-1775973376453-nom68i",
+    "jobId": "job-1775973335721-mcij0b",
+    "versionNumber": 1,
+    "payloadJson": "{\"routeId\":\"vf-signal-tech-news_flash-high\",\"themeCategory\":\"news_flash\",\"visualFamily\":\"signal-tech\",\"tone\":\"sharp\",\"densityLevel\":\"high\",\"layoutMode\":\"compact\",\"paletteKey\":\"tech-emerald\",\"typographyMode\":\"display-sharp\",\"decorationLevel\":\"medium\",\"imageStrategy\":\"abstract\",\"routeReasons\":[\"angle_selected_base_route\",\"audience_mode_broad_consumer\",\"density_high_layout_compact\"],\"warnings\":[\"overall_content_density_high\",\"slide_1_highlight_too_long\",\"slide_2_title_may_overflow\",\"slide_2_highlight_too_long\",\"slide_3_title_may_overflow\",\"slide_4_title_may_overflow\",\"template_family_fallback\",\"template_theme_fallback\",\"template_density_fallback\"]}",
+    "createdAt": "2026-04-12T05:56:16.453Z"
+  },
+  {
+    "id": "visual_specs-1775973253020-g7rgky",
+    "jobId": "job-1775973185021-qwr4j3",
+    "versionNumber": 1,
+    "payloadJson": "{\"routeId\":\"vf-signal-tech-news_flash-medium\",\"themeCategory\":\"news_flash\",\"visualFamily\":\"signal-tech\",\"tone\":\"sharp\",\"densityLevel\":\"medium\",\"layoutMode\":\"balanced\",\"paletteKey\":\"tech-emerald\",\"typographyMode\":\"display-sharp\",\"decorationLevel\":\"medium\",\"imageStrategy\":\"abstract\",\"routeReasons\":[\"angle_selected_base_route\",\"audience_mode_professional\",\"density_medium_layout_balanced\"],\"warnings\":[\"slide_1_highlight_too_long\",\"slide_2_highlight_too_long\",\"slide_4_highlight_too_long\"]}",
+    "createdAt": "2026-04-12T05:54:13.020Z"
+  },
+  {
     "id": "visual_specs-1775437398453-2iv9sx",
     "jobId": "job-1775434736665-urhs39",
     "versionNumber": 1,

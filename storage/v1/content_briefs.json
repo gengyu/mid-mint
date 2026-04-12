@@ -1,5 +1,26 @@
 [
   {
+    "id": "content_briefs-1775973354034-ewn2xd",
+    "jobId": "job-1775973335721-mcij0b",
+    "versionNumber": 1,
+    "payloadJson": "{\"topic\":\"Content Parser Test Run Brief\",\"angle\":\"quick_view\",\"audience\":\"Xiaohongshu content creators and social media managers seeking efficient workflow tools\",\"narrative\":\"Just tested the Xiaohongshu content parser with the bare minimum input—rawText 'test run' and all other fields empty—and it still churned out a sharp, usable brief! This proves the tool is perfect for creators who hate繁琐 prep and want to jump straight to crafting engaging posts. No URLs or extra notes? No problem—it keeps things lean and focused, saving you time for what matters: making relatable, standout content. 🛠️✨ #ContentHacks #XiaohongshuTips\",\"keyTakeaways\":[\"Minimal input like 'test run' is enough to generate a structured brief.\",\"The parser reliably preserves critical upstream facts for accuracy.\",\"Tailor narratives to Xiaohongshu's conversational, visual-first style for better engagement.\",\"Avoid overloading briefs with vague details; stay concrete and actionable.\",\"Always incorporate mustInclude facts to maintain source integrity.\"],\"mustInclude\":[\"The rawText field contains the string 'test run'.\",\"All other input fields (urls, notes, targetAudience, contentGoal, preferredStyle) are empty.\",\"No URLs were fetched.\"],\"avoid\":[\"Using jargon or ambiguous terms that hinder downstream content creation\",\"Neglecting Xiaohongshu's audience preferences for authenticity and trends\",\"Adding unnecessary complexity that distracts from core messaging\"],\"contentGoal\":\"\"}",
+    "createdAt": "2026-04-12T05:55:54.034Z"
+  },
+  {
+    "id": "content_briefs-1775973312121-xp1ex8",
+    "jobId": "job-1775973292966-kfi5k2",
+    "versionNumber": 1,
+    "payloadJson": "{\"topic\":\"Test Run First Impressions\",\"angle\":\"quick_view\",\"audience\":\"Xiaohongshu users seeking authentic, quick takes on new products or experiences\",\"narrative\":\"Just wrapped up a rapid test run and I'm spilling my immediate, unfiltered thoughts! There's a certain honesty that comes with a first-try experience—no overthinking, just raw reactions. This isn't a deep dive; it's my gut-level take to help you quickly decide if it's worth exploring further. Sometimes the most helpful insights come from these simple, no-fuss trials.\",\"keyTakeaways\":[\"A test run delivers authentic, immediate reactions without bias\",\"Simplicity in evaluation leads to clearer, more honest assessments\",\"Quick trials help others make fast, informed decisions\",\"First impressions capture the core user experience effectively\"],\"mustInclude\":[\"Direct reference to the 'test run' concept\",\"Emphasis on immediate, unpolished reactions\",\"Tone that feels personal and conversational\",\"Acknowledgment of the minimal, straightforward nature of the experience\"],\"avoid\":[\"Inventing detailed features or results not implied by 'test run'\",\"Using overly technical or formal review language\",\"Overcomplicating with unnecessary background or comparisons\",\"Ignoring the simplicity and spontaneity of a first-try scenario\"],\"contentGoal\":\"\"}",
+    "createdAt": "2026-04-12T05:55:12.121Z"
+  },
+  {
+    "id": "content_briefs-1775973228897-lg9wgx",
+    "jobId": "job-1775973185021-qwr4j3",
+    "versionNumber": 1,
+    "payloadJson": "{\"topic\":\"Test Run\",\"angle\":\"quick_view\",\"audience\":\"Xiaohongshu users aged 20-35 who enjoy authentic product trials and honest first impressions.\",\"narrative\":\"In this engaging Xiaohongshu post, I share my real-time 'test run' of a new trending product/routine, capturing honest first impressions, practical tips, and a candid before-and-after vibe. The content stays raw and relatable, focusing on the genuine experience without overproduction, and invites followers to join the trial journey through interactive polls and comments.\",\"keyTakeaways\":[\"Viewers will see an authentic, unedited test process from start to finish.\",\"The post highlights key pros and cons observed during the trial.\",\"Practical tips are provided for replicating the test or using the product.\",\"Audience interaction is encouraged through polls and Q&A in the comments.\"],\"mustInclude\":[\"The content must only reflect the minimal input: the phrase 'test run' and no external sources.\",\"No URLs, links, or references to external content should be added.\",\"All metadata fields (targetAudience, contentGoal, preferredStyle) are empty and should remain unspecified in the final post.\",\"The quoted material is exactly 'test run' and must be preserved if used.\",\"The post should not assume any product, brand, or specific context beyond the test run concept.\"],\"avoid\":[\"Do not invent specific product names, brands, or detailed scenarios not present in the input.\",\"Avoid adding placeholder filler text that distracts from the core 'test run' narrative.\",\"Steer clear of over-polished production; maintain a raw, genuine feel.\",\"Do not include any URLs, references, or claims that require external verification.\"],\"contentGoal\":\"\"}",
+    "createdAt": "2026-04-12T05:53:48.897Z"
+  },
+  {
     "id": "content_briefs-1775437373911-afj9v4",
     "jobId": "job-1775434736665-urhs39",
     "versionNumber": 1,

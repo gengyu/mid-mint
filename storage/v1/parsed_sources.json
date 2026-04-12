@@ -1,5 +1,26 @@
 [
   {
+    "id": "parsed_sources-1775973342322-ia5eef",
+    "jobId": "job-1775973335721-mcij0b",
+    "versionNumber": 1,
+    "payloadJson": "{\"title\":\"Test Run\",\"summary\":\"This is a test run of the source parser with minimal input consisting of rawText 'test run' and empty other fields.\",\"keyFacts\":[\"The rawText field contains the string 'test run'.\",\"All other input fields (urls, notes, targetAudience, contentGoal, preferredStyle) are empty.\",\"No URLs were fetched.\"],\"keyPoints\":[\"Input appears to be a placeholder or test.\",\"No substantive content is available for parsing.\"],\"quotes\":[\"test run\"],\"sourceUrls\":[],\"publishTime\":null,\"riskFlags\":[]}",
+    "createdAt": "2026-04-12T05:55:42.322Z"
+  },
+  {
+    "id": "parsed_sources-1775973301510-tiplwc",
+    "jobId": "job-1775973292966-kfi5k2",
+    "versionNumber": 1,
+    "payloadJson": "{\"title\":\"\",\"summary\":\"The source material consists of a brief text that reads 'test run'.\",\"keyFacts\":[\"The raw text provided is 'test run'.\"],\"keyPoints\":[\"The content is minimal, containing only the phrase 'test run'.\"],\"quotes\":[\"test run\"],\"sourceUrls\":[],\"publishTime\":null,\"riskFlags\":[]}",
+    "createdAt": "2026-04-12T05:55:01.510Z"
+  },
+  {
+    "id": "parsed_sources-1775973215906-1p9qfe",
+    "jobId": "job-1775973185021-qwr4j3",
+    "versionNumber": 1,
+    "payloadJson": "{\"title\":\"Test Run\",\"summary\":\"The source is a minimal test run containing only the raw text 'test run' with no additional content, URLs, or metadata.\",\"keyFacts\":[\"Raw text: 'test run'.\",\"URLs array is empty.\",\"Notes, targetAudience, contentGoal, and preferredStyle fields are empty strings.\",\"Fetched URLs list is empty; no fetch failures reported.\"],\"keyPoints\":[\"Content consists solely of the phrase 'test run'.\",\"All metadata fields are empty.\",\"No external resources are referenced or fetched.\"],\"quotes\":[\"test run\"],\"sourceUrls\":[],\"publishTime\":null,\"riskFlags\":[]}",
+    "createdAt": "2026-04-12T05:53:35.906Z"
+  },
+  {
     "id": "parsed_sources-1775437361253-fbgw5r",
     "jobId": "job-1775434736665-urhs39",
     "versionNumber": 1,
