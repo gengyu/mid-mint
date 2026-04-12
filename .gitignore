@@ -8,4 +8,4 @@ dist
 public/generated-backgrounds/*
 !public/generated-backgrounds/.gitkeep
 .DS_Store
-storage/*
+storage/v1

@@ -15,7 +15,6 @@ import type {
   ParsedSource,
   RenderResult,
   ReviewResult,
-  StageExecutionMeta,
   SourceInput,
   VisualSpec
 } from "@/modules/domain/types";
@@ -25,7 +24,6 @@ import {
   type StageRunResult,
   createDeterministicStageResult
 } from "@/modules/workflow/stage-execution";
-import type { RunJobOptions } from "@/modules/workflow/workflow.types";
 
 const STAGE_META_ORDER: JobStatus[] = [
   "INPUT_RECEIVED",
@@ -40,10 +38,26 @@ const STAGE_META_ORDER: JobStatus[] = [
   "FAILED"
 ];
 
+type WorkflowStageDetail = {
+  stageName: JobStatus;
+  status: "success" | "error";
+  startedAt: string;
+  finishedAt: string;
+  usedLlm: boolean;
+  llmAttempted: boolean;
+  model: string | null;
+  usedFallback: boolean;
+  retryOccurred: boolean;
+  durationMs: number;
+  errorCode: string | null;
+  errorMessage: string | null;
+};
+
 export type WorkflowRepositories = {
   jobs: {
     create(input: SourceInput): Job;
     getById(jobId: string): Job | null;
+    list(): Job[];
     update(jobId: string, updater: (current: Job) => Job): Job | null;
   };
   jobVersions: {
@@ -107,6 +121,9 @@ export type WorkflowRepositories = {
     }): void;
     listByJobIdAndVersion?(jobId: string, versionNumber: number): Array<{
       stageName: JobStatus;
+      status: "success" | "error";
+      startedAt: string;
+      finishedAt: string;
       model: string | null;
       usedLlm: boolean;
       llmAttempted: boolean;
@@ -114,6 +131,7 @@ export type WorkflowRepositories = {
       usedFallback: boolean;
       durationMs: number;
       errorCode: string | null;
+      errorMessage: string | null;
     }>;
   };
 };
@@ -156,8 +174,7 @@ export class WorkflowOrchestrator {
     private readonly modules: WorkflowModules
   ) {}
 
-  async run(jobId: string, options?: RunJobOptions): Promise<Job> {
-    void options;
+  async run(jobId: string): Promise<Job> {
     const job = this.repositories.jobs.getById(jobId);
     if (!job) {
       throw new Error(`Job not found: ${jobId}`);
@@ -456,18 +473,22 @@ export class WorkflowOrchestrator {
       });
   }
 
-  private getStageMeta(jobId: string, versionNumber: number): StageExecutionMeta[] {
+  private getStageMeta(jobId: string, versionNumber: number): WorkflowStageDetail[] {
     const rows = this.repositories.stageLogs.listByJobIdAndVersion?.(jobId, versionNumber) ?? [];
     return rows
       .map((row) => ({
         stageName: row.stageName,
+        status: row.status,
+        startedAt: row.startedAt,
+        finishedAt: row.finishedAt,
         usedLlm: row.usedLlm,
         llmAttempted: row.llmAttempted,
         model: row.model,
         usedFallback: row.usedFallback,
         retryOccurred: row.retryOccurred,
         durationMs: row.durationMs,
-        errorCode: row.errorCode
+        errorCode: row.errorCode,
+        errorMessage: row.errorMessage
       }))
       .sort((left, right) => STAGE_META_ORDER.indexOf(left.stageName) - STAGE_META_ORDER.indexOf(right.stageName));
   }
