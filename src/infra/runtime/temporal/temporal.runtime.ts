@@ -3,7 +3,7 @@ import { fileURLToPath } from "url";
 import { Client, WorkflowExecutionAlreadyStartedError } from "@temporalio/client";
 import { NativeConnection, Worker } from "@temporalio/worker";
 import type { RewriteStage } from "@/core/domain/types";
-import type { WorkflowModules, WorkflowRepositories } from "@/features/jobs/orchestrator";
+import type { WorkflowModules, WorkflowRepositories } from "@/features/jobs/job-runtime.types";
 import { TemporalJobActivitiesImpl } from "./activities/job.activities";
 import type { JobWorkflowRuntimeState } from "./workflows/types";
 
@@ -82,7 +82,7 @@ export class TemporalWorkflowRuntime {
     } catch (error) {
       this.mode = "error";
       this.lastError = error instanceof Error ? error.message : "Temporal initialization failed.";
-      console.error("[temporal] initialization failed; falling back to legacy orchestrator", error);
+      console.error("[temporal] initialization failed", error);
     }
   }
 

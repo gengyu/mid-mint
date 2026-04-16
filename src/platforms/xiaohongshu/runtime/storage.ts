@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import type { XhsSlide, XhsLogEntry } from "@/infra/integrations/xhs/types";
+import type { XhsSlide, XhsLogEntry } from "@/platforms/xiaohongshu/types";
 import { ensureDir, projectPath } from "@/infra/utils/fs";
 
 type SaveDeckBundleInput = {

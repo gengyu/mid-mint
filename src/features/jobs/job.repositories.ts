@@ -1,5 +1,5 @@
 import { createV1Repositories } from "@/infra/persistence/storage";
-import type { WorkflowRepositories } from "@/features/jobs/orchestrator";
+import type { WorkflowRepositories } from "@/features/jobs/job-runtime.types";
 
 function createTypedWorkflowRepositories(): WorkflowRepositories {
   const repositories = createV1Repositories();

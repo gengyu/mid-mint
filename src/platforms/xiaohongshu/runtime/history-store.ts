@@ -1,5 +1,5 @@
 import fs from "fs";
-import type { XhsDeckHistoryEntry } from "@/infra/integrations/xhs/types";
+import type { XhsDeckHistoryEntry } from "@/platforms/xiaohongshu/types";
 import { ensureDir, projectPath } from "@/infra/utils/fs";
 
 const historyDir = ensureDir(projectPath("storage"));

@@ -1,4 +1,4 @@
-import type { XhsSlideTemplateId } from "@/infra/integrations/xhs/types";
+import type { XhsSlideTemplateId } from "@/platforms/xiaohongshu/types";
 import { stripUnsupportedText, truncateTextSoft } from "@/infra/utils/text";
 
 export type DeckOutlineSlide = {

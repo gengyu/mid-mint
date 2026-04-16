@@ -1,16 +1,16 @@
 import { Module } from "@nestjs/common";
 import { JobsController } from "./jobs.controller";
-import { BriefGenerator } from "@/features/brief/brief-generator";
-import { DeckGenerator } from "@/features/deck/deck-generator";
-import { Renderer } from "@/features/render/renderer";
-import { Reviewer } from "@/features/review/reviewer";
-import { SourceParser } from "@/features/source/source-parser";
-import { VisualMatch } from "@/features/visual/visual-match";
-import { WorkflowOrchestrator } from "@/features/jobs/orchestrator";
-import { jobRepositories } from "@/features/jobs/job.repositories";
+import { BriefGenerator } from "@/features/generation/brief/brief-generator";
+import { DeckGenerator } from "@/features/generation/deck/deck-generator";
 import { JobsService } from "@/features/jobs/job.service";
+import { jobRepositories } from "@/features/jobs/job.repositories";
+import { Renderer } from "@/features/generation/render/renderer";
+import { Reviewer } from "@/features/generation/review/reviewer";
+import { SourceParser } from "@/features/generation/source/source-parser";
+import { VisualMatch } from "@/features/generation/visual/visual-match";
 import { OpenAiProvider } from "@/infra/ai/llm/openai";
 import { TemporalWorkflowRuntime } from "@/infra/runtime/temporal/temporal.runtime";
+import type { WorkflowModules } from "@/features/jobs/job-runtime.types";
 
 const WORKFLOW_REPOSITORIES = "WORKFLOW_REPOSITORIES";
 
@@ -25,35 +25,6 @@ const WORKFLOW_REPOSITORIES = "WORKFLOW_REPOSITORIES";
     Reviewer,
     OpenAiProvider,
     { provide: WORKFLOW_REPOSITORIES, useValue: jobRepositories },
-    {
-      provide: WorkflowOrchestrator,
-      inject: [
-        WORKFLOW_REPOSITORIES,
-        SourceParser,
-        BriefGenerator,
-        DeckGenerator,
-        VisualMatch,
-        Renderer,
-        Reviewer
-      ],
-      useFactory: (
-        repositories: typeof jobRepositories,
-        sourceParser: SourceParser,
-        briefGenerator: BriefGenerator,
-        deckGenerator: DeckGenerator,
-        visualMatch: VisualMatch,
-        renderer: Renderer,
-        reviewer: Reviewer
-      ) =>
-        new WorkflowOrchestrator(repositories, {
-          sourceParser,
-          briefGenerator,
-          deckGenerator,
-          visualMatch,
-          renderer,
-          reviewer
-        })
-    },
     {
       provide: TemporalWorkflowRuntime,
       inject: [
@@ -74,27 +45,27 @@ const WORKFLOW_REPOSITORIES = "WORKFLOW_REPOSITORIES";
         renderer: Renderer,
         reviewer: Reviewer
       ) => {
-        const runtime = new TemporalWorkflowRuntime(repositories, {
+        const modules: WorkflowModules = {
           sourceParser,
           briefGenerator,
           deckGenerator,
           visualMatch,
           renderer,
           reviewer
-        });
+        };
+        const runtime = new TemporalWorkflowRuntime(repositories, modules);
         await runtime.init();
         return runtime;
       }
     },
     {
       provide: JobsService,
-      inject: [WorkflowOrchestrator, WORKFLOW_REPOSITORIES, TemporalWorkflowRuntime],
+      inject: [WORKFLOW_REPOSITORIES, TemporalWorkflowRuntime],
       useFactory: (
-        orchestrator: WorkflowOrchestrator,
         repositories: typeof jobRepositories,
         temporalRuntime: TemporalWorkflowRuntime
       ) =>
-        new JobsService(orchestrator, repositories, temporalRuntime)
+        new JobsService(repositories, temporalRuntime)
     }
   ],
 })

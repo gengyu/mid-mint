@@ -22,7 +22,7 @@ import {
   type StageRunResult,
   createDeterministicStageResult
 } from "@/features/jobs/stage-execution";
-import type { WorkflowModules, WorkflowRepositories } from "@/features/jobs/orchestrator";
+import type { WorkflowModules, WorkflowRepositories } from "@/features/jobs/job-runtime.types";
 
 type ReviewFinalization = {
   status: JobStatus;
@@ -503,4 +503,3 @@ export class TemporalJobActivitiesImpl implements TemporalJobActivities {
     }
   }
 }
-
