@@ -1,8 +1,8 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
-import { loadProjectEnv } from "./src/lib/config/env";
-import { DEFAULT_CLIENT_PORT, resolveApiPort } from "./src/lib/config/ports";
+import { loadProjectEnv } from "./src/config/env";
+import { DEFAULT_CLIENT_PORT, resolveApiPort } from "./src/config/ports";
 
 loadProjectEnv(process.cwd());
 const apiPort = resolveApiPort(process.env);

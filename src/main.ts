@@ -2,9 +2,9 @@ import "reflect-metadata";
 import path from "path";
 import { fileURLToPath } from "url";
 import { NestFactory } from "@nestjs/core";
-import { AppModule } from "./app.module";
-import { loadProjectEnv } from "@/lib/config/env";
-import { resolveApiPort } from "@/lib/config/ports";
+import { AppModule } from "@/app/app.module";
+import { loadProjectEnv } from "@/config/env";
+import { resolveApiPort } from "@/config/ports";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
