@@ -21,7 +21,7 @@ import {
   type StageRunResult,
   type StructuredLlmProvider,
   runLlmStage
-} from "@/features/jobs/stage-execution";
+} from "@/application/jobs/stage-execution";
 
 const reviewObservationSchema = z.object({
   category: z.enum([

@@ -26,7 +26,7 @@ import {
   type StageRunResult,
   type StructuredLlmProvider,
   runLlmStage
-} from "@/features/jobs/stage-execution";
+} from "@/application/jobs/stage-execution";
 
 type BaseRoute = {
   themeCategory: ThemeCategory;

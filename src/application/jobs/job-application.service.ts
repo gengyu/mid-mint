@@ -1,13 +1,25 @@
-import { assertSourceInput } from "@/core/domain/validation";
-import type { Job, JobStatus, SourceInput } from "@/core/domain/types";
-import type { WorkflowRepositories } from "@/features/jobs/job-runtime.types";
-import type { CreateJobInput } from "@/features/jobs/job.types";
+import { assertSourceInput, validateRewriteRequest } from "@/core/domain/validation";
+import type { Job, JobStatus, RewriteRequest, SourceInput } from "@/core/domain/types";
+import type { WorkflowRepositories } from "@/application/jobs/job-runtime.types";
+import type { CreateJobInput } from "@/application/jobs/job.types";
 import { TemporalWorkflowRuntime } from "@/infra/runtime/temporal/temporal.runtime";
 import { AppValidationError, createAppError } from "@/shared/errors/app-error";
 
-export class JobsService {
+type WritableWorkflowRepositories = WorkflowRepositories & {
+  jobs: WorkflowRepositories["jobs"] & {
+    deleteById?: (jobId: string) => boolean;
+  };
+  jobVersions: WorkflowRepositories["jobVersions"] & {
+    deleteByJobId?: (jobId: string) => number;
+  };
+  sourceInputs: WorkflowRepositories["sourceInputs"] & {
+    deleteByJobIdAndVersion?: (jobId: string, versionNumber: number) => number;
+  };
+};
+
+export class JobApplicationService {
   constructor(
-    private readonly repositories: WorkflowRepositories,
+    private readonly repositories: WritableWorkflowRepositories,
     private readonly temporalRuntime: TemporalWorkflowRuntime
   ) {}
 
@@ -21,51 +33,62 @@ export class JobsService {
       preferredStyle: input.preferredStyle ?? ""
     });
 
+    this.ensureRuntimeReady();
+
     const job = this.repositories.jobs.create(sourceInput);
-    this.repositories.jobVersions.create({
-      jobId: job.id,
-      versionNumber: job.activeVersion,
-      trigger: "initial",
-      rewriteStage: null
-    });
-    this.repositories.sourceInputs.save(job.id, job.activeVersion, sourceInput);
+    try {
+      this.repositories.jobVersions.create({
+        jobId: job.id,
+        versionNumber: job.activeVersion,
+        trigger: "initial",
+        rewriteStage: null
+      });
+      this.repositories.sourceInputs.save(job.id, job.activeVersion, sourceInput);
 
-    const runState = await this.startRun(job.id);
+      const runState = await this.startRun(job.id);
+      const currentJob = this.requireJob(job.id);
 
-    return {
-      jobId: job.id,
-      status: job.status,
-      activeVersion: job.activeVersion,
-      runtimeStatus: "runtimeStatus" in runState ? runState.runtimeStatus : null,
-      currentStage: "currentStage" in runState ? runState.currentStage : null
-    };
+      return {
+        jobId: currentJob.id,
+        status: currentJob.status,
+        activeVersion: currentJob.activeVersion,
+        runtimeStatus: runState.runtimeStatus,
+        currentStage: runState.currentStage
+      };
+    } catch (error) {
+      this.rollbackCreate(job.id, job.activeVersion);
+      throw error;
+    }
   }
 
-  private async startRun(jobId: string) {
-    if (!this.temporalRuntime.isReady()) {
+  async requestRewrite(jobId: string, input: Omit<RewriteRequest, "jobId">) {
+    const request = this.assertRewriteRequest({
+      jobId,
+      targetStage: input.targetStage,
+      reason: input.reason
+    });
+
+    this.ensureRuntimeReady();
+
+    const job = this.requireJob(request.jobId);
+    if (job.status !== "REWRITE_PENDING") {
       throw new AppValidationError(
         createAppError(
-          "TEMPORAL_RUNTIME_UNAVAILABLE",
-          "Temporal runtime is not ready.",
-          {
-            mode: this.temporalRuntime.getMode(),
-            error: this.temporalRuntime.getLastError()
-          }
+          "REWRITE_NOT_AVAILABLE",
+          "Current job is not waiting for rewrite."
         )
       );
     }
 
-    const runtimeState = await this.temporalRuntime.startOrReuse(jobId);
-    const job = this.repositories.jobs.getById(jobId);
-    if (!job) {
-      throw new Error(`Job not found: ${jobId}`);
-    }
+    await this.temporalRuntime.requestRewrite(request.jobId, request.targetStage, request.reason);
+
+    const updated = await this.temporalRuntime.waitForVersion(request.jobId, job.activeVersion + 1);
+    const nextJob = updated ?? this.requireJob(request.jobId);
 
     return {
-      jobId: job.id,
-      status: job.status,
-      runtimeStatus: runtimeState?.runtimeStatus ?? null,
-      currentStage: runtimeState?.currentStage ?? null
+      jobId: nextJob.id,
+      status: nextJob.status,
+      activeVersion: nextJob.activeVersion
     };
   }
 
@@ -97,6 +120,20 @@ export class JobsService {
     };
   }
 
+  private async startRun(jobId: string) {
+    this.ensureRuntimeReady();
+
+    const runtimeState = await this.temporalRuntime.startOrReuse(jobId);
+    const job = this.requireJob(jobId);
+
+    return {
+      jobId: job.id,
+      status: job.status,
+      runtimeStatus: runtimeState?.runtimeStatus ?? null,
+      currentStage: runtimeState?.currentStage ?? null
+    };
+  }
+
   private async decorateJob(job: Job) {
     const runtimeState = this.temporalRuntime.isReady()
       ? await this.temporalRuntime.getRuntimeState(job.id)
@@ -112,8 +149,7 @@ export class JobsService {
     return {
       ...job,
       jobId: job.id,
-      runtimeStatus: runtimeState?.runtimeStatus
-        ?? derivedRuntimeStatus,
+      runtimeStatus: runtimeState?.runtimeStatus ?? derivedRuntimeStatus,
       currentStage: runtimeState?.currentStage ?? this.toCurrentStage(job.status),
       runtimeVersion: runtimeState?.currentVersion ?? job.activeVersion,
       lastErrorCode: runtimeState?.lastErrorCode ?? null,
@@ -170,5 +206,44 @@ export class JobsService {
       "RENDERED",
       "REVIEWED"
     ].includes(status) ? status : null;
+  }
+
+  private ensureRuntimeReady() {
+    if (!this.temporalRuntime.isReady()) {
+      throw new AppValidationError(
+        createAppError(
+          "TEMPORAL_RUNTIME_UNAVAILABLE",
+          "Temporal runtime is not ready.",
+          {
+            mode: this.temporalRuntime.getMode(),
+            error: this.temporalRuntime.getLastError()
+          }
+        )
+      );
+    }
+  }
+
+  private requireJob(jobId: string) {
+    const job = this.repositories.jobs.getById(jobId);
+    if (!job) {
+      throw new Error(`Job not found: ${jobId}`);
+    }
+
+    return job;
+  }
+
+  private rollbackCreate(jobId: string, versionNumber: number) {
+    this.repositories.sourceInputs.deleteByJobIdAndVersion?.(jobId, versionNumber);
+    this.repositories.jobVersions.deleteByJobId?.(jobId);
+    this.repositories.jobs.deleteById?.(jobId);
+  }
+
+  private assertRewriteRequest(input: unknown) {
+    const result = validateRewriteRequest(input);
+    if (!result.success) {
+      throw new AppValidationError(result.error);
+    }
+
+    return result.data;
   }
 }

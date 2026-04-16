@@ -1,16 +1,16 @@
 import { Module } from "@nestjs/common";
 import { JobsController } from "./jobs.controller";
+import { JobApplicationService } from "@/application/jobs/job-application.service";
+import { jobRepositories } from "@/application/jobs/job.repositories";
+import type { WorkflowModules } from "@/application/jobs/job-runtime.types";
 import { BriefGenerator } from "@/features/generation/brief/brief-generator";
 import { DeckGenerator } from "@/features/generation/deck/deck-generator";
-import { JobsService } from "@/features/jobs/job.service";
-import { jobRepositories } from "@/features/jobs/job.repositories";
 import { Renderer } from "@/features/generation/render/renderer";
 import { Reviewer } from "@/features/generation/review/reviewer";
 import { SourceParser } from "@/features/generation/source/source-parser";
 import { VisualMatch } from "@/features/generation/visual/visual-match";
 import { OpenAiProvider } from "@/infra/ai/llm/openai";
 import { TemporalWorkflowRuntime } from "@/infra/runtime/temporal/temporal.runtime";
-import type { WorkflowModules } from "@/features/jobs/job-runtime.types";
 
 const WORKFLOW_REPOSITORIES = "WORKFLOW_REPOSITORIES";
 
@@ -59,13 +59,13 @@ const WORKFLOW_REPOSITORIES = "WORKFLOW_REPOSITORIES";
       }
     },
     {
-      provide: JobsService,
+      provide: JobApplicationService,
       inject: [WORKFLOW_REPOSITORIES, TemporalWorkflowRuntime],
       useFactory: (
         repositories: typeof jobRepositories,
         temporalRuntime: TemporalWorkflowRuntime
       ) =>
-        new JobsService(repositories, temporalRuntime)
+        new JobApplicationService(repositories, temporalRuntime)
     }
   ],
 })

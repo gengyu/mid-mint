@@ -8,7 +8,7 @@ import {
   type StructuredLlmProvider,
   StageExecutionError,
   runLlmStage
-} from "@/features/jobs/stage-execution";
+} from "@/application/jobs/stage-execution";
 import { fetchUrlSupport, parseSourceInput } from "./source-utils";
 
 const sourceParserResponseSchema = z.object({

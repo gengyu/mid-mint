@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Inject, Param, ParseIntPipe, Post } from "@nestjs/common";
-import { JobsService } from "@/features/jobs/job.service";
+import { JobApplicationService } from "@/application/jobs/job-application.service";
 
 @Controller("api/jobs")
 export class JobsController {
-  constructor(@Inject(JobsService) private readonly jobsService: JobsService) {}
+  constructor(@Inject(JobApplicationService) private readonly jobsService: JobApplicationService) {}
 
   @Get()
   async listJobs() {
@@ -13,6 +13,11 @@ export class JobsController {
   @Post()
   async createJob(@Body() body: any) {
     return this.jobsService.createJob(body);
+  }
+
+  @Post(":jobId/rewrite")
+  async requestRewrite(@Param("jobId") jobId: string, @Body() body: any) {
+    return this.jobsService.requestRewrite(jobId, body);
   }
 
   @Get(":jobId")

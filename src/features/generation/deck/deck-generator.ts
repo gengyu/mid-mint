@@ -6,7 +6,7 @@ import {
   type StageRunResult,
   type StructuredLlmProvider,
   runLlmStage
-} from "@/features/jobs/stage-execution";
+} from "@/application/jobs/stage-execution";
 import { buildDeckPlan } from "./deck-utils";
 
 const deckResponseSchema = z.object({

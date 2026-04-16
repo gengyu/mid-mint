@@ -77,6 +77,9 @@ function createArtifactRepository<TPayload>(tableName: string) {
             payload: parsePayload<TPayload>(record.payloadJson)
           }))
       );
+    },
+    deleteByJobIdAndVersion(jobId: string, versionNumber: number) {
+      return table.deleteWhere((row) => row.jobId === jobId && row.versionNumber === versionNumber);
     }
   };
 }
@@ -130,6 +133,9 @@ export const jobRepository = {
       updatedAt: new Date().toISOString()
     });
     return jobsTable.getById(jobId);
+  },
+  deleteById(jobId: string) {
+    return jobsTable.deleteById(jobId);
   }
 };
 
@@ -166,6 +172,9 @@ export const jobVersionRepository = {
   },
   latestByJobId(jobId: string) {
     return sortNewestFirst(jobVersionsTable.list().filter((row) => row.jobId === jobId))[0] ?? null;
+  },
+  deleteByJobId(jobId: string) {
+    return jobVersionsTable.deleteWhere((row) => row.jobId === jobId);
   }
 };
 

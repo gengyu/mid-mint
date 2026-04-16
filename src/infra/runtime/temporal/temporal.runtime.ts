@@ -2,8 +2,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { Client, WorkflowExecutionAlreadyStartedError } from "@temporalio/client";
 import { NativeConnection, Worker } from "@temporalio/worker";
+import type { WorkflowModules, WorkflowRepositories } from "@/application/jobs/job-runtime.types";
 import type { RewriteStage } from "@/core/domain/types";
-import type { WorkflowModules, WorkflowRepositories } from "@/features/jobs/job-runtime.types";
 import { TemporalJobActivitiesImpl } from "./activities/job.activities";
 import type { JobWorkflowRuntimeState } from "./workflows/types";
 

@@ -1,5 +1,5 @@
 import { createV1Repositories } from "@/infra/persistence/storage";
-import type { WorkflowRepositories } from "@/features/jobs/job-runtime.types";
+import type { WorkflowRepositories } from "@/application/jobs/job-runtime.types";
 
 function createTypedWorkflowRepositories(): WorkflowRepositories {
   const repositories = createV1Repositories();
@@ -17,7 +17,3 @@ function createTypedWorkflowRepositories(): WorkflowRepositories {
 }
 
 export const jobRepositories = createTypedWorkflowRepositories();
-
-export function createJobRepositories() {
-  return createTypedWorkflowRepositories();
-}

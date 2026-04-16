@@ -372,10 +372,55 @@ export function App() {
     });
   }
 
+  async function handleRequestRewrite() {
+    const reviewResult = versionPayload?.reviewResult;
+    if (!selectedJob || !reviewResult?.rewriteStage) {
+      return;
+    }
+
+    setError(null);
+    setMessage(null);
+
+    startTransition(() => {
+      void (async () => {
+        try {
+          const reason = [
+            reviewResult.issues?.[0],
+            reviewResult.suggestedFixes?.[0]
+          ]
+            .filter(Boolean)
+            .join("；") || "根据 review 建议发起重跑。";
+
+          const response = await readJson<{ jobId: string; activeVersion: number }>(
+            `/api/jobs/${selectedJob.jobId}/rewrite`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                targetStage: reviewResult.rewriteStage,
+                reason
+              })
+            }
+          );
+
+          await refreshJobs();
+          await refreshDetail(response.jobId, response.activeVersion);
+          setMessage(`已发起重跑，当前版本切换到 v${response.activeVersion}。`);
+        } catch (requestError) {
+          setError(requestError instanceof Error ? requestError.message : "发起重跑失败。");
+        }
+      })();
+    });
+  }
+
   const stageMetaMap = useMemo(() => {
     const rows = versionPayload?.stageMeta ?? [];
     return new Map(rows.map((item) => [item.stageName, item]));
   }, [versionPayload?.stageMeta]);
+
+  const canRequestRewrite = Boolean(
+    selectedJob?.status === "REWRITE_PENDING" && versionPayload?.reviewResult?.rewriteStage
+  );
 
   const taskHealth = getTaskHealth(selectedJob);
 
@@ -488,6 +533,16 @@ export function App() {
                         <InfoTile label="创建时间" value={formatDateTime(selectedJob.createdAt)} />
                         <InfoTile label="更新时间" value={formatDateTime(selectedJob.updatedAt)} />
                       </div>
+                      {canRequestRewrite ? (
+                        <div className="button-row">
+                          <button className="primary" type="button" onClick={handleRequestRewrite} disabled={isPending}>
+                            按建议重跑
+                          </button>
+                          <button className="ghost" type="button" disabled>
+                            起点 {versionPayload?.reviewResult?.rewriteStage}
+                          </button>
+                        </div>
+                      ) : null}
                     </article>
 
                     <article className="card-block compact">

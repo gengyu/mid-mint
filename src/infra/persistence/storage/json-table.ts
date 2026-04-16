@@ -58,6 +58,26 @@ export function createJsonTable<TRecord extends { id: string }>(tableName: strin
       write(nextRows);
       return updated;
     },
+    deleteById(id: string) {
+      const rows = read();
+      const nextRows = rows.filter((row) => row.id !== id);
+      if (nextRows.length === rows.length) {
+        return false;
+      }
+
+      write(nextRows);
+      return true;
+    },
+    deleteWhere(predicate: (row: TRecord) => boolean) {
+      const rows = read();
+      const nextRows = rows.filter((row) => !predicate(row));
+      if (nextRows.length === rows.length) {
+        return 0;
+      }
+
+      write(nextRows);
+      return rows.length - nextRows.length;
+    },
     clear() {
       write([]);
     },

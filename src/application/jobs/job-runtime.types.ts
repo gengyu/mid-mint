@@ -11,7 +11,7 @@ import type {
   SourceInput,
   VisualSpec
 } from "@/core/domain/types";
-import type { StageRunResult } from "@/features/jobs/stage-execution";
+import type { StageRunResult } from "@/application/jobs/stage-execution";
 
 export type WorkflowRepositories = {
   jobs: {
@@ -19,14 +19,17 @@ export type WorkflowRepositories = {
     getById(jobId: string): Job | null;
     list(): Job[];
     update(jobId: string, updater: (current: Job) => Job): Job | null;
+    deleteById?: (jobId: string) => boolean;
   };
   jobVersions: {
     create(input: { jobId: string; versionNumber: number; trigger: "initial" | "rewrite"; rewriteStage: RewriteStage | null }): JobVersion;
     listByJobId(jobId: string): JobVersion[];
+    deleteByJobId?: (jobId: string) => number;
   };
   sourceInputs: {
     save(jobId: string, versionNumber: number, payload: SourceInput): void;
     get(jobId: string, versionNumber: number): SourceInput | null;
+    deleteByJobIdAndVersion?: (jobId: string, versionNumber: number) => number;
   };
   parsedSources: {
     save(jobId: string, versionNumber: number, payload: ParsedSource): void;
