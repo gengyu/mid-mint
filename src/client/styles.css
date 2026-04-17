@@ -159,7 +159,7 @@ h3 {
 
 .intro,
 .empty-copy,
-.job-summary-card,
+.workflow-summary-card,
 .notice,
 .stage-metrics,
 .info-tile span {
@@ -207,7 +207,7 @@ h3 {
   color: var(--text);
 }
 
-.job-summary-card,
+.workflow-summary-card,
 .card-block,
 .asset-card,
 .run-status-card,
@@ -221,7 +221,7 @@ h3 {
   min-width: 0;
 }
 
-.job-summary-card,
+.workflow-summary-card,
 .run-status-card,
 .card-block,
 .stage-detail-card {

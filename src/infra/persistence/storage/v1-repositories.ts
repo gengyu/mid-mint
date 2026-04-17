@@ -2,10 +2,9 @@ import { createId } from "@/infra/utils/id";
 import { createJsonTable } from "@/infra/persistence/storage/json-table";
 import type {
   ArtifactRecord,
-  JobRecord,
-  JobVersionRecord,
   RewriteLogRecord,
-  StageLogRecord
+  StageLogRecord,
+  WorkflowVersionRecord
 } from "@/infra/persistence/storage/v1-types";
 
 function stringifyPayload(payload: unknown) {
@@ -28,10 +27,10 @@ function createArtifactRepository<TPayload>(tableName: string) {
   const table = createJsonTable<ArtifactRecord<TPayload>>(tableName);
 
   return {
-    save(jobId: string, versionNumber: number, payload: TPayload) {
+    save(workflowId: string, versionNumber: number, payload: TPayload) {
       const record: ArtifactRecord<TPayload> = {
         id: createId(tableName),
-        jobId,
+        workflowId,
         versionNumber,
         payloadJson: stringifyPayload(payload),
         createdAt: new Date().toISOString()
@@ -40,18 +39,11 @@ function createArtifactRepository<TPayload>(tableName: string) {
       table.save(record);
       return record;
     },
-    getRecord(jobId: string, versionNumber: number) {
-      return (
-        table
-          .list()
-          .find((row) => row.jobId === jobId && row.versionNumber === versionNumber) ?? null
-      );
+    getRecord(workflowId: string, versionNumber: number) {
+      return table.list().find((row) => row.workflowId === workflowId && row.versionNumber === versionNumber) ?? null;
     },
-    get(jobId: string, versionNumber: number) {
-      const record =
-        table
-          .list()
-          .find((row) => row.jobId === jobId && row.versionNumber === versionNumber) ?? null;
+    get(workflowId: string, versionNumber: number) {
+      const record = table.list().find((row) => row.workflowId === workflowId && row.versionNumber === versionNumber) ?? null;
       if (!record) {
         return null;
       }
@@ -64,22 +56,22 @@ function createArtifactRepository<TPayload>(tableName: string) {
     list() {
       return sortNewestFirst(table.list());
     },
-    listByJobId(jobId: string) {
-      return sortNewestFirst(table.list().filter((row) => row.jobId === jobId));
+    listByWorkflowId(workflowId: string) {
+      return sortNewestFirst(table.list().filter((row) => row.workflowId === workflowId));
     },
-    listPayloadsByJobId(jobId: string) {
+    listPayloadsByWorkflowId(workflowId: string) {
       return sortNewestFirst(
         table
           .list()
-          .filter((row) => row.jobId === jobId)
+          .filter((row) => row.workflowId === workflowId)
           .map((record) => ({
             ...record,
             payload: parsePayload<TPayload>(record.payloadJson)
           }))
       );
     },
-    deleteByJobIdAndVersion(jobId: string, versionNumber: number) {
-      return table.deleteWhere((row) => row.jobId === jobId && row.versionNumber === versionNumber);
+    deleteByWorkflowIdAndVersion(workflowId: string, versionNumber: number) {
+      return table.deleteWhere((row) => row.workflowId === workflowId && row.versionNumber === versionNumber);
     }
   };
 }
@@ -88,8 +80,7 @@ function createJsonTableRepo<TRecord extends { id: string }>(tableName: string) 
   return createJsonTable<TRecord>(tableName);
 }
 
-export const jobsTable = createJsonTableRepo<JobRecord>("jobs");
-export const jobVersionsTable = createJsonTableRepo<JobVersionRecord>("job_versions");
+export const workflowVersionsTable = createJsonTableRepo<WorkflowVersionRecord>("workflow_versions");
 export const sourceInputsTable = createJsonTableRepo<ArtifactRecord<unknown>>("source_inputs");
 export const parsedSourcesTable = createJsonTableRepo<ArtifactRecord<unknown>>("parsed_sources");
 export const contentBriefsTable = createJsonTableRepo<ArtifactRecord<unknown>>("content_briefs");
@@ -100,80 +91,38 @@ export const reviewResultsTable = createJsonTableRepo<ArtifactRecord<unknown>>("
 export const stageLogsTable = createJsonTableRepo<StageLogRecord>("stage_logs");
 export const rewriteLogsTable = createJsonTableRepo<RewriteLogRecord>("rewrite_logs");
 
-export const jobRepository = {
-  create(input: unknown) {
-    void input;
-    const now = new Date().toISOString();
-    const record: JobRecord = {
-      id: createId("job"),
-      rewriteCount: 0,
-      activeVersion: 1,
-      createdAt: now,
-      updatedAt: now
-    };
-    jobsTable.save(record);
-    return record;
-  },
-  getById(jobId: string) {
-    return jobsTable.getById(jobId);
-  },
-  list() {
-    return sortNewestFirst(jobsTable.list());
-  },
-  update(jobId: string, updater: (current: JobRecord) => JobRecord) {
-    const current = jobsTable.getById(jobId);
-    if (!current) {
-      return null;
-    }
-
-    const updated = updater(current);
-    jobsTable.save({
-      ...updated,
-      updatedAt: new Date().toISOString()
-    });
-    return jobsTable.getById(jobId);
-  },
-  deleteById(jobId: string) {
-    return jobsTable.deleteById(jobId);
-  }
-};
-
-export const jobVersionRepository = {
+export const workflowVersionRepository = {
   create(input: {
-    jobId: string;
+    workflowId: string;
     versionNumber: number;
     trigger: "initial" | "rewrite";
-    rewriteStage: JobVersionRecord["rewriteStage"];
+    rewriteStage: WorkflowVersionRecord["rewriteStage"];
   }) {
-    const record: JobVersionRecord = {
-      id: createId("job-version"),
-      jobId: input.jobId,
+    const record: WorkflowVersionRecord = {
+      id: createId("workflow-version"),
+      workflowId: input.workflowId,
       versionNumber: input.versionNumber,
       trigger: input.trigger,
       rewriteStage: input.rewriteStage,
       createdAt: new Date().toISOString()
     };
-    jobVersionsTable.save(record);
+    workflowVersionsTable.save(record);
     return record;
   },
-  getByJobIdAndVersion(jobId: string, versionNumber: number) {
-    return (
-      jobVersionsTable
-        .list()
-        .find((row) => row.jobId === jobId && row.versionNumber === versionNumber) ?? null
-    );
+  getByWorkflowIdAndVersion(workflowId: string, versionNumber: number) {
+    return workflowVersionsTable.list().find((row) => row.workflowId === workflowId && row.versionNumber === versionNumber) ?? null;
   },
-  listByJobId(jobId: string) {
-    return sortNewestFirst(jobVersionsTable.list().filter((row) => row.jobId === jobId));
+  listByWorkflowId(workflowId: string) {
+    return sortNewestFirst(workflowVersionsTable.list().filter((row) => row.workflowId === workflowId));
   },
   list() {
-    return sortNewestFirst(jobVersionsTable.list());
+    return sortNewestFirst(workflowVersionsTable.list());
   },
-  latestByJobId(jobId: string) {
-    return sortNewestFirst(jobVersionsTable.list().filter((row) => row.jobId === jobId))[0] ?? null;
+  latestByWorkflowId(workflowId: string) {
+    return sortNewestFirst(workflowVersionsTable.list().filter((row) => row.workflowId === workflowId))[0] ?? null;
   },
-  deleteByJobId(jobId: string) {
-    return jobVersionsTable.deleteWhere((row) => row.jobId === jobId);
+  deleteByWorkflowId(workflowId: string) {
+    return workflowVersionsTable.deleteWhere((row) => row.workflowId === workflowId);
   }
 };
 
@@ -197,15 +146,12 @@ export const stageLogRepository = {
   list() {
     return sortByTimestamp(stageLogsTable.list(), (row) => row.startedAt);
   },
-  listByJobId(jobId: string) {
-    return sortByTimestamp(
-      stageLogsTable.list().filter((row) => row.jobId === jobId),
-      (row) => row.startedAt
-    );
+  listByWorkflowId(workflowId: string) {
+    return sortByTimestamp(stageLogsTable.list().filter((row) => row.workflowId === workflowId), (row) => row.startedAt);
   },
-  listByJobIdAndVersion(jobId: string, versionNumber: number) {
+  listByWorkflowIdAndVersion(workflowId: string, versionNumber: number) {
     return sortByTimestamp(
-      stageLogsTable.list().filter((row) => row.jobId === jobId && row.versionNumber === versionNumber),
+      stageLogsTable.list().filter((row) => row.workflowId === workflowId && row.versionNumber === versionNumber),
       (row) => row.startedAt
     );
   }
@@ -224,15 +170,14 @@ export const rewriteLogRepository = {
   list() {
     return sortNewestFirst(rewriteLogsTable.list());
   },
-  listByJobId(jobId: string) {
-    return sortNewestFirst(rewriteLogsTable.list().filter((row) => row.jobId === jobId));
+  listByWorkflowId(workflowId: string) {
+    return sortNewestFirst(rewriteLogsTable.list().filter((row) => row.workflowId === workflowId));
   }
 };
 
 export function createV1Repositories() {
   return {
-    jobs: jobRepository,
-    jobVersions: jobVersionRepository,
+    workflowVersions: workflowVersionRepository,
     sourceInputs: sourceInputRepository,
     parsedSources: parsedSourceRepository,
     contentBriefs: contentBriefRepository,

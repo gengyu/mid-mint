@@ -1,21 +1,13 @@
-import type { JobStatus, RewriteStage } from "@/core/domain/types";
+import type { RewriteStage, WorkflowStageStatus } from "@/core/domain/types";
 
 export type JsonTableRow = {
   id: string;
   createdAt: string;
 };
 
-export type JobRecord = {
+export type WorkflowVersionRecord = {
   id: string;
-  rewriteCount: number;
-  activeVersion: number;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type JobVersionRecord = {
-  id: string;
-  jobId: string;
+  workflowId: string;
   versionNumber: number;
   trigger: "initial" | "rewrite";
   rewriteStage: RewriteStage | null;
@@ -24,7 +16,7 @@ export type JobVersionRecord = {
 
 export type ArtifactRecord<TPayload> = {
   id: string;
-  jobId: string;
+  workflowId: string;
   versionNumber: number;
   payloadJson: string;
   createdAt: string;
@@ -33,9 +25,9 @@ export type ArtifactRecord<TPayload> = {
 
 export type StageLogRecord = {
   id: string;
-  jobId: string;
+  workflowId: string;
   versionNumber: number;
-  stageName: JobStatus;
+  stageName: WorkflowStageStatus;
   startedAt: string;
   finishedAt: string;
   status: "success" | "error";
@@ -51,7 +43,7 @@ export type StageLogRecord = {
 
 export type RewriteLogRecord = {
   id: string;
-  jobId: string;
+  workflowId: string;
   fromVersion: number;
   toVersion: number;
   targetStage: RewriteStage;

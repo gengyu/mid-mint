@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { JobStatus, LlmErrorCode, StageExecutionMeta } from "@/core/domain/types";
+import type { WorkflowStageStatus, LlmErrorCode, StageExecutionMeta } from "@/core/domain/types";
 import { AppValidationError, createAppError } from "@/shared/errors/app-error";
 
 export type StageRunResult<T> = {
@@ -36,7 +36,7 @@ function nowDurationMs(startedAt: number) {
 }
 
 function buildMeta(
-  stageName: JobStatus,
+  stageName: WorkflowStageStatus,
   input: Partial<Omit<StageExecutionMeta, "stageName" | "durationMs">> & { durationMs: number }
 ): StageExecutionMeta {
   return {
@@ -96,7 +96,7 @@ function toLlmErrorCode(error: unknown): LlmErrorCode {
 }
 
 function toStageExecutionError(
-  stageName: JobStatus,
+  stageName: WorkflowStageStatus,
   code: string,
   message: string,
   startedAt: number,
@@ -114,7 +114,7 @@ function toStageExecutionError(
 }
 
 export function createDeterministicStageResult<T>(
-  stageName: JobStatus,
+  stageName: WorkflowStageStatus,
   output: T,
   partialMeta?: Partial<Omit<StageExecutionMeta, "stageName" | "durationMs" | "errorCode">>
 ): StageRunResult<T> {
@@ -129,7 +129,7 @@ export function createDeterministicStageResult<T>(
 }
 
 export async function runLlmStage<TInput, TParsed, TOutput>(options: {
-  stageName: JobStatus;
+  stageName: WorkflowStageStatus;
   input: TInput;
   validateInput?: (input: TInput) => void;
   prompt: string;

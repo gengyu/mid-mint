@@ -1,5 +1,5 @@
 import type { GenerateRequest, GeneratedCopy, TemplateSchema } from "@/infra/rendering/templates/types";
-import type { StructuredLlmResponse } from "@/application/jobs/stage-execution";
+import type { StructuredLlmResponse } from "@/application/workflows/stage-execution";
 
 export interface LlmProvider {
   generateCopy(request: GenerateRequest, template: TemplateSchema): Promise<GeneratedCopy>;

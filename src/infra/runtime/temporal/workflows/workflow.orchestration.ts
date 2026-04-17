@@ -1,22 +1,22 @@
 import { condition, defineQuery, defineSignal, proxyActivities, setHandler } from "@temporalio/workflow";
-import type { JobStatus } from "@/core/domain/types";
-import type { TemporalJobActivities } from "../activities/job.activities";
-import type { JobWorkflowRuntimeState, RewriteSignalPayload } from "./types";
+import type { WorkflowStageStatus } from "@/core/domain/types";
+import type { TemporalWorkflowActivities } from "../activities/workflow.activities";
+import type { RewriteSignalPayload, WorkflowRuntimeState } from "./types";
 
 export const requestRewriteSignal = defineSignal<[RewriteSignalPayload]>("requestRewrite");
-export const getRuntimeStateQuery = defineQuery<JobWorkflowRuntimeState>("getRuntimeState");
+export const getRuntimeStateQuery = defineQuery<WorkflowRuntimeState>("getRuntimeState");
 
-const activities = proxyActivities<TemporalJobActivities>({
+const activities = proxyActivities<TemporalWorkflowActivities>({
   startToCloseTimeout: "10 minutes",
   retry: {
     maximumAttempts: 2
   }
 });
 
-export async function jobWorkflow(jobId: string): Promise<void> {
+export async function workflowOrchestration(workflowId: string): Promise<void> {
   let pendingRewrite: RewriteSignalPayload | null = null;
-  const runtimeState: JobWorkflowRuntimeState = {
-    jobId,
+  const runtimeState: WorkflowRuntimeState = {
+    workflowId,
     currentVersion: null,
     currentStage: "INPUT_RECEIVED",
     runtimeStatus: "running",
@@ -24,7 +24,7 @@ export async function jobWorkflow(jobId: string): Promise<void> {
     pendingRewrite: false
   };
 
-  const setStage = (stage: JobStatus | null, status: JobWorkflowRuntimeState["runtimeStatus"]) => {
+  const setStage = (stage: WorkflowStageStatus | null, status: WorkflowRuntimeState["runtimeStatus"]) => {
     runtimeState.currentStage = stage;
     runtimeState.runtimeStatus = status;
   };
@@ -37,29 +37,29 @@ export async function jobWorkflow(jobId: string): Promise<void> {
   setHandler(getRuntimeStateQuery, () => runtimeState);
 
   while (true) {
-    const job = await activities.loadJob(jobId);
-    runtimeState.currentVersion = job.activeVersion;
+    const workflow = await activities.loadWorkflowInstance(workflowId);
+    runtimeState.currentVersion = workflow.activeVersion;
     runtimeState.lastErrorCode = null;
 
     setStage("PARSED", "running");
-    await activities.executeParsedStage(jobId, job.activeVersion);
+    await activities.executeParsedStage(workflowId, workflow.activeVersion);
 
     setStage("BRIEFED", "running");
-    await activities.executeBriefStage(jobId, job.activeVersion);
+    await activities.executeBriefStage(workflowId, workflow.activeVersion);
 
     setStage("DECK_GENERATED", "running");
-    await activities.executeDeckStage(jobId, job.activeVersion);
+    await activities.executeDeckStage(workflowId, workflow.activeVersion);
 
     setStage("VISUAL_MATCHED", "running");
-    await activities.executeVisualStage(jobId, job.activeVersion);
+    await activities.executeVisualStage(workflowId, workflow.activeVersion);
 
     setStage("RENDERED", "running");
-    await activities.executeRenderStage(jobId, job.activeVersion);
+    await activities.executeRenderStage(workflowId, workflow.activeVersion);
 
     setStage("REVIEWED", "running");
-    await activities.executeReviewStage(jobId, job.activeVersion);
+    await activities.executeReviewStage(workflowId, workflow.activeVersion);
 
-    const finalized = await activities.finalizeReview(jobId, job.activeVersion);
+    const finalized = await activities.finalizeReview(workflowId, workflow.activeVersion);
     runtimeState.lastErrorCode = finalized.errorCode;
 
     if (finalized.status === "APPROVED") {
@@ -78,16 +78,14 @@ export async function jobWorkflow(jobId: string): Promise<void> {
     await condition(() => pendingRewrite !== null);
 
     const rewrite = pendingRewrite as RewriteSignalPayload | null;
-    const rewriteTargetStage = rewrite?.targetStage;
-    const rewriteReason = rewrite?.reason;
     pendingRewrite = null;
     runtimeState.pendingRewrite = false;
 
-    if (rewriteTargetStage === undefined || rewriteReason === undefined) {
+    if (!rewrite) {
       continue;
     }
 
-    const nextVersion = await activities.createRewriteVersion(jobId, rewriteTargetStage, rewriteReason);
+    const nextVersion = await activities.createRewriteVersion(workflowId, rewrite.targetStage, rewrite.reason);
     runtimeState.currentVersion = nextVersion;
   }
 }

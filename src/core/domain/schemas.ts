@@ -4,8 +4,8 @@ import type {
   ContentSignals,
   DeckPlan,
   DeckSlide,
-  Job,
-  JobVersion,
+  WorkflowInstance,
+  WorkflowVersion,
   ParsedSource,
   RenderResult,
   RenderedAsset,
@@ -199,25 +199,25 @@ export const reviewResultSchema = z.object({
   rewriteStage: rewriteStageSchema.nullable()
 }) satisfies z.ZodType<ReviewResult>;
 
-export const jobSchema = z.object({
+export const workflowInstanceSchema = z.object({
   id: z.string(),
   rewriteCount: z.number().int().nonnegative(),
   activeVersion: z.number().int().positive(),
   createdAt: z.string(),
   updatedAt: z.string()
-}) satisfies z.ZodType<Job>;
+}) satisfies z.ZodType<WorkflowInstance>;
 
-export const jobVersionSchema = z.object({
+export const workflowVersionSchema = z.object({
   id: z.string(),
-  jobId: z.string(),
+  workflowId: z.string(),
   versionNumber: z.number().int().positive(),
   trigger: z.enum(["initial", "rewrite"]),
   rewriteStage: rewriteStageSchema.nullable(),
   createdAt: z.string()
-}) satisfies z.ZodType<JobVersion>;
+}) satisfies z.ZodType<WorkflowVersion>;
 
 export const rewriteRequestSchema = z.object({
-  jobId: z.string(),
+  workflowId: z.string(),
   targetStage: rewriteStageSchema,
   reason: z.string()
 }) satisfies z.ZodType<RewriteRequest>;

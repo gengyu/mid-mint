@@ -1,12 +1,12 @@
-import { Module } from '@nestjs/common';
-import { JobsModule } from './jobs/jobs.module';
-import { TemplatesModule } from './templates/templates.module';
-import { HistoryModule } from './history/history.module';
-import { LlmModule } from './llm/llm.module';
+import { Module } from "@nestjs/common";
+import { WorkflowsModule } from "./workflows/workflows.module";
+import { TemplatesModule } from "./templates/templates.module";
+import { HistoryModule } from "./history/history.module";
+import { LlmModule } from "./llm/llm.module";
 
 @Module({
   imports: [
-    JobsModule,
+    WorkflowsModule,
     TemplatesModule,
     HistoryModule,
     LlmModule

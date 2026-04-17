@@ -8,8 +8,8 @@ import {
   contentBriefSchema,
   contentSignalsSchema,
   deckPlanSchema,
-  jobSchema,
-  jobVersionSchema,
+  workflowInstanceSchema,
+  workflowVersionSchema,
   parsedSourceSchema,
   renderResultSchema,
   reviewResultSchema,
@@ -22,8 +22,8 @@ import type {
   ContentBrief,
   ContentSignals,
   DeckPlan,
-  Job,
-  JobVersion,
+  WorkflowInstance,
+  WorkflowVersion,
   ParsedSource,
   RenderResult,
   ReviewResult,
@@ -335,12 +335,12 @@ export function assertReviewResult(input: unknown): ReviewResult {
   return result.data;
 }
 
-export function validateJob(input: unknown): ValidationResult<Job> {
-  return safeParseWithError<Job>(jobSchema, input, createAppError("UNKNOWN_ERROR", "Job is invalid."));
+export function validateWorkflowInstance(input: unknown): ValidationResult<WorkflowInstance> {
+  return safeParseWithError<WorkflowInstance>(workflowInstanceSchema, input, createAppError("UNKNOWN_ERROR", "Workflow instance is invalid."));
 }
 
-export function validateJobVersion(input: unknown): ValidationResult<JobVersion> {
-  return safeParseWithError<JobVersion>(jobVersionSchema, input, createAppError("UNKNOWN_ERROR", "Job version is invalid."));
+export function validateWorkflowVersion(input: unknown): ValidationResult<WorkflowVersion> {
+  return safeParseWithError<WorkflowVersion>(workflowVersionSchema, input, createAppError("UNKNOWN_ERROR", "Workflow version is invalid."));
 }
 
 export function validateRewriteRequest(input: unknown): ValidationResult<RewriteRequest> {

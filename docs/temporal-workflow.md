@@ -13,92 +13,45 @@
 
 当前主链路：
 
-`create job -> jobWorkflow -> parse -> brief -> deck -> visual -> render -> review -> approve / rewrite / fail`
+`create workflow -> workflowOrchestration -> parse -> brief -> deck -> visual -> render -> review -> approve / rewrite / fail`
 
 ## 代码入口
 
-### API 入口
+### API
 
-- `POST /api/jobs`
-  文件：`src/app/jobs/jobs.controller.ts`
-- `POST /api/jobs/:jobId/rewrite`
-  文件：`src/app/jobs/jobs.controller.ts`
-- `GET /api/jobs`
-- `GET /api/jobs/:jobId`
-- `GET /api/jobs/:jobId/versions/:version`
+- `POST /api/workflows`
+- `GET /api/workflows`
+- `GET /api/workflows/:workflowId`
+- `GET /api/workflows/:workflowId/versions/:version`
+- `POST /api/workflows/:workflowId/rewrite`
 
-控制器只做请求转发，真正的业务入口是：
+控制器：
 
-- `src/application/jobs/job-application.service.ts`
+- `src/app/workflows/workflows.controller.ts`
 
-### Runtime 入口
+应用服务：
 
-Temporal runtime 初始化和 worker 注册在：
+- `src/application/workflows/workflow-application.service.ts`
+
+### Temporal Runtime
+
+运行时初始化、worker 注册、query/signal 调用入口：
 
 - `src/infra/runtime/temporal/temporal.runtime.ts`
 
-这里会：
+### Workflow
 
-- 创建 Temporal client
-- 创建 Temporal worker
-- 注册 workflow 文件
-- 注册 activities 实现
+唯一工作流编排器：
 
-### Workflow 入口
+- `src/infra/runtime/temporal/workflows/workflow.orchestration.ts`
 
-实际的工作流定义在：
+### Activities
 
-- `src/infra/runtime/temporal/workflows/job.workflow.ts`
+阶段副作用执行层：
 
-它是当前唯一的流程编排器。
+- `src/infra/runtime/temporal/activities/workflow.activities.ts`
 
-## 职责分层
-
-### 1. Workflow 层
-
-文件：
-
-- `src/infra/runtime/temporal/workflows/job.workflow.ts`
-
-职责：
-
-- 定义完整阶段顺序
-- 维护 workflow 内部运行态
-- 处理 rewrite signal
-- 决定 approve / rewrite_pending / failed
-- 在 worker 重启后依赖 Temporal replay 恢复流程状态
-
-workflow 内部维护的关键状态：
-
-- `currentVersion`
-- `currentStage`
-- `runtimeStatus`
-- `lastErrorCode`
-- `pendingRewrite`
-
-### 2. Activities 层
-
-文件：
-
-- `src/infra/runtime/temporal/activities/job.activities.ts`
-
-职责：
-
-- 读取当前 version 所需输入
-- 调用 generation 模块执行单阶段逻辑
-- 校验阶段输出
-- 持久化阶段产物
-- 记录 stage logs
-- 处理 rewrite 版本创建和产物复制
-
-可以理解为：
-
-- workflow 决定“下一步做什么”
-- activities 决定“这一步怎么执行并落盘”
-
-### 3. Generation 模块层
-
-目录：
+### Generation Modules
 
 - `src/features/generation/source`
 - `src/features/generation/brief`
@@ -106,6 +59,35 @@ workflow 内部维护的关键状态：
 - `src/features/generation/visual`
 - `src/features/generation/render`
 - `src/features/generation/review`
+
+## 职责分层
+
+### Workflow 层
+
+职责：
+
+- 定义阶段顺序
+- 维护 `currentVersion`、`currentStage`、`runtimeStatus`
+- 等待 rewrite signal
+- 决定 `APPROVED / REWRITE_PENDING / FAILED`
+
+### Activities 层
+
+职责：
+
+- 读取当前版本输入
+- 调用 generation 模块
+- 校验产物
+- 持久化产物
+- 记录 `stage_logs`
+- 创建 rewrite 版本并复制可复用产物
+
+可以理解为：
+
+- workflow 决定“下一步做什么”
+- activities 决定“这一步怎么执行并落盘”
+
+### Generation 模块层
 
 职责：
 
@@ -124,7 +106,7 @@ workflow 内部维护的关键状态：
 
 ## 阶段流转
 
-workflow 固定按以下顺序推进：
+固定顺序：
 
 1. `PARSED`
 2. `BRIEFED`
@@ -133,199 +115,45 @@ workflow 固定按以下顺序推进：
 5. `RENDERED`
 6. `REVIEWED`
 
-之后进入三种结果之一：
+review 结束后进入：
 
 - `APPROVED`
 - `REWRITE_PENDING`
 - `FAILED`
 
-### 每个阶段做什么
+### 阶段对应关系
 
-#### 1. PARSED
-
-activity：
-
-- `executeParsedStage(jobId, versionNumber)`
-
-调用：
-
-- `SourceParser.parse()`
-
-输入：
-
-- `sourceInput`
-
-产物：
-
-- `parsedSource`
-
-#### 2. BRIEFED
-
-activity：
-
-- `executeBriefStage(jobId, versionNumber)`
-
-调用：
-
-- `BriefGenerator.generate()`
-
-输入：
-
-- `sourceInput`
-- `parsedSource`
-
-产物：
-
-- `contentBrief`
-
-#### 3. DECK_GENERATED
-
-activity：
-
-- `executeDeckStage(jobId, versionNumber)`
-
-调用：
-
-- `DeckGenerator.generate()`
-
-输入：
-
-- `parsedSource`
-- `contentBrief`
-
-产物：
-
-- `deckPlan`
-
-#### 4. VISUAL_MATCHED
-
-activity：
-
-- `executeVisualStage(jobId, versionNumber)`
-
-调用：
-
-- `VisualMatch.match()`
-
-输入：
-
-- `parsedSource`
-- `contentBrief`
-- `deckPlan`
-- `sourceInput.preferredStyle`
-
-产物：
-
-- `deckPlan`（带模板绑定的更新版）
-- `visualSpec`
-
-#### 5. RENDERED
-
-activity：
-
-- `executeRenderStage(jobId, versionNumber)`
-
-调用：
-
-- `Renderer.render()`
-
-输入：
-
-- `deckPlan`
-- `visualSpec`
-
-产物：
-
-- `renderResult`
-- 本地渲染资源：SVG / PNG / HTML
-
-#### 6. REVIEWED
-
-activity：
-
-- `executeReviewStage(jobId, versionNumber)`
-
-调用：
-
-- `Reviewer.review()`
-
-输入：
-
-- `parsedSource`
-- `contentBrief`
-- `deckPlan`
-- `visualSpec`
-- `renderResult`
-
-产物：
-
-- `reviewResult`
-
-## Review 结束后的分支
-
-review 完成后，workflow 会调用：
-
-- `finalizeReview(jobId, versionNumber)`
-
-分支规则：
-
-- `decision === approve` -> `APPROVED`
-- `decision === block` -> `FAILED`
-- `decision === rewrite` -> 进入 `REWRITE_PENDING`
-
-另外还有一个保护规则：
-
-- 如果 rewrite 次数超过上限，直接 `FAILED`
-- 如果最近多次改写提升过低，也会直接 `FAILED`
+- `executeParsedStage(workflowId, versionNumber)` -> `SourceParser.parse()`
+- `executeBriefStage(workflowId, versionNumber)` -> `BriefGenerator.generate()`
+- `executeDeckStage(workflowId, versionNumber)` -> `DeckGenerator.generate()`
+- `executeVisualStage(workflowId, versionNumber)` -> `VisualMatch.match()`
+- `executeRenderStage(workflowId, versionNumber)` -> `Renderer.render()`
+- `executeReviewStage(workflowId, versionNumber)` -> `Reviewer.review()`
 
 ## Rewrite 机制
 
-### 触发方式
-
 客户端调用：
 
-- `POST /api/jobs/:jobId/rewrite`
+- `POST /api/workflows/:workflowId/rewrite`
 
-服务端通过 Temporal signal 发送：
-
-- `requestRewrite`
-
-### workflow 中的处理
-
-workflow 在 `REWRITE_PENDING` 状态下等待 signal：
-
-- `pendingRewrite = true`
-- `runtimeStatus = waiting_signal`
+workflow 在 `REWRITE_PENDING` 时等待 `requestRewrite` signal。
 
 收到 signal 后会调用：
 
-- `createRewriteVersion(jobId, targetStage, reason)`
-
-### Rewrite 版本如何创建
-
-会创建新的 `jobVersion`，并增加：
-
-- `activeVersion`
-- `rewriteCount`
-
-然后复制可以复用的历史产物。
+- `createRewriteVersion(workflowId, targetStage, reason)`
 
 复制规则：
 
-- 目标是 `source-parse`：只复制 `sourceInput`
-- 目标是 `brief`：复制 `sourceInput`、`parsedSource`
-- 目标是 `deck`：复制 `sourceInput`、`parsedSource`、`contentBrief`
-- 目标是 `visual`：复制 `sourceInput`、`parsedSource`、`contentBrief`、`deckPlan`
-
-这样下游阶段可以直接继续跑，不需要从头生成。
+- `source-parse`：只复制 `sourceInput`
+- `brief`：复制 `sourceInput`、`parsedSource`
+- `deck`：复制 `sourceInput`、`parsedSource`、`contentBrief`
+- `visual`：复制 `sourceInput`、`parsedSource`、`contentBrief`、`deckPlan`
 
 ## 数据落点
 
-### 数据库里保留的内容
+### 数据库存储
 
-当前数据库主要存两类数据：
-
-1. 业务产物
+业务产物：
 
 - `source_inputs`
 - `parsed_sources`
@@ -335,93 +163,38 @@ workflow 在 `REWRITE_PENDING` 状态下等待 signal：
 - `render_results`
 - `review_results`
 
-2. 审计与版本信息
+审计与版本：
 
-- `jobs`
-- `job_versions`
+- `workflow_versions`
 - `stage_logs`
 - `rewrite_logs`
 
-### 数据库里不再承担的职责
+### 不再由数据库维护的内容
 
-数据库不再维护独立流程状态机。
+- 当前运行阶段
+- 运行态
+- 是否等待 rewrite signal
 
-也就是说：
+这些都以 Temporal workflow state 为准。
 
-- `jobs` 记录任务元信息
-- `jobs.activeVersion` 指向当前版本
-- workflow 当前阶段、运行态、是否等待 signal，由 Temporal runtime state 负责
+## 重启行为
 
-接口里返回给前端的 `status`，是服务层基于以下信息派生出来的：
+worker 重启后会发生 workflow replay，这是正常恢复机制。
 
-- Temporal query 返回的 runtime state
-- 当前 version 的 review 结果
-- 当前 version 的 stage logs
-- 当前 version 的已落盘产物
+这里要区分：
 
-## 为什么保留 activities，而不是 workflow 直接调用 generation 模块
-
-因为 Temporal 中：
-
-- workflow 应该保持可 replay
-- 有副作用的逻辑应该放在 activity
-
-当前这些行为都属于副作用：
-
-- 调模型
-- 写数据库
-- 写文件
-- 渲染图片
-- 记录 stage logs
-
-所以不能把它们直接塞进 workflow。
-
-## Worker 重启时的行为
-
-Temporal worker 重启后，workflow 代码会 replay，这是正常行为。
-
-这里要区分两件事：
-
-- workflow replay：为了恢复状态机
+- workflow replay：恢复状态机
 - activity re-execution：真正的副作用执行
 
-当前实现里，activity 内部对已存在产物有跳过逻辑，因此不会因为 worker 重启就把每个阶段都重新生成一遍。
+当前实现里，activity 对已存在产物有跳过逻辑，所以不会因为 replay 就把每个阶段全量重算一遍。
 
-例如：
+## 文件关系
 
-- 已有 `parsedSource` 且不需要从 `source-parse` 重跑，会跳过 parse
-- 已有 `deckPlan` 且不是相关 rewrite，会跳过 deck
-- 已有 `renderResult` 会跳过 render
-
-## 当前文件关系
-
-最重要的几处关系如下：
-
-- `jobs.controller.ts`
-  -> `JobApplicationService`
-- `JobApplicationService`
-  -> `TemporalWorkflowRuntime`
-- `TemporalWorkflowRuntime`
-  -> `jobWorkflow`
-  -> `TemporalJobActivitiesImpl`
-- `TemporalJobActivitiesImpl`
-  -> `SourceParser / BriefGenerator / DeckGenerator / VisualMatch / Renderer / Reviewer`
+- `workflows.controller.ts` -> `WorkflowApplicationService`
+- `WorkflowApplicationService` -> `TemporalWorkflowRuntime`
+- `TemporalWorkflowRuntime` -> `workflowOrchestration` + `TemporalWorkflowActivitiesImpl`
+- `TemporalWorkflowActivitiesImpl` -> generation modules + repositories
 
 整体链路：
 
 `HTTP Request -> Application Service -> Temporal Runtime -> Workflow -> Activities -> Generation Modules -> Repositories / Storage`
-
-## 目前的架构结论
-
-当前实现已经按下面的边界收敛：
-
-- Temporal 是唯一流程编排者
-- activities 是唯一阶段副作用执行层
-- generation 模块是纯业务阶段实现
-- 数据库存业务产物，不再存独立流程状态机
-
-如果后续继续演进，最自然的优化方向是：
-
-- 继续把 `job.activities.ts` 拆成更小的 activity helper 文件
-- 让 review / rewrite / artifact copy 等逻辑进一步模块化
-- 保持 workflow 本身尽量薄，只负责编排和状态推进

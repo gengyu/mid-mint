@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 
-type JobStatus =
+type WorkflowStatus =
   | "INPUT_RECEIVED"
   | "PARSED"
   | "BRIEFED"
@@ -23,15 +23,15 @@ type SourceInput = {
   preferredStyle: string;
 };
 
-type JobSummary = {
-  jobId: string;
-  status: JobStatus;
+type WorkflowSummary = {
+  workflowId: string;
+  status: WorkflowStatus;
   rewriteCount: number;
   activeVersion: number;
   createdAt: string;
   updatedAt: string;
   runtimeStatus?: "running" | "waiting_signal" | "completed" | "failed" | "legacy_fallback" | null;
-  currentStage?: JobStatus | null;
+  currentStage?: WorkflowStatus | null;
   runtimeVersion?: number | null;
   temporalMode?: "disabled" | "ready" | "error";
   temporalError?: string | null;
@@ -66,7 +66,7 @@ type VisualSpec = {
 };
 
 type StageMeta = {
-  stageName: JobStatus;
+  stageName: WorkflowStatus;
   status: "success" | "error";
   startedAt: string;
   finishedAt: string;
@@ -81,7 +81,7 @@ type StageMeta = {
 };
 
 type VersionPayload = {
-  job: JobSummary | null;
+  workflow: WorkflowSummary | null;
   sourceInput: SourceInput | null;
   parsedSource: Record<string, unknown> | null;
   contentBrief: Record<string, unknown> | null;
@@ -115,11 +115,11 @@ type VersionPayload = {
 };
 
 const pages: Array<{ id: AppPage; label: string }> = [
-  { id: "tasks", label: "任务列表" },
-  { id: "create", label: "新建任务" }
+  { id: "tasks", label: "工作流列表" },
+  { id: "create", label: "新建工作流" }
 ];
 
-const stageOrder: JobStatus[] = [
+const stageOrder: WorkflowStatus[] = [
   "INPUT_RECEIVED",
   "PARSED",
   "BRIEFED",
@@ -130,11 +130,11 @@ const stageOrder: JobStatus[] = [
   "APPROVED"
 ];
 
-const stageCopy: Record<JobStatus, { title: string; description: string; recovery: string }> = {
+const stageCopy: Record<WorkflowStatus, { title: string; description: string; recovery: string }> = {
   INPUT_RECEIVED: {
     title: "接收输入",
-    description: "保存链接、原文、备注和目标，建立任务版本。",
-    recovery: "任务元数据已持久化，进程中断后可以从当前版本继续读取状态。"
+    description: "保存链接、原文、备注和目标，建立工作流版本。",
+    recovery: "输入元数据已持久化，进程中断后可以从当前版本继续读取状态。"
   },
   PARSED: {
     title: "解析素材",
@@ -168,7 +168,7 @@ const stageCopy: Record<JobStatus, { title: string; description: string; recover
   },
   APPROVED: {
     title: "完成通过",
-    description: "任务全部执行完成，当前版本可直接交付使用。",
+    description: "工作流全部执行完成，当前版本可直接交付使用。",
     recovery: "最终状态已落盘，页面刷新后仍能看到完整详情和产物。"
   },
   REWRITE_PENDING: {
@@ -235,48 +235,51 @@ function formatDuration(durationMs: number | null | undefined) {
 export function App() {
   const [page, setPage] = useState<AppPage>(() => derivePageFromHash());
   const [form, setForm] = useState(initialForm);
-  const [jobs, setJobs] = useState<JobSummary[]>([]);
-  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const [workflows, setWorkflows] = useState<WorkflowSummary[]>([]);
+  const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null);
   const [selectedVersion, setSelectedVersion] = useState(1);
-  const [jobDetail, setJobDetail] = useState<JobSummary | null>(null);
+  const [workflowDetail, setWorkflowDetail] = useState<WorkflowSummary | null>(null);
   const [versionPayload, setVersionPayload] = useState<VersionPayload | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const selectedJob = useMemo(
-    () => jobs.find((item) => item.jobId === selectedJobId) ?? jobDetail,
-    [jobDetail, jobs, selectedJobId]
+  const selectedWorkflow = useMemo(
+    () => workflows.find((item) => item.workflowId === selectedWorkflowId) ?? workflowDetail,
+    [selectedWorkflowId, workflowDetail, workflows]
   );
 
   const versionOptions = useMemo(() => {
-    if (!selectedJob) {
+    if (!selectedWorkflow) {
       return [];
     }
 
-    return Array.from({ length: selectedJob.activeVersion }, (_, index) => selectedJob.activeVersion - index);
-  }, [selectedJob]);
+    return Array.from({ length: selectedWorkflow.activeVersion }, (_, index) => selectedWorkflow.activeVersion - index);
+  }, [selectedWorkflow]);
 
-  const runningJobs = useMemo(
-    () => jobs.filter((item) => item.runtimeStatus === "running"),
-    [jobs]
+  const runningWorkflows = useMemo(
+    () => workflows.filter((item) => item.runtimeStatus === "running"),
+    [workflows]
   );
 
-  const activeStage = selectedJob?.currentStage ?? (selectedJob?.status === "REWRITE_PENDING" ? "REVIEWED" : selectedJob?.status) ?? null;
+  const activeStage =
+    selectedWorkflow?.currentStage ??
+    (selectedWorkflow?.status === "REWRITE_PENDING" ? "REVIEWED" : selectedWorkflow?.status) ??
+    null;
 
-  const refreshJobs = useCallback(async () => {
-    const items = await readJson<JobSummary[]>("/api/jobs");
-    setJobs(items);
-    setSelectedJobId((current) => current ?? items[0]?.jobId ?? null);
+  const refreshWorkflows = useCallback(async () => {
+    const items = await readJson<WorkflowSummary[]>("/api/workflows");
+    setWorkflows(items);
+    setSelectedWorkflowId((current) => current ?? items[0]?.workflowId ?? null);
   }, []);
 
-  const refreshDetail = useCallback(async (jobId: string, version: number) => {
-    const [jobSummary, versionData] = await Promise.all([
-      readJson<JobSummary>(`/api/jobs/${jobId}`),
-      readJson<VersionPayload>(`/api/jobs/${jobId}/versions/${version}`)
+  const refreshDetail = useCallback(async (workflowId: string, version: number) => {
+    const [workflowSummary, versionData] = await Promise.all([
+      readJson<WorkflowSummary>(`/api/workflows/${workflowId}`),
+      readJson<VersionPayload>(`/api/workflows/${workflowId}/versions/${version}`)
     ]);
 
-    setJobDetail(jobSummary);
+    setWorkflowDetail(workflowSummary);
     setVersionPayload(versionData);
     setSelectedVersion(version);
   }, []);
@@ -291,35 +294,35 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    void refreshJobs().catch(() => undefined);
-  }, [refreshJobs]);
+    void refreshWorkflows().catch(() => undefined);
+  }, [refreshWorkflows]);
 
   useEffect(() => {
-    if (!selectedJobId) {
-      setJobDetail(null);
+    if (!selectedWorkflowId) {
+      setWorkflowDetail(null);
       setVersionPayload(null);
       return;
     }
 
-    void refreshDetail(selectedJobId, selectedVersion).catch((requestError) => {
-      setError(requestError instanceof Error ? requestError.message : "加载任务详情失败。");
+    void refreshDetail(selectedWorkflowId, selectedVersion).catch((requestError) => {
+      setError(requestError instanceof Error ? requestError.message : "加载工作流详情失败。");
     });
-  }, [refreshDetail, selectedJobId, selectedVersion]);
+  }, [refreshDetail, selectedVersion, selectedWorkflowId]);
 
   useEffect(() => {
-    if (!jobs.some((item) => item.runtimeStatus === "running")) {
+    if (!workflows.some((item) => item.runtimeStatus === "running")) {
       return;
     }
 
     const timer = window.setInterval(() => {
-      void refreshJobs().catch(() => undefined);
-      if (selectedJobId) {
-        void refreshDetail(selectedJobId, selectedVersion).catch(() => undefined);
+      void refreshWorkflows().catch(() => undefined);
+      if (selectedWorkflowId) {
+        void refreshDetail(selectedWorkflowId, selectedVersion).catch(() => undefined);
       }
     }, 1500);
 
     return () => window.clearInterval(timer);
-  }, [jobs, refreshDetail, refreshJobs, selectedJobId, selectedVersion]);
+  }, [refreshDetail, refreshWorkflows, selectedVersion, selectedWorkflowId, workflows]);
 
   function navigate(nextPage: AppPage) {
     window.location.hash = nextPage;
@@ -330,20 +333,20 @@ export function App() {
     setForm((current) => ({ ...current, [name]: value }));
   }
 
-  function handleSelectJob(job: JobSummary) {
-    setSelectedJobId(job.jobId);
-    setSelectedVersion(job.activeVersion);
+  function handleSelectWorkflow(workflow: WorkflowSummary) {
+    setSelectedWorkflowId(workflow.workflowId);
+    setSelectedVersion(workflow.activeVersion);
     setError(null);
   }
 
-  async function handleCreateJob() {
+  async function handleCreateWorkflow() {
     setError(null);
     setMessage(null);
 
     startTransition(() => {
       void (async () => {
         try {
-          const created = await readJson<{ jobId: string; activeVersion: number }>("/api/jobs", {
+          const created = await readJson<{ workflowId: string; activeVersion: number }>("/api/workflows", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -360,13 +363,13 @@ export function App() {
           });
 
           setForm(initialForm);
-          setSelectedJobId(created.jobId);
-          await refreshJobs();
-          await refreshDetail(created.jobId, created.activeVersion);
-          setMessage("任务已创建，工作流已经自动开始。");
+          setSelectedWorkflowId(created.workflowId);
+          await refreshWorkflows();
+          await refreshDetail(created.workflowId, created.activeVersion);
+          setMessage("工作流已创建，并且已经自动开始执行。");
           navigate("tasks");
         } catch (requestError) {
-          setError(requestError instanceof Error ? requestError.message : "创建任务失败。");
+          setError(requestError instanceof Error ? requestError.message : "创建工作流失败。");
         }
       })();
     });
@@ -374,7 +377,7 @@ export function App() {
 
   async function handleRequestRewrite() {
     const reviewResult = versionPayload?.reviewResult;
-    if (!selectedJob || !reviewResult?.rewriteStage) {
+    if (!selectedWorkflow || !reviewResult?.rewriteStage) {
       return;
     }
 
@@ -384,15 +387,11 @@ export function App() {
     startTransition(() => {
       void (async () => {
         try {
-          const reason = [
-            reviewResult.issues?.[0],
-            reviewResult.suggestedFixes?.[0]
-          ]
-            .filter(Boolean)
-            .join("；") || "根据 review 建议发起重跑。";
+          const reason =
+            [reviewResult.issues?.[0], reviewResult.suggestedFixes?.[0]].filter(Boolean).join("；") || "根据 review 建议发起重跑。";
 
-          const response = await readJson<{ jobId: string; activeVersion: number }>(
-            `/api/jobs/${selectedJob.jobId}/rewrite`,
+          const response = await readJson<{ workflowId: string; activeVersion: number }>(
+            `/api/workflows/${selectedWorkflow.workflowId}/rewrite`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -403,8 +402,8 @@ export function App() {
             }
           );
 
-          await refreshJobs();
-          await refreshDetail(response.jobId, response.activeVersion);
+          await refreshWorkflows();
+          await refreshDetail(response.workflowId, response.activeVersion);
           setMessage(`已发起重跑，当前版本切换到 v${response.activeVersion}。`);
         } catch (requestError) {
           setError(requestError instanceof Error ? requestError.message : "发起重跑失败。");
@@ -419,18 +418,18 @@ export function App() {
   }, [versionPayload?.stageMeta]);
 
   const canRequestRewrite = Boolean(
-    selectedJob?.status === "REWRITE_PENDING" && versionPayload?.reviewResult?.rewriteStage
+    selectedWorkflow?.status === "REWRITE_PENDING" && versionPayload?.reviewResult?.rewriteStage
   );
 
-  const taskHealth = getTaskHealth(selectedJob);
+  const workflowHealth = getWorkflowHealth(selectedWorkflow);
 
   return (
     <div className="app-shell">
       <aside className="panel hero-panel">
         <div>
           <p className="eyebrow">MID-MINT</p>
-          <h1>任务管理台</h1>
-          <p className="intro">默认打开任务列表，左边看任务，右边看每一步详情和产物。</p>
+          <h1>工作流管理台</h1>
+          <p className="intro">默认打开工作流列表，左边看执行实例，右边看每一步详情和产物。</p>
         </div>
 
         <nav className="page-nav" aria-label="Primary pages">
@@ -446,20 +445,20 @@ export function App() {
           ))}
         </nav>
 
-        <div className="job-summary-card">
-          <strong>总任务数 {jobs.length}</strong>
-          <span>运行中 {runningJobs.length}</span>
-          <span>当前任务 {selectedJob?.jobId || "-"}</span>
-          <span>当前版本 v{selectedJob?.activeVersion || "-"}</span>
+        <div className="workflow-summary-card">
+          <strong>总工作流数 {workflows.length}</strong>
+          <span>运行中 {runningWorkflows.length}</span>
+          <span>当前工作流 {selectedWorkflow?.workflowId || "-"}</span>
+          <span>当前版本 v{selectedWorkflow?.activeVersion || "-"}</span>
         </div>
 
-        <div className={classNames("run-status-card", selectedJob?.runtimeStatus === "running" && "running")}>
-          <strong>{taskHealth.title}</strong>
-          <span>{taskHealth.summary}</span>
-          <span>运行态: {selectedJob?.runtimeStatus || "-"}</span>
+        <div className={classNames("run-status-card", selectedWorkflow?.runtimeStatus === "running" && "running")}>
+          <strong>{workflowHealth.title}</strong>
+          <span>{workflowHealth.summary}</span>
+          <span>运行态: {selectedWorkflow?.runtimeStatus || "-"}</span>
           <span>当前步骤: {activeStage || "-"}</span>
-          <span>Temporal: {selectedJob?.temporalMode || "-"}</span>
-          {selectedJob?.temporalError ? <span>运行备注: {selectedJob.temporalError}</span> : null}
+          <span>Temporal: {selectedWorkflow?.temporalMode || "-"}</span>
+          {selectedWorkflow?.temporalError ? <span>运行备注: {selectedWorkflow.temporalError}</span> : null}
         </div>
 
         {message ? <p className="notice success">{message}</p> : null}
@@ -469,27 +468,27 @@ export function App() {
       <main className="workspace">
         {page === "tasks" ? (
           <section className="panel page-panel">
-            <SectionHeader eyebrow="TASKS" title="任务列表与详情" />
+            <SectionHeader eyebrow="WORKFLOWS" title="工作流列表与详情" />
 
             <div className="task-layout">
               <section className="card-block compact">
                 <div className="section-head">
                   <div>
-                    <h3>任务列表</h3>
-                    <p className="empty-copy">点击任意任务查看详情。</p>
+                    <h3>工作流列表</h3>
+                    <p className="empty-copy">点击任意工作流查看详情。</p>
                   </div>
                 </div>
                 <div className="task-list">
-                  {jobs.length ? (
-                    jobs.map((item) => (
+                  {workflows.length ? (
+                    workflows.map((item) => (
                       <button
-                        key={item.jobId}
+                        key={item.workflowId}
                         type="button"
-                        className={classNames("task-item", selectedJobId === item.jobId && "active")}
-                        onClick={() => handleSelectJob(item)}
+                        className={classNames("task-item", selectedWorkflowId === item.workflowId && "active")}
+                        onClick={() => handleSelectWorkflow(item)}
                       >
                         <div className="task-item-row">
-                          <strong>{item.jobId}</strong>
+                          <strong>{item.workflowId}</strong>
                           <span className={classNames("status-badge", item.runtimeStatus === "running" && "running")}>
                             {item.runtimeStatus || item.status}
                           </span>
@@ -499,19 +498,19 @@ export function App() {
                       </button>
                     ))
                   ) : (
-                    <EmptyBlock text="还没有任务，去新建一个试试。" />
+                    <EmptyBlock text="还没有工作流，去新建一个试试。" />
                   )}
                 </div>
               </section>
 
               <section className="detail-stack">
-                {selectedJob ? (
+                {selectedWorkflow ? (
                   <>
                     <article className="card-block compact">
                       <div className="section-head">
                         <div>
-                          <h3>任务概览</h3>
-                          <p className="empty-copy">{selectedJob.jobId}</p>
+                          <h3>工作流概览</h3>
+                          <p className="empty-copy">{selectedWorkflow.workflowId}</p>
                         </div>
                         <label className="version-switcher">
                           <span>版本</span>
@@ -526,12 +525,12 @@ export function App() {
                       </div>
 
                       <div className="summary-grid">
-                        <InfoTile label="状态" value={selectedJob.status} />
-                        <InfoTile label="当前步骤" value={selectedJob.currentStage || "-"} />
-                        <InfoTile label="最后错误" value={selectedJob.lastErrorCode || "-"} />
-                        <InfoTile label="重试次数" value={String(selectedJob.rewriteCount)} />
-                        <InfoTile label="创建时间" value={formatDateTime(selectedJob.createdAt)} />
-                        <InfoTile label="更新时间" value={formatDateTime(selectedJob.updatedAt)} />
+                        <InfoTile label="状态" value={selectedWorkflow.status} />
+                        <InfoTile label="当前步骤" value={selectedWorkflow.currentStage || "-"} />
+                        <InfoTile label="最后错误" value={selectedWorkflow.lastErrorCode || "-"} />
+                        <InfoTile label="重跑次数" value={String(selectedWorkflow.rewriteCount)} />
+                        <InfoTile label="创建时间" value={formatDateTime(selectedWorkflow.createdAt)} />
+                        <InfoTile label="更新时间" value={formatDateTime(selectedWorkflow.updatedAt)} />
                       </div>
                       {canRequestRewrite ? (
                         <div className="button-row">
@@ -558,12 +557,9 @@ export function App() {
                         />
                         <InfoTile
                           label="恢复"
-                          value={selectedJob.runtimeStatus === "legacy_fallback" ? "已切到本地编排兜底" : "依赖持久化产物恢复"}
+                          value={selectedWorkflow.runtimeStatus === "legacy_fallback" ? "已切到本地编排兜底" : "依赖持久化产物恢复"}
                         />
-                        <InfoTile
-                          label="等待信号"
-                          value={selectedJob.pendingRewrite ? "是" : "否"}
-                        />
+                        <InfoTile label="等待信号" value={selectedWorkflow.pendingRewrite ? "是" : "否"} />
                       </div>
                     </article>
 
@@ -572,7 +568,7 @@ export function App() {
                       <div className="stage-detail-list">
                         {stageOrder.map((stage) => {
                           const meta = stageMetaMap.get(stage);
-                          const state = resolveStageState(stage, selectedJob, stageMetaMap);
+                          const state = resolveStageState(stage, selectedWorkflow, stageMetaMap);
 
                           return (
                             <div key={stage} className={classNames("stage-detail-card", `is-${state}`)}>
@@ -598,11 +594,7 @@ export function App() {
                                 />
                                 <InfoTile
                                   label="超时"
-                                  value={
-                                    meta?.errorCode === "LLM_TIMEOUT"
-                                      ? meta.errorMessage || "模型调用超时"
-                                      : "未记录超时"
-                                  }
+                                  value={meta?.errorCode === "LLM_TIMEOUT" ? meta.errorMessage || "模型调用超时" : "未记录超时"}
                                 />
                                 <InfoTile
                                   label="恢复"
@@ -675,7 +667,7 @@ export function App() {
                     ) : null}
                   </>
                 ) : (
-                  <EmptyBlock text="先从左侧选一个任务，右边就会展示步骤详情。" />
+                  <EmptyBlock text="先从左侧选一个工作流，右边就会展示步骤详情。" />
                 )}
               </section>
             </div>
@@ -684,7 +676,7 @@ export function App() {
 
         {page === "create" ? (
           <section className="panel page-panel">
-            <SectionHeader eyebrow="CREATE" title="新建任务" />
+            <SectionHeader eyebrow="CREATE" title="新建工作流" />
             <p className="empty-copy">这里只保留一个创建接口。提交后会自动开始执行，不需要额外 Run 按钮。</p>
             <div className="form-grid">
               <label>
@@ -713,11 +705,11 @@ export function App() {
               </label>
             </div>
             <div className="button-row">
-              <button className="primary" type="button" onClick={handleCreateJob} disabled={isPending}>
-                创建任务
+              <button className="primary" type="button" onClick={handleCreateWorkflow} disabled={isPending}>
+                创建工作流
               </button>
               <button className="ghost" type="button" onClick={() => navigate("tasks")}>
-                返回任务列表
+                返回工作流列表
               </button>
             </div>
           </section>
@@ -727,17 +719,21 @@ export function App() {
   );
 }
 
-function resolveStageState(stage: JobStatus, job: JobSummary, stageMetaMap: Map<JobStatus, StageMeta>) {
+function resolveStageState(
+  stage: WorkflowStatus,
+  workflow: WorkflowSummary,
+  stageMetaMap: Map<WorkflowStatus, StageMeta>
+) {
   const meta = stageMetaMap.get(stage);
   if (meta) {
     return meta.status === "error" ? "error" : "done";
   }
 
-  if (job.runtimeStatus === "running" && job.currentStage === stage) {
+  if (workflow.runtimeStatus === "running" && workflow.currentStage === stage) {
     return "running";
   }
 
-  const activeIndex = stageOrder.indexOf(job.currentStage ?? job.status);
+  const activeIndex = stageOrder.indexOf(workflow.currentStage ?? workflow.status);
   const stageIndex = stageOrder.indexOf(stage);
   if (activeIndex >= 0 && stageIndex < activeIndex) {
     return "done";
@@ -746,29 +742,29 @@ function resolveStageState(stage: JobStatus, job: JobSummary, stageMetaMap: Map<
   return "pending";
 }
 
-function getTaskHealth(job: JobSummary | null) {
-  if (!job) {
+function getWorkflowHealth(workflow: WorkflowSummary | null) {
+  if (!workflow) {
     return {
-      title: "未选择任务",
-      summary: "左侧选一个任务就能看到完整详情。"
+      title: "未选择工作流",
+      summary: "左侧选一个工作流就能看到完整详情。"
     };
   }
 
-  if (job.runtimeStatus === "running") {
+  if (workflow.runtimeStatus === "running") {
     return {
-      title: "任务执行中",
-      summary: `当前正在执行 ${job.currentStage || job.status}，页面会自动刷新。`
+      title: "工作流执行中",
+      summary: `当前正在执行 ${workflow.currentStage || workflow.status}，页面会自动刷新。`
     };
   }
 
-  if (job.lastErrorCode) {
+  if (workflow.lastErrorCode) {
     return {
-      title: "任务有失败记录",
-      summary: `最近错误码是 ${job.lastErrorCode}，可以结合步骤日志排查。`
+      title: "工作流有失败记录",
+      summary: `最近错误码是 ${workflow.lastErrorCode}，可以结合步骤日志排查。`
     };
   }
 
-  if (job.runtimeStatus === "legacy_fallback") {
+  if (workflow.runtimeStatus === "legacy_fallback") {
     return {
       title: "已切换兜底模式",
       summary: "Temporal 不可用时，会自动回退到本地编排继续执行。"
@@ -776,8 +772,8 @@ function getTaskHealth(job: JobSummary | null) {
   }
 
   return {
-    title: "任务状态稳定",
-    summary: "当前任务没有新的运行异常。"
+    title: "工作流状态稳定",
+    summary: "当前工作流没有新的运行异常。"
   };
 }
 

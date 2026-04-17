@@ -1,16 +1,16 @@
-import type { JobStatus, RewriteStage } from "@/core/domain/types";
+import type { RewriteStage, WorkflowStageStatus } from "@/core/domain/types";
 
-export type JobWorkflowRuntimeStatus =
+export type WorkflowRuntimeStatus =
   | "running"
   | "waiting_signal"
   | "completed"
   | "failed";
 
-export type JobWorkflowRuntimeState = {
-  jobId: string;
+export type WorkflowRuntimeState = {
+  workflowId: string;
   currentVersion: number | null;
-  currentStage: JobStatus | null;
-  runtimeStatus: JobWorkflowRuntimeStatus;
+  currentStage: WorkflowStageStatus | null;
+  runtimeStatus: WorkflowRuntimeStatus;
   lastErrorCode: string | null;
   pendingRewrite: boolean;
 };

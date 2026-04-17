@@ -1,4 +1,4 @@
-export type CreateJobInput = {
+export type CreateWorkflowInput = {
   urls?: string[];
   rawText?: string;
   notes?: string;

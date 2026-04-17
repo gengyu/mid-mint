@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common";
-import { JobsController } from "./jobs.controller";
-import { JobApplicationService } from "@/application/jobs/job-application.service";
-import { jobRepositories } from "@/application/jobs/job.repositories";
-import type { WorkflowModules } from "@/application/jobs/job-runtime.types";
+import { WorkflowsController } from "./workflows.controller";
+import { WorkflowApplicationService } from "@/application/workflows/workflow-application.service";
+import { workflowRepositories } from "@/application/workflows/workflow.repositories";
+import type { WorkflowModules } from "@/application/workflows/workflow-runtime.types";
 import { BriefGenerator } from "@/features/generation/brief/brief-generator";
 import { DeckGenerator } from "@/features/generation/deck/deck-generator";
 import { Renderer } from "@/features/generation/render/renderer";
@@ -15,7 +15,7 @@ import { TemporalWorkflowRuntime } from "@/infra/runtime/temporal/temporal.runti
 const WORKFLOW_REPOSITORIES = "WORKFLOW_REPOSITORIES";
 
 @Module({
-  controllers: [JobsController],
+  controllers: [WorkflowsController],
   providers: [
     SourceParser,
     BriefGenerator,
@@ -24,7 +24,7 @@ const WORKFLOW_REPOSITORIES = "WORKFLOW_REPOSITORIES";
     Renderer,
     Reviewer,
     OpenAiProvider,
-    { provide: WORKFLOW_REPOSITORIES, useValue: jobRepositories },
+    { provide: WORKFLOW_REPOSITORIES, useValue: workflowRepositories },
     {
       provide: TemporalWorkflowRuntime,
       inject: [
@@ -37,7 +37,7 @@ const WORKFLOW_REPOSITORIES = "WORKFLOW_REPOSITORIES";
         Reviewer
       ],
       useFactory: async (
-        repositories: typeof jobRepositories,
+        repositories: typeof workflowRepositories,
         sourceParser: SourceParser,
         briefGenerator: BriefGenerator,
         deckGenerator: DeckGenerator,
@@ -59,14 +59,14 @@ const WORKFLOW_REPOSITORIES = "WORKFLOW_REPOSITORIES";
       }
     },
     {
-      provide: JobApplicationService,
+      provide: WorkflowApplicationService,
       inject: [WORKFLOW_REPOSITORIES, TemporalWorkflowRuntime],
       useFactory: (
-        repositories: typeof jobRepositories,
+        repositories: typeof workflowRepositories,
         temporalRuntime: TemporalWorkflowRuntime
       ) =>
-        new JobApplicationService(repositories, temporalRuntime)
+        new WorkflowApplicationService(repositories, temporalRuntime)
     }
   ],
 })
-export class JobsModule {}
+export class WorkflowsModule {}

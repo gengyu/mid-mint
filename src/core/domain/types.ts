@@ -1,6 +1,6 @@
-// Job 在主流程中的阶段状态。
+// Workflow 在主流程中的阶段状态。
 // 这些状态同时用于前端展示、后端编排和阶段日志归档。
-export type JobStatus =
+export type WorkflowStageStatus =
   | "INPUT_RECEIVED"
   | "PARSED"
   | "BRIEFED"
@@ -118,7 +118,7 @@ export type LlmErrorCode =
   | "LLM_OUTPUT_SCHEMA_INVALID"
   | "LLM_FALLBACK_EXHAUSTED";
 
-// 用户创建 job 时提交的原始输入。
+// 用户创建 workflow 时提交的原始输入。
 // 这是整个工作流的源头数据，会被持久化并贯穿后续各阶段。
 export type SourceInput = {
   urls: string[]; // 用户提供的原始链接列表，通常用于补充事实来源。
@@ -262,21 +262,21 @@ export type ReviewResult = {
   rewriteStage: RewriteStage | null; // 若需重写，建议从哪个阶段开始。
 };
 
-// job 元数据。
-// 表示一个内容生成任务的整体状态，而不是某个具体版本的产物。
-export type Job = {
-  id: string; // job 唯一标识。
+// workflow instance 元数据。
+// 表示一个工作流实例的派生摘要，而不是独立持久化实体。
+export type WorkflowInstance = {
+  id: string; // workflow 实例唯一标识。
   rewriteCount: number; // 已经发生的 rewrite 次数。
   activeVersion: number; // 当前激活中的版本号。
-  createdAt: string; // job 创建时间。
-  updatedAt: string; // job 最近一次更新时间。
+  createdAt: string; // workflow 创建时间。
+  updatedAt: string; // workflow 最近一次更新时间。
 };
 
-// job 的版本记录。
+// workflow 的版本记录。
 // 每次初始创建或 rewrite 都会产生一个新的版本号。
-export type JobVersion = {
+export type WorkflowVersion = {
   id: string; // 版本记录自身的唯一标识。
-  jobId: string; // 所属 job 的 id。
+  workflowId: string; // 所属 workflow 的 id。
   versionNumber: number; // 版本号，从 1 开始递增。
   trigger: "initial" | "rewrite"; // 该版本是初始创建还是由 rewrite 产生。
   rewriteStage: RewriteStage | null; // 如果是 rewrite，记录从哪个阶段开始重跑。
@@ -285,7 +285,7 @@ export type JobVersion = {
 
 // 一次 rewrite 请求的业务表达。
 export type RewriteRequest = {
-  jobId: string; // 要执行 rewrite 的 job。
+  workflowId: string; // 要执行 rewrite 的 workflow。
   targetStage: RewriteStage; // 目标重跑起点阶段。
   reason: string; // 用户填写的重写原因。
 };
@@ -293,7 +293,7 @@ export type RewriteRequest = {
 // 阶段执行元信息。
 // 主要用于工作台展示、问题排查和运行审计。
 export type StageExecutionMeta = {
-  stageName: JobStatus; // 当前记录对应的阶段名。
+  stageName: WorkflowStageStatus; // 当前记录对应的阶段名。
   usedLlm: boolean; // 最终是否实际使用了 LLM 结果。
   llmAttempted: boolean; // 该阶段是否尝试过调用 LLM。
   model: string | null; // 使用的模型名，未使用时为 null。

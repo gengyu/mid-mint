@@ -12,8 +12,8 @@ function toStorageUrl(filePath: string) {
   return `/storage/${relativePath}`;
 }
 
-function createOutputDir(jobId: string, versionNumber: number) {
-  return ensureDir(projectPath("storage", "v1", "jobs", jobId, `v${versionNumber}`));
+function createOutputDir(workflowId: string, versionNumber: number) {
+  return ensureDir(projectPath("storage", "v1", "workflows", workflowId, `v${versionNumber}`));
 }
 
 function splitBody(body: string, count: number, maxLength: number) {
@@ -200,12 +200,12 @@ function buildHtmlPreview(title: string, slides: Array<{ index: number; svg: str
 
 export class Renderer {
   async render(input: {
-    jobId: string;
+    workflowId: string;
     versionNumber: number;
     deckPlan: DeckPlan;
     visualSpec: VisualSpec;
   }): Promise<RenderResult> {
-    const outputDir = createOutputDir(input.jobId, input.versionNumber);
+    const outputDir = createOutputDir(input.workflowId, input.versionNumber);
     const renderedSlides = input.deckPlan.slides.map((slide) => {
       const template = TEMPLATE_REGISTRY.getById(slide.templateId);
       if (!template) {

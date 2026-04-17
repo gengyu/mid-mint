@@ -6,22 +6,22 @@ import {
   assertReviewResult,
   assertVisualSpec
 } from "@/core/domain/validation";
-import type { Job, JobStatus, ReviewResult, RewriteStage } from "@/core/domain/types";
+import type { WorkflowInstance, ReviewResult, RewriteStage, WorkflowStageStatus } from "@/core/domain/types";
 import { createAppError } from "@/shared/errors/app-error";
 import {
   StageExecutionError,
   type StageRunResult,
   createDeterministicStageResult
-} from "@/application/jobs/stage-execution";
-import type { WorkflowModules, WorkflowRepositories } from "@/application/jobs/job-runtime.types";
+} from "@/application/workflows/stage-execution";
+import type { WorkflowModules, WorkflowRepositories } from "@/application/workflows/workflow-runtime.types";
 
 type ReviewFinalization = {
-  status: JobStatus;
+  status: WorkflowStageStatus;
   errorCode: string | null;
 };
 
 function createStageExecutionError(
-  stageName: JobStatus,
+  stageName: WorkflowStageStatus,
   error: unknown,
   durationMs: number
 ): StageExecutionError {
@@ -47,7 +47,7 @@ function createStageExecutionError(
   });
 }
 
-function normalizeStageResult<T>(stageName: JobStatus, result: T | StageRunResult<T>): StageRunResult<T> {
+function normalizeStageResult<T>(stageName: WorkflowStageStatus, result: T | StageRunResult<T>): StageRunResult<T> {
   if (typeof result === "object" && result !== null && "output" in result && "meta" in result) {
     return result as StageRunResult<T>;
   }
@@ -55,49 +55,44 @@ function normalizeStageResult<T>(stageName: JobStatus, result: T | StageRunResul
   return createDeterministicStageResult(stageName, result as T);
 }
 
-export interface TemporalJobActivities {
-  loadJob(jobId: string): Promise<Job>;
-  executeParsedStage(jobId: string, versionNumber: number): Promise<void>;
-  executeBriefStage(jobId: string, versionNumber: number): Promise<void>;
-  executeDeckStage(jobId: string, versionNumber: number): Promise<void>;
-  executeVisualStage(jobId: string, versionNumber: number): Promise<void>;
-  executeRenderStage(jobId: string, versionNumber: number): Promise<void>;
-  executeReviewStage(jobId: string, versionNumber: number): Promise<void>;
-  finalizeReview(jobId: string, versionNumber: number): Promise<ReviewFinalization>;
-  createRewriteVersion(jobId: string, targetStage: RewriteStage, reason: string): Promise<number>;
+export interface TemporalWorkflowActivities {
+  loadWorkflowInstance(workflowId: string): Promise<WorkflowInstance>;
+  executeParsedStage(workflowId: string, versionNumber: number): Promise<void>;
+  executeBriefStage(workflowId: string, versionNumber: number): Promise<void>;
+  executeDeckStage(workflowId: string, versionNumber: number): Promise<void>;
+  executeVisualStage(workflowId: string, versionNumber: number): Promise<void>;
+  executeRenderStage(workflowId: string, versionNumber: number): Promise<void>;
+  executeReviewStage(workflowId: string, versionNumber: number): Promise<void>;
+  finalizeReview(workflowId: string, versionNumber: number): Promise<ReviewFinalization>;
+  createRewriteVersion(workflowId: string, targetStage: RewriteStage, reason: string): Promise<number>;
 }
 
-export class TemporalJobActivitiesImpl implements TemporalJobActivities {
+export class TemporalWorkflowActivitiesImpl implements TemporalWorkflowActivities {
   constructor(
     private readonly repositories: WorkflowRepositories,
     private readonly modules: WorkflowModules
   ) {}
 
-  async loadJob(jobId: string): Promise<Job> {
-    const job = this.repositories.jobs.getById(jobId);
-    if (!job) {
-      throw new Error(`Job not found: ${jobId}`);
-    }
-
-    return job;
+  async loadWorkflowInstance(workflowId: string): Promise<WorkflowInstance> {
+    return this.requireWorkflowInstance(workflowId);
   }
 
-  async executeParsedStage(jobId: string, versionNumber: number): Promise<void> {
-    const existing = this.repositories.parsedSources.get(jobId, versionNumber);
-    const rewriteStage = this.getRewriteStage(jobId, versionNumber);
+  async executeParsedStage(workflowId: string, versionNumber: number): Promise<void> {
+    const existing = this.repositories.parsedSources.get(workflowId, versionNumber);
+    const rewriteStage = this.getRewriteStage(workflowId, versionNumber);
     if (existing && rewriteStage !== "source-parse") {
       return;
     }
 
     const sourceInput = this.requireArtifact(
-      this.repositories.sourceInputs.get(jobId, versionNumber),
+      this.repositories.sourceInputs.get(workflowId, versionNumber),
       "Source input not found."
     );
 
-    await this.executeStage("PARSED", jobId, versionNumber, async () => {
+    await this.executeStage("PARSED", workflowId, versionNumber, async () => {
       const result = await this.modules.sourceParser.parse(sourceInput);
       const validated = assertParsedSource(result.output);
-      this.repositories.parsedSources.save(jobId, versionNumber, validated);
+      this.repositories.parsedSources.save(workflowId, versionNumber, validated);
       return {
         output: validated,
         meta: result.meta
@@ -105,23 +100,23 @@ export class TemporalJobActivitiesImpl implements TemporalJobActivities {
     });
   }
 
-  async executeBriefStage(jobId: string, versionNumber: number): Promise<void> {
-    const existing = this.repositories.contentBriefs.get(jobId, versionNumber);
-    const rewriteStage = this.getRewriteStage(jobId, versionNumber);
+  async executeBriefStage(workflowId: string, versionNumber: number): Promise<void> {
+    const existing = this.repositories.contentBriefs.get(workflowId, versionNumber);
+    const rewriteStage = this.getRewriteStage(workflowId, versionNumber);
     if (existing && rewriteStage !== "brief" && rewriteStage !== "source-parse") {
       return;
     }
 
     const sourceInput = this.requireArtifact(
-      this.repositories.sourceInputs.get(jobId, versionNumber),
+      this.repositories.sourceInputs.get(workflowId, versionNumber),
       "Source input not found."
     );
     const parsedSource = this.requireArtifact(
-      this.repositories.parsedSources.get(jobId, versionNumber),
+      this.repositories.parsedSources.get(workflowId, versionNumber),
       "Parsed source not found."
     );
 
-    await this.executeStage("BRIEFED", jobId, versionNumber, async () => {
+    await this.executeStage("BRIEFED", workflowId, versionNumber, async () => {
       const result = await this.modules.briefGenerator.generate({
         ...parsedSource,
         targetAudience: sourceInput.targetAudience,
@@ -129,7 +124,7 @@ export class TemporalJobActivitiesImpl implements TemporalJobActivities {
         preferredStyle: sourceInput.preferredStyle
       });
       const validated = assertContentBrief(result.output);
-      this.repositories.contentBriefs.save(jobId, versionNumber, validated);
+      this.repositories.contentBriefs.save(workflowId, versionNumber, validated);
       return {
         output: validated,
         meta: result.meta
@@ -137,9 +132,9 @@ export class TemporalJobActivitiesImpl implements TemporalJobActivities {
     });
   }
 
-  async executeDeckStage(jobId: string, versionNumber: number): Promise<void> {
-    const existing = this.repositories.deckPlans.get(jobId, versionNumber);
-    const rewriteStage = this.getRewriteStage(jobId, versionNumber);
+  async executeDeckStage(workflowId: string, versionNumber: number): Promise<void> {
+    const existing = this.repositories.deckPlans.get(workflowId, versionNumber);
+    const rewriteStage = this.getRewriteStage(workflowId, versionNumber);
     if (existing && rewriteStage === null) {
       return;
     }
@@ -148,21 +143,21 @@ export class TemporalJobActivitiesImpl implements TemporalJobActivities {
     }
 
     const parsedSource = this.requireArtifact(
-      this.repositories.parsedSources.get(jobId, versionNumber),
+      this.repositories.parsedSources.get(workflowId, versionNumber),
       "Parsed source not found."
     );
     const contentBrief = this.requireArtifact(
-      this.repositories.contentBriefs.get(jobId, versionNumber),
+      this.repositories.contentBriefs.get(workflowId, versionNumber),
       "Content brief not found."
     );
 
-    await this.executeStage("DECK_GENERATED", jobId, versionNumber, async () => {
+    await this.executeStage("DECK_GENERATED", workflowId, versionNumber, async () => {
       const result = await this.modules.deckGenerator.generate({
         parsedSource,
         contentBrief
       });
       const validated = assertDeckPlan(result.output);
-      this.repositories.deckPlans.save(jobId, versionNumber, validated);
+      this.repositories.deckPlans.save(workflowId, versionNumber, validated);
       return {
         output: validated,
         meta: result.meta
@@ -170,32 +165,32 @@ export class TemporalJobActivitiesImpl implements TemporalJobActivities {
     });
   }
 
-  async executeVisualStage(jobId: string, versionNumber: number): Promise<void> {
-    const existingVisual = this.repositories.visualSpecs.get(jobId, versionNumber);
-    const existingDeck = this.repositories.deckPlans.get(jobId, versionNumber);
-    const rewriteStage = this.getRewriteStage(jobId, versionNumber);
+  async executeVisualStage(workflowId: string, versionNumber: number): Promise<void> {
+    const existingVisual = this.repositories.visualSpecs.get(workflowId, versionNumber);
+    const existingDeck = this.repositories.deckPlans.get(workflowId, versionNumber);
+    const rewriteStage = this.getRewriteStage(workflowId, versionNumber);
     if (existingVisual && existingDeck && rewriteStage === null) {
       return;
     }
 
     const parsedSource = this.requireArtifact(
-      this.repositories.parsedSources.get(jobId, versionNumber),
+      this.repositories.parsedSources.get(workflowId, versionNumber),
       "Parsed source not found."
     );
     const contentBrief = this.requireArtifact(
-      this.repositories.contentBriefs.get(jobId, versionNumber),
+      this.repositories.contentBriefs.get(workflowId, versionNumber),
       "Content brief not found."
     );
     const deckPlan = this.requireArtifact(
-      this.repositories.deckPlans.get(jobId, versionNumber),
+      this.repositories.deckPlans.get(workflowId, versionNumber),
       "Deck plan not found."
     );
     const sourceInput = this.requireArtifact(
-      this.repositories.sourceInputs.get(jobId, versionNumber),
+      this.repositories.sourceInputs.get(workflowId, versionNumber),
       "Source input not found."
     );
 
-    await this.executeStage("VISUAL_MATCHED", jobId, versionNumber, async () => {
+    await this.executeStage("VISUAL_MATCHED", workflowId, versionNumber, async () => {
       const result = await this.modules.visualMatch.match({
         parsedSource,
         contentBrief,
@@ -204,8 +199,8 @@ export class TemporalJobActivitiesImpl implements TemporalJobActivities {
       });
       const validatedDeckPlan = assertDeckPlan(result.output.deckPlan);
       const validatedVisualSpec = assertVisualSpec(result.output.visualSpec);
-      this.repositories.deckPlans.save(jobId, versionNumber, validatedDeckPlan);
-      this.repositories.visualSpecs.save(jobId, versionNumber, validatedVisualSpec);
+      this.repositories.deckPlans.save(workflowId, versionNumber, validatedDeckPlan);
+      this.repositories.visualSpecs.save(workflowId, versionNumber, validatedVisualSpec);
       return {
         output: {
           deckPlan: validatedDeckPlan,
@@ -216,62 +211,62 @@ export class TemporalJobActivitiesImpl implements TemporalJobActivities {
     });
   }
 
-  async executeRenderStage(jobId: string, versionNumber: number): Promise<void> {
-    const existing = this.repositories.renderResults.get(jobId, versionNumber);
+  async executeRenderStage(workflowId: string, versionNumber: number): Promise<void> {
+    const existing = this.repositories.renderResults.get(workflowId, versionNumber);
     if (existing) {
       return;
     }
 
     const deckPlan = this.requireArtifact(
-      this.repositories.deckPlans.get(jobId, versionNumber),
+      this.repositories.deckPlans.get(workflowId, versionNumber),
       "Deck plan not found."
     );
     const visualSpec = this.requireArtifact(
-      this.repositories.visualSpecs.get(jobId, versionNumber),
+      this.repositories.visualSpecs.get(workflowId, versionNumber),
       "Visual spec not found."
     );
 
-    await this.executeStage("RENDERED", jobId, versionNumber, async () => {
+    await this.executeStage("RENDERED", workflowId, versionNumber, async () => {
       const result = await this.modules.renderer.render({
-        jobId,
+        workflowId,
         versionNumber,
         deckPlan,
         visualSpec
       });
       const validated = assertRenderResult(result, deckPlan.slides.length);
-      this.repositories.renderResults.save(jobId, versionNumber, validated);
+      this.repositories.renderResults.save(workflowId, versionNumber, validated);
       return validated;
     });
   }
 
-  async executeReviewStage(jobId: string, versionNumber: number): Promise<void> {
-    const existing = this.repositories.reviewResults.get(jobId, versionNumber);
+  async executeReviewStage(workflowId: string, versionNumber: number): Promise<void> {
+    const existing = this.repositories.reviewResults.get(workflowId, versionNumber);
     if (existing) {
       return;
     }
 
     const parsedSource = this.requireArtifact(
-      this.repositories.parsedSources.get(jobId, versionNumber),
+      this.repositories.parsedSources.get(workflowId, versionNumber),
       "Parsed source not found."
     );
     const contentBrief = this.requireArtifact(
-      this.repositories.contentBriefs.get(jobId, versionNumber),
+      this.repositories.contentBriefs.get(workflowId, versionNumber),
       "Content brief not found."
     );
     const deckPlan = this.requireArtifact(
-      this.repositories.deckPlans.get(jobId, versionNumber),
+      this.repositories.deckPlans.get(workflowId, versionNumber),
       "Deck plan not found."
     );
     const visualSpec = this.requireArtifact(
-      this.repositories.visualSpecs.get(jobId, versionNumber),
+      this.repositories.visualSpecs.get(workflowId, versionNumber),
       "Visual spec not found."
     );
     const renderResult = this.requireArtifact(
-      this.repositories.renderResults.get(jobId, versionNumber),
+      this.repositories.renderResults.get(workflowId, versionNumber),
       "Render result not found."
     );
 
-    await this.executeStage("REVIEWED", jobId, versionNumber, async () => {
+    await this.executeStage("REVIEWED", workflowId, versionNumber, async () => {
       const result = await this.modules.reviewer.review({
         parsedSource,
         contentBrief,
@@ -280,7 +275,7 @@ export class TemporalJobActivitiesImpl implements TemporalJobActivities {
         renderResult
       });
       const validated = assertReviewResult(result.output);
-      this.repositories.reviewResults.save(jobId, versionNumber, validated);
+      this.repositories.reviewResults.save(workflowId, versionNumber, validated);
       return {
         output: validated,
         meta: result.meta
@@ -289,11 +284,11 @@ export class TemporalJobActivitiesImpl implements TemporalJobActivities {
   }
 
   async finalizeReview(
-    jobId: string,
+    workflowId: string,
     versionNumber: number
   ): Promise<{ status: "APPROVED" | "FAILED" | "REWRITE_PENDING"; errorCode: string | null }> {
     const reviewResult = this.requireArtifact(
-      this.repositories.reviewResults.get(jobId, versionNumber),
+      this.repositories.reviewResults.get(workflowId, versionNumber),
       "Review result not found."
     );
 
@@ -305,12 +300,9 @@ export class TemporalJobActivitiesImpl implements TemporalJobActivities {
       return { status: "FAILED", errorCode: "REVIEW_BLOCKED" };
     }
 
-    const shouldStopForLowImprovement = this.hasLowImprovementStreak(jobId);
-    const job = this.requireArtifact(
-      this.repositories.jobs.getById(jobId),
-      `Job not found: ${jobId}`
-    );
-    const status = job.rewriteCount >= 3 || shouldStopForLowImprovement ? "FAILED" : "REWRITE_PENDING";
+    const shouldStopForLowImprovement = this.hasLowImprovementStreak(workflowId);
+    const workflow = this.requireWorkflowInstance(workflowId);
+    const status = workflow.rewriteCount >= 3 || shouldStopForLowImprovement ? "FAILED" : "REWRITE_PENDING";
 
     return {
       status,
@@ -318,48 +310,42 @@ export class TemporalJobActivitiesImpl implements TemporalJobActivities {
     };
   }
 
-  async createRewriteVersion(jobId: string, targetStage: RewriteStage, reason: string): Promise<number> {
-    const job = this.repositories.jobs.getById(jobId);
-    if (!job) {
-      throw new Error(`Job not found: ${jobId}`);
-    }
+  async createRewriteVersion(workflowId: string, targetStage: RewriteStage, reason: string): Promise<number> {
+    const workflow = this.requireWorkflowInstance(workflowId);
 
-    if (job.rewriteCount >= 3) {
+    if (workflow.rewriteCount >= 3) {
       throw new Error("Rewrite limit reached.");
     }
 
-    const currentVersion = job.activeVersion;
+    const currentVersion = workflow.activeVersion;
     const nextVersion = currentVersion + 1;
-    const existingVersion = this.repositories.jobVersions.listByJobId(jobId)
+    const existingVersion = this.repositories.workflowVersions
+      .listByWorkflowId(workflowId)
       .find((version) => version.versionNumber === nextVersion);
     if (existingVersion) {
       return nextVersion;
     }
 
-    this.repositories.jobVersions.create({
-      jobId,
+    this.repositories.workflowVersions.create({
+      workflowId,
       versionNumber: nextVersion,
       trigger: "rewrite",
       rewriteStage: targetStage
     });
-    this.copyRewriteArtifacts(jobId, currentVersion, nextVersion, targetStage);
+    this.copyRewriteArtifacts(workflowId, currentVersion, nextVersion, targetStage);
     this.repositories.rewriteLogs.create({
-      jobId,
+      workflowId,
       fromVersion: currentVersion,
       toVersion: nextVersion,
       targetStage,
       reason
     });
-    this.updateJob(jobId, (current) => ({
-      ...current,
-      rewriteCount: current.rewriteCount + 1,
-      activeVersion: nextVersion
-    }));
     return nextVersion;
   }
 
-  private getRewriteStage(jobId: string, versionNumber: number) {
-    return this.repositories.jobVersions.listByJobId(jobId)
+  private getRewriteStage(workflowId: string, versionNumber: number) {
+    return this.repositories.workflowVersions
+      .listByWorkflowId(workflowId)
       .find((version) => version.versionNumber === versionNumber)?.rewriteStage ?? null;
   }
 
@@ -371,18 +357,9 @@ export class TemporalJobActivitiesImpl implements TemporalJobActivities {
     return value;
   }
 
-  private updateJob(jobId: string, updater: (job: Job) => Job): Job {
-    const updated = this.repositories.jobs.update(jobId, updater);
-    if (!updated) {
-      throw new Error(`Job not found: ${jobId}`);
-    }
-
-    return updated;
-  }
-
   private async executeStage<T>(
-    stageName: JobStatus,
-    jobId: string,
+    stageName: WorkflowStageStatus,
+    workflowId: string,
     versionNumber: number,
     executor: () => Promise<T | StageRunResult<T>>
   ): Promise<T> {
@@ -394,7 +371,7 @@ export class TemporalJobActivitiesImpl implements TemporalJobActivities {
       const normalizedResult = normalizeStageResult(stageName, rawResult);
       const finishedAt = new Date().toISOString();
       this.repositories.stageLogs.create({
-        jobId,
+        workflowId,
         versionNumber,
         stageName,
         startedAt,
@@ -415,7 +392,7 @@ export class TemporalJobActivitiesImpl implements TemporalJobActivities {
       const finishedAt = new Date(finishedAtMs).toISOString();
       const stageError = createStageExecutionError(stageName, error, finishedAtMs - startedAtMs);
       this.repositories.stageLogs.create({
-        jobId,
+        workflowId,
         versionNumber,
         stageName,
         startedAt,
@@ -434,16 +411,15 @@ export class TemporalJobActivitiesImpl implements TemporalJobActivities {
     }
   }
 
-  private hasLowImprovementStreak(jobId: string) {
-    const reviewRepository = this.repositories.reviewResults;
-    const listByJobId = reviewRepository.listByJobId;
-    if (!listByJobId) {
+  private hasLowImprovementStreak(workflowId: string) {
+    const listByWorkflowId = this.repositories.reviewResults.listByWorkflowId;
+    if (!listByWorkflowId) {
       return false;
     }
 
-    const rows = listByJobId(jobId)
-      .filter((item): item is { jobId: string; versionNumber: number; payload?: ReviewResult } => "versionNumber" in item)
-      .filter((item): item is { jobId: string; versionNumber: number; payload: ReviewResult } => Boolean(item.payload))
+    const rows = listByWorkflowId(workflowId)
+      .filter((item): item is { workflowId: string; versionNumber: number; payload?: ReviewResult } => "versionNumber" in item)
+      .filter((item): item is { workflowId: string; versionNumber: number; payload: ReviewResult } => Boolean(item.payload))
       .sort((left, right) => left.versionNumber - right.versionNumber);
 
     if (rows.length < 3) {
@@ -457,41 +433,57 @@ export class TemporalJobActivitiesImpl implements TemporalJobActivities {
   }
 
   private copyRewriteArtifacts(
-    jobId: string,
+    workflowId: string,
     fromVersion: number,
     toVersion: number,
     targetStage: RewriteStage
   ) {
-    const sourceInput = this.repositories.sourceInputs.get(jobId, fromVersion);
+    const sourceInput = this.repositories.sourceInputs.get(workflowId, fromVersion);
     if (sourceInput) {
-      this.repositories.sourceInputs.save(jobId, toVersion, sourceInput);
+      this.repositories.sourceInputs.save(workflowId, toVersion, sourceInput);
     }
 
     if (targetStage === "source-parse") {
       return;
     }
 
-    const parsedSource = this.repositories.parsedSources.get(jobId, fromVersion);
+    const parsedSource = this.repositories.parsedSources.get(workflowId, fromVersion);
     if (parsedSource) {
-      this.repositories.parsedSources.save(jobId, toVersion, parsedSource);
+      this.repositories.parsedSources.save(workflowId, toVersion, parsedSource);
     }
 
     if (targetStage === "brief") {
       return;
     }
 
-    const contentBrief = this.repositories.contentBriefs.get(jobId, fromVersion);
+    const contentBrief = this.repositories.contentBriefs.get(workflowId, fromVersion);
     if (contentBrief) {
-      this.repositories.contentBriefs.save(jobId, toVersion, contentBrief);
+      this.repositories.contentBriefs.save(workflowId, toVersion, contentBrief);
     }
 
     if (targetStage === "deck") {
       return;
     }
 
-    const deckPlan = this.repositories.deckPlans.get(jobId, fromVersion);
+    const deckPlan = this.repositories.deckPlans.get(workflowId, fromVersion);
     if (deckPlan) {
-      this.repositories.deckPlans.save(jobId, toVersion, deckPlan);
+      this.repositories.deckPlans.save(workflowId, toVersion, deckPlan);
     }
+  }
+
+  private requireWorkflowInstance(workflowId: string): WorkflowInstance {
+    const versions = this.repositories.workflowVersions.listByWorkflowId(workflowId);
+    if (!versions.length) {
+      throw new Error(`Workflow not found: ${workflowId}`);
+    }
+
+    const latest = versions[0];
+    return {
+      id: workflowId,
+      rewriteCount: versions.filter((version) => version.trigger === "rewrite").length,
+      activeVersion: latest.versionNumber,
+      createdAt: versions[versions.length - 1]?.createdAt ?? latest.createdAt,
+      updatedAt: latest.createdAt
+    };
   }
 }
