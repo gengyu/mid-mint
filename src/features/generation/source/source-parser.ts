@@ -88,7 +88,7 @@ function buildPrompt(input: SourceInput, urlSupport: Awaited<ReturnType<typeof f
 export class SourceParser {
   constructor(private readonly provider: StructuredLlmProvider = new OpenAiProvider()) {}
 
-  async run(input: SourceInput): Promise<StageRunResult<ParsedSource>> {
+  async parse(input: SourceInput): Promise<StageRunResult<ParsedSource>> {
     const validatedInput = assertSourceInput(input);
     const urlSupport = await fetchUrlSupport(validatedInput);
     const deterministicFallback = () => {

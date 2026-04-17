@@ -83,7 +83,7 @@ function buildPrompt(input: BriefInput) {
 export class BriefGenerator {
   constructor(private readonly provider: StructuredLlmProvider = new OpenAiProvider()) {}
 
-  async run(input: BriefInput): Promise<StageRunResult<ContentBrief>> {
+  async generate(input: BriefInput): Promise<StageRunResult<ContentBrief>> {
     assertParsedSource(input);
 
     return runLlmStage({

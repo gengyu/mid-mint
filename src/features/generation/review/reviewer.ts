@@ -301,7 +301,7 @@ function buildPrompt(input: {
 export class Reviewer {
   constructor(private readonly provider: StructuredLlmProvider = new OpenAiProvider()) {}
 
-  async run(input: {
+  async review(input: {
     parsedSource: ParsedSource;
     contentBrief: ContentBrief;
     deckPlan: DeckPlan;

@@ -18,7 +18,7 @@ export async function jobWorkflow(jobId: string): Promise<void> {
   const runtimeState: JobWorkflowRuntimeState = {
     jobId,
     currentVersion: null,
-    currentStage: null,
+    currentStage: "INPUT_RECEIVED",
     runtimeStatus: "running",
     lastErrorCode: null,
     pendingRewrite: false
@@ -41,28 +41,23 @@ export async function jobWorkflow(jobId: string): Promise<void> {
     runtimeState.currentVersion = job.activeVersion;
     runtimeState.lastErrorCode = null;
 
-    if (job.status === "APPROVED") {
-      setStage("APPROVED", "completed");
-      return;
-    }
-
     setStage("PARSED", "running");
-    await activities.runParsedStage(jobId, job.activeVersion);
+    await activities.executeParsedStage(jobId, job.activeVersion);
 
     setStage("BRIEFED", "running");
-    await activities.runBriefStage(jobId, job.activeVersion);
+    await activities.executeBriefStage(jobId, job.activeVersion);
 
     setStage("DECK_GENERATED", "running");
-    await activities.runDeckStage(jobId, job.activeVersion);
+    await activities.executeDeckStage(jobId, job.activeVersion);
 
     setStage("VISUAL_MATCHED", "running");
-    await activities.runVisualStage(jobId, job.activeVersion);
+    await activities.executeVisualStage(jobId, job.activeVersion);
 
     setStage("RENDERED", "running");
-    await activities.runRenderStage(jobId, job.activeVersion);
+    await activities.executeRenderStage(jobId, job.activeVersion);
 
     setStage("REVIEWED", "running");
-    await activities.runReviewStage(jobId, job.activeVersion);
+    await activities.executeReviewStage(jobId, job.activeVersion);
 
     const finalized = await activities.finalizeReview(jobId, job.activeVersion);
     runtimeState.lastErrorCode = finalized.errorCode;

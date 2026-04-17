@@ -101,16 +101,16 @@ export type WorkflowRepositories = {
 
 export type WorkflowModules = {
   sourceParser: {
-    run(input: SourceInput): Promise<StageRunResult<ParsedSource>>;
+    parse(input: SourceInput): Promise<StageRunResult<ParsedSource>>;
   };
   briefGenerator: {
-    run(input: ParsedSource & { targetAudience: string; contentGoal: string; preferredStyle: string }): Promise<StageRunResult<ContentBrief>>;
+    generate(input: ParsedSource & { targetAudience: string; contentGoal: string; preferredStyle: string }): Promise<StageRunResult<ContentBrief>>;
   };
   deckGenerator: {
-    run(input: { parsedSource: ParsedSource; contentBrief: ContentBrief }): Promise<StageRunResult<DeckPlan>>;
+    generate(input: { parsedSource: ParsedSource; contentBrief: ContentBrief }): Promise<StageRunResult<DeckPlan>>;
   };
   visualMatch: {
-    run(input: {
+    match(input: {
       parsedSource: ParsedSource;
       contentBrief: ContentBrief;
       deckPlan: DeckPlan;
@@ -118,10 +118,10 @@ export type WorkflowModules = {
     }): Promise<StageRunResult<{ deckPlan: DeckPlan; visualSpec: VisualSpec }>>;
   };
   renderer: {
-    run(input: { jobId: string; versionNumber: number; deckPlan: DeckPlan; visualSpec: VisualSpec }): Promise<RenderResult>;
+    render(input: { jobId: string; versionNumber: number; deckPlan: DeckPlan; visualSpec: VisualSpec }): Promise<RenderResult>;
   };
   reviewer: {
-    run(input: {
+    review(input: {
       parsedSource: ParsedSource;
       contentBrief: ContentBrief;
       deckPlan: DeckPlan;

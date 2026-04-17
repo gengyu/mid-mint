@@ -147,12 +147,12 @@ export class TemporalWorkflowRuntime {
         // bind(this.activities) 是为了保证方法内部的 this 正确指向 activities 实例。
         activities: {
           loadJob: this.activities.loadJob.bind(this.activities),
-          runParsedStage: this.activities.runParsedStage.bind(this.activities),
-          runBriefStage: this.activities.runBriefStage.bind(this.activities),
-          runDeckStage: this.activities.runDeckStage.bind(this.activities),
-          runVisualStage: this.activities.runVisualStage.bind(this.activities),
-          runRenderStage: this.activities.runRenderStage.bind(this.activities),
-          runReviewStage: this.activities.runReviewStage.bind(this.activities),
+          executeParsedStage: this.activities.executeParsedStage.bind(this.activities),
+          executeBriefStage: this.activities.executeBriefStage.bind(this.activities),
+          executeDeckStage: this.activities.executeDeckStage.bind(this.activities),
+          executeVisualStage: this.activities.executeVisualStage.bind(this.activities),
+          executeRenderStage: this.activities.executeRenderStage.bind(this.activities),
+          executeReviewStage: this.activities.executeReviewStage.bind(this.activities),
           finalizeReview: this.activities.finalizeReview.bind(this.activities),
           createRewriteVersion: this.activities.createRewriteVersion.bind(this.activities)
         }

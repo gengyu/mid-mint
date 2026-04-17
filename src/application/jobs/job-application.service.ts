@@ -1,9 +1,10 @@
 import { assertSourceInput, validateRewriteRequest } from "@/core/domain/validation";
-import type { Job, JobStatus, RewriteRequest, SourceInput } from "@/core/domain/types";
+import type { Job, JobStatus, RewriteRequest, ReviewResult, SourceInput } from "@/core/domain/types";
 import type { WorkflowRepositories } from "@/application/jobs/job-runtime.types";
 import type { CreateJobInput } from "@/application/jobs/job.types";
 import { TemporalWorkflowRuntime } from "@/infra/runtime/temporal/temporal.runtime";
 import { AppValidationError, createAppError } from "@/shared/errors/app-error";
+import type { JobWorkflowRuntimeState } from "@/infra/runtime/temporal/workflows/types";
 
 type WritableWorkflowRepositories = WorkflowRepositories & {
   jobs: WorkflowRepositories["jobs"] & {
@@ -50,7 +51,7 @@ export class JobApplicationService {
 
       return {
         jobId: currentJob.id,
-        status: currentJob.status,
+        status: "INPUT_RECEIVED" as const,
         activeVersion: currentJob.activeVersion,
         runtimeStatus: runState.runtimeStatus,
         currentStage: runState.currentStage
@@ -71,7 +72,8 @@ export class JobApplicationService {
     this.ensureRuntimeReady();
 
     const job = this.requireJob(request.jobId);
-    if (job.status !== "REWRITE_PENDING") {
+    const runtimeState = await this.temporalRuntime.getRuntimeState(request.jobId);
+    if (runtimeState?.runtimeStatus !== "waiting_signal") {
       throw new AppValidationError(
         createAppError(
           "REWRITE_NOT_AVAILABLE",
@@ -87,7 +89,7 @@ export class JobApplicationService {
 
     return {
       jobId: nextJob.id,
-      status: nextJob.status,
+      status: this.deriveStatus(nextJob, runtimeState ?? null),
       activeVersion: nextJob.activeVersion
     };
   }
@@ -106,9 +108,10 @@ export class JobApplicationService {
     return Promise.all(jobs.map((job) => this.decorateJob(job)));
   }
 
-  getJobVersion(jobId: string, versionNumber: number) {
+  async getJobVersion(jobId: string, versionNumber: number) {
+    const job = this.repositories.jobs.getById(jobId);
     return {
-      job: this.repositories.jobs.getById(jobId),
+      job: job ? await this.decorateJob(job) : null,
       sourceInput: this.repositories.sourceInputs.get(jobId, versionNumber),
       parsedSource: this.repositories.parsedSources.get(jobId, versionNumber),
       contentBrief: this.repositories.contentBriefs.get(jobId, versionNumber),
@@ -128,7 +131,7 @@ export class JobApplicationService {
 
     return {
       jobId: job.id,
-      status: job.status,
+      status: "INPUT_RECEIVED" as const,
       runtimeStatus: runtimeState?.runtimeStatus ?? null,
       currentStage: runtimeState?.currentStage ?? null
     };
@@ -138,22 +141,18 @@ export class JobApplicationService {
     const runtimeState = this.temporalRuntime.isReady()
       ? await this.temporalRuntime.getRuntimeState(job.id)
       : null;
-    const derivedRuntimeStatus = job.status === "REWRITE_PENDING"
-      ? "waiting_signal"
-      : job.status === "FAILED"
-        ? "failed"
-        : job.status === "APPROVED"
-          ? "completed"
-          : null;
+    const derivedStatus = this.deriveStatus(job, runtimeState);
+    const derivedRuntimeStatus = runtimeState?.runtimeStatus ?? this.deriveRuntimeStatus(job);
 
     return {
       ...job,
       jobId: job.id,
-      runtimeStatus: runtimeState?.runtimeStatus ?? derivedRuntimeStatus,
-      currentStage: runtimeState?.currentStage ?? this.toCurrentStage(job.status),
+      status: derivedStatus,
+      runtimeStatus: derivedRuntimeStatus,
+      currentStage: runtimeState?.currentStage ?? this.deriveCurrentStage(job, derivedStatus),
       runtimeVersion: runtimeState?.currentVersion ?? job.activeVersion,
-      lastErrorCode: runtimeState?.lastErrorCode ?? null,
-      pendingRewrite: runtimeState?.pendingRewrite ?? false,
+      lastErrorCode: runtimeState?.lastErrorCode ?? this.deriveLastErrorCode(job),
+      pendingRewrite: runtimeState?.pendingRewrite ?? derivedStatus === "REWRITE_PENDING",
       temporalMode: this.temporalRuntime.getMode(),
       temporalError: this.temporalRuntime.getLastError()
     };
@@ -192,20 +191,92 @@ export class JobApplicationService {
       .sort((left, right) => stageOrder.indexOf(left.stageName) - stageOrder.indexOf(right.stageName));
   }
 
-  private toCurrentStage(status: JobStatus): JobStatus | null {
-    if (status === "APPROVED" || status === "FAILED" || status === "REWRITE_PENDING") {
-      return status;
+  private deriveStatus(job: Job, runtimeState: JobWorkflowRuntimeState | null): JobStatus {
+    if (runtimeState?.runtimeStatus === "waiting_signal") {
+      return "REWRITE_PENDING";
+    }
+    if (runtimeState?.runtimeStatus === "completed") {
+      return "APPROVED";
+    }
+    if (runtimeState?.runtimeStatus === "failed") {
+      return "FAILED";
+    }
+    if (runtimeState?.currentStage) {
+      return runtimeState.currentStage;
     }
 
-    return [
-      "INPUT_RECEIVED",
-      "PARSED",
-      "BRIEFED",
-      "DECK_GENERATED",
-      "VISUAL_MATCHED",
-      "RENDERED",
-      "REVIEWED"
-    ].includes(status) ? status : null;
+    const reviewResult = this.repositories.reviewResults.get(job.id, job.activeVersion);
+    if (reviewResult) {
+      return this.deriveStatusFromReview(reviewResult);
+    }
+
+    if (this.repositories.renderResults.get(job.id, job.activeVersion)) {
+      return "RENDERED";
+    }
+    if (this.repositories.visualSpecs.get(job.id, job.activeVersion)) {
+      return "VISUAL_MATCHED";
+    }
+    if (this.repositories.deckPlans.get(job.id, job.activeVersion)) {
+      return "DECK_GENERATED";
+    }
+    if (this.repositories.contentBriefs.get(job.id, job.activeVersion)) {
+      return "BRIEFED";
+    }
+    if (this.repositories.parsedSources.get(job.id, job.activeVersion)) {
+      return "PARSED";
+    }
+
+    return "INPUT_RECEIVED";
+  }
+
+  private deriveStatusFromReview(reviewResult: ReviewResult): JobStatus {
+    if (reviewResult.decision === "approve") {
+      return "APPROVED";
+    }
+    if (reviewResult.decision === "block") {
+      return "FAILED";
+    }
+    return "REWRITE_PENDING";
+  }
+
+  private deriveRuntimeStatus(job: Job): "running" | "waiting_signal" | "completed" | "failed" | null {
+    const reviewResult = this.repositories.reviewResults.get(job.id, job.activeVersion);
+    if (reviewResult) {
+      if (reviewResult.decision === "approve") {
+        return "completed";
+      }
+      if (reviewResult.decision === "block") {
+        return "failed";
+      }
+      return "waiting_signal";
+    }
+
+    const stageRows = this.repositories.stageLogs.listByJobIdAndVersion?.(job.id, job.activeVersion) ?? [];
+    if (stageRows.some((row) => row.status === "error")) {
+      return "failed";
+    }
+    if (stageRows.length > 0) {
+      return "running";
+    }
+    return null;
+  }
+
+  private deriveCurrentStage(job: Job, status: JobStatus): JobStatus | null {
+    if (status === "REWRITE_PENDING") {
+      return "REVIEWED";
+    }
+    if (status === "APPROVED" || status === "FAILED") {
+      const stageRows = this.repositories.stageLogs.listByJobIdAndVersion?.(job.id, job.activeVersion) ?? [];
+      const errorStage = stageRows.find((row) => row.status === "error")?.stageName;
+      return errorStage ?? (status === "APPROVED" ? "APPROVED" : "FAILED");
+    }
+
+    return status;
+  }
+
+  private deriveLastErrorCode(job: Job) {
+    const stageRows = this.repositories.stageLogs.listByJobIdAndVersion?.(job.id, job.activeVersion) ?? [];
+    return stageRows.find((row) => row.status === "error")?.errorCode ?? null;
   }
 
   private ensureRuntimeReady() {

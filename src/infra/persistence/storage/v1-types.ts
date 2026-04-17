@@ -7,7 +7,6 @@ export type JsonTableRow = {
 
 export type JobRecord = {
   id: string;
-  status: JobStatus;
   rewriteCount: number;
   activeVersion: number;
   createdAt: string;

@@ -266,7 +266,6 @@ export type ReviewResult = {
 // 表示一个内容生成任务的整体状态，而不是某个具体版本的产物。
 export type Job = {
   id: string; // job 唯一标识。
-  status: JobStatus; // 当前 job 的业务状态。
   rewriteCount: number; // 已经发生的 rewrite 次数。
   activeVersion: number; // 当前激活中的版本号。
   createdAt: string; // job 创建时间。

@@ -199,7 +199,7 @@ function buildHtmlPreview(title: string, slides: Array<{ index: number; svg: str
 }
 
 export class Renderer {
-  async run(input: {
+  async render(input: {
     jobId: string;
     versionNumber: number;
     deckPlan: DeckPlan;

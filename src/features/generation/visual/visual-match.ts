@@ -517,7 +517,7 @@ function applyDeterministicRoute(input: {
 export class VisualMatch {
   constructor(private readonly provider: StructuredLlmProvider = new OpenAiProvider()) {}
 
-  async run(input: {
+  async match(input: {
     parsedSource: ParsedSource;
     contentBrief: ContentBrief;
     deckPlan: DeckPlan;

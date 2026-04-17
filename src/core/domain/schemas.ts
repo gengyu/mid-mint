@@ -201,7 +201,6 @@ export const reviewResultSchema = z.object({
 
 export const jobSchema = z.object({
   id: z.string(),
-  status: jobStatusSchema,
   rewriteCount: z.number().int().nonnegative(),
   activeVersion: z.number().int().positive(),
   createdAt: z.string(),

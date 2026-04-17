@@ -118,7 +118,7 @@ function buildPrompt(input: { parsedSource: ParsedSource; contentBrief: ContentB
 export class DeckGenerator {
   constructor(private readonly provider: StructuredLlmProvider = new OpenAiProvider()) {}
 
-  async run(input: { parsedSource: ParsedSource; contentBrief: ContentBrief }): Promise<StageRunResult<DeckPlan>> {
+  async generate(input: { parsedSource: ParsedSource; contentBrief: ContentBrief }): Promise<StageRunResult<DeckPlan>> {
     assertParsedSource(input.parsedSource);
     assertContentBrief(input.contentBrief);
 

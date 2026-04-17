@@ -106,7 +106,6 @@ export const jobRepository = {
     const now = new Date().toISOString();
     const record: JobRecord = {
       id: createId("job"),
-      status: "INPUT_RECEIVED",
       rewriteCount: 0,
       activeVersion: 1,
       createdAt: now,
