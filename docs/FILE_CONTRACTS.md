@@ -2,13 +2,13 @@
 
 ## 说明
 
-本文件只定义第一版中间产物和输出文件的最小结构。
+本文件定义第一版中间产物和输出文件的基础结构。
 
 目标：
 
 1. 让每一步输入输出清晰
-2. 降低模块之间沟通成本
-3. 方便 AI 和人工排查问题
+2. 让模块之间职责边界稳定
+3. 让 AI 和人工都能快速排查问题
 
 ## 项目目录
 
@@ -22,14 +22,16 @@ data/projects/<projectId>/
 
 ```txt
 data/projects/<projectId>/
-├── input.md | input.txt
+├── input.md | input.txt | input.docx | input.html
 ├── project.json
 ├── parsed-document.json
 ├── content-analysis.json
 ├── deck-plan.json
+├── visual-plan.json
 ├── slide-specs.json
 ├── assets/
-│   └── slide-002.svg
+│   ├── slide-002.svg
+│   └── ...
 └── output/
     └── <title>.pptx
 ```
@@ -104,6 +106,22 @@ data/projects/<projectId>/
 }
 ```
 
+## visual-plan.json
+
+```json
+{
+  "theme": "clean-light",
+  "slides": [
+    {
+      "slideNumber": 2,
+      "visualType": "diagram",
+      "goal": "Explain the core pipeline",
+      "assetFile": "slide-002.svg"
+    }
+  ]
+}
+```
+
 ## slide-specs.json
 
 ```json
@@ -141,11 +159,11 @@ slide-003.svg
 slide-004.svg
 ```
 
-约束：
+第一版约束：
 
-- 一页最多一个主图示
-- 第一版只要求简单 SVG
-- 如果后续接入 Mermaid，最终仍然落成 SVG 文件
+- 一页最多一个主视觉文件
+- 第一版优先支持简单 SVG
+- 后续如果接入其他素材来源，最终仍然需要稳定落盘
 
 ## output/
 
@@ -158,4 +176,5 @@ output/<title>.pptx
 要求：
 
 - 文件可被常见 PPT 软件打开
+- 输出路径可回写到 `project.json`
 - 第一版优先保证内容完整和文件可用

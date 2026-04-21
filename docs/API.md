@@ -1,14 +1,16 @@
 # API.md
 
-## 当前接口
+## 说明
+
+本文件描述第一版阶段对外暴露的项目接口。
 
 Base URL: `http://localhost:3000`
 
-当前只维护已经存在的最小接口，不描述未实现能力。
+第一版仍以项目维度接口为主，围绕“创建项目 -> 触发生成 -> 获取项目结果”展开。
 
 ## POST /projects
 
-创建项目并保存输入文案。
+创建项目并保存输入文档。
 
 请求：
 
@@ -23,8 +25,8 @@ Base URL: `http://localhost:3000`
 字段：
 
 - `title` 可选，项目标题
-- `content` 必填，原始 Markdown 或 Txt 文案
-- `sourceType` 可选，`markdown` 或 `txt`
+- `content` 必填，原始文档内容
+- `sourceType` 可选，第一版目标支持 `markdown`、`txt`、`docx`、`html`
 
 响应示例：
 
@@ -87,7 +89,7 @@ Base URL: `http://localhost:3000`
 
 ## POST /projects/:projectId/generate
 
-执行主流程，生成中间产物、图示素材和最终输出文件。
+执行第一版主流程，生成解析结果、分析结果、大纲、视觉规划、逐页内容和最终输出文件。
 
 请求：
 
@@ -99,7 +101,7 @@ Base URL: `http://localhost:3000`
 
 字段：
 
-- `requestedSlides` 可选，范围意图为 `3-10`
+- `requestedSlides` 可选，期望页数
 
 响应示例：
 
@@ -130,13 +132,14 @@ data/projects/<projectId>/
 
 目录中的关键文件包括：
 
-- `input.md` 或 `input.txt`
+- `input.*`
 - `project.json`
 - `parsed-document.json`
 - `content-analysis.json`
 - `deck-plan.json`
+- `visual-plan.json`
 - `slide-specs.json`
-- `assets/slide-00x.svg`
+- `assets/*`
 - `output/<title>.pptx`
 
 ## 错误响应

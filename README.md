@@ -2,36 +2,32 @@
 
 一个本地优先的 AI PPT 生成服务。
 
-当前 MVP 只做一件事：输入一段 `Markdown / Txt` 文案，生成一个 `.pptx`，并把所有中间产物保存到项目目录中。
+当前项目按照第一版目标推进，不再以 MVP 口径描述。
 
-## 这个项目适合什么
+第一版聚焦一条完整且可持续迭代的主链路：输入文档，生成结构化中间产物，规划演示内容与视觉表达，最终导出 `.pptx`。
 
-- 想先把“文案 -> PPT”主链路跑通
-- 想让 AI 工具更容易接手和持续开发
-- 想把中间结果落成 JSON，方便检查和调试
+## 第一版目标
 
-## 当前范围
+- 支持 `Markdown / Docx / Txt / HTML`
+- 解析文档结构
+- 通过 LLM 分析内容
+- 生成 Deck 大纲
+- 规划视觉呈现
+- 生成逐页内容
+- 渲染并导出 `.pptx`
+- 将输入、产物和输出文件完整保存到项目目录
 
-已覆盖：
+## 第一版主流程
 
-- 创建项目
-- 保存输入文案
-- 解析 `Markdown / Txt`
-- 生成 `parsed-document.json`
-- 生成 `content-analysis.json`
-- 生成 `deck-plan.json`
-- 生成 `slide-specs.json`
-- 生成少量 SVG 图示素材
-- 输出 `.pptx`
-
-明确不做：
-
-- BullMQ / Redis / 异步队列
-- TypeORM / PostgreSQL
-- Reviewer / Auto-fix
-- Export 独立模块
-- 在线预览编辑
-- 复杂模板系统
+```txt
+Document
+  -> Parse
+  -> Analyze
+  -> Plan
+  -> Visuals
+  -> Slides
+  -> Render
+```
 
 ## 当前接口
 
@@ -41,19 +37,6 @@
 - `POST /projects/:projectId/generate`
 
 更具体的请求和响应见 [docs/API.md](/Users/gengyu/code/mid-mint/docs/API.md:1)。
-
-## 主流程
-
-```txt
-Create Project
-  -> Save Input
-  -> Parse Document
-  -> Analyze Content
-  -> Plan Deck
-  -> Write Slides
-  -> Generate Assets
-  -> Render PPTX
-```
 
 ## 项目结构
 
@@ -68,23 +51,24 @@ src/
     ├── pipeline/
     ├── parser/
     ├── llm/
-    ├── slides/
     ├── visuals/
+    ├── slides/
     ├── renderer/
     └── storage/
 ```
 
 ## 输出目录
 
-每次生成都会写到：
+所有项目产物写到：
 
 ```txt
 data/projects/<projectId>/
-├── input.md | input.txt
+├── input.*
 ├── project.json
 ├── parsed-document.json
 ├── content-analysis.json
 ├── deck-plan.json
+├── visual-plan.json
 ├── slide-specs.json
 ├── assets/
 └── output/
@@ -120,7 +104,7 @@ pnpm start:prod
 
 示例文案见 [examples/sample.md](/Users/gengyu/code/mid-mint/examples/sample.md:1)。
 
-如果当前环境不方便监听 HTTP 端口，也可以直接在 Node 进程里调用 `ProjectsService` 跑一条例子：
+如果当前环境不方便监听 HTTP 端口，也可以直接在 Node 进程里调用 `ProjectsService`：
 
 ```bash
 node - <<'JS'
@@ -154,14 +138,17 @@ JS
 如果你是新加入项目的开发者或 AI 工具，建议先看：
 
 1. [AGENTS.md](/Users/gengyu/code/mid-mint/AGENTS.md:1)
-2. [docs/MVP.md](/Users/gengyu/code/mid-mint/docs/MVP.md:1)
+2. [docs/V1.md](/Users/gengyu/code/mid-mint/docs/V1.md:1)
 3. [docs/IMPLEMENTATION_PLAN.md](/Users/gengyu/code/mid-mint/docs/IMPLEMENTATION_PLAN.md:1)
 4. [docs/FILE_CONTRACTS.md](/Users/gengyu/code/mid-mint/docs/FILE_CONTRACTS.md:1)
-5. [examples/sample.md](/Users/gengyu/code/mid-mint/examples/sample.md:1)
+5. [docs/API.md](/Users/gengyu/code/mid-mint/docs/API.md:1)
+6. [examples/sample.md](/Users/gengyu/code/mid-mint/examples/sample.md:1)
 
-## 现在这两个文件的分工
+## 文档分工
 
 - `AGENTS.md`
-  放 AI 协作约束、代码边界、阅读顺序、工作方式
+  放 AI 协作约束、架构边界、开发顺序、工作方式
 - `README.md`
-  放项目介绍、当前接口、运行方式、输出目录、上手入口
+  放项目介绍、第一版目标、主流程、运行方式、上手入口
+- `docs/V1.md`
+  放第一版范围、原则和验收标准
