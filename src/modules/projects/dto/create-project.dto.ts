@@ -3,5 +3,5 @@ export class CreateProjectDto {
 
   content!: string;
 
-  sourceType?: 'markdown' | 'txt';
+  sourceType?: 'markdown' | 'txt' | 'html' | 'docx';
 }

@@ -33,7 +33,24 @@ export class LlmJsonService {
     requestedSlides?: number,
   ): Promise<DeckPlan> {
     const fallback = this.buildFallbackDeckPlan(document, analysis, requestedSlides);
-    return fallback;
+    if (!this.llmService.isConfigured()) {
+      return fallback;
+    }
+
+    const prompt = [
+      'Create a presentation deck plan and return JSON only.',
+      JSON.stringify({
+        title: document.title,
+        summary: analysis.summary,
+        keyMessages: analysis.keyMessages,
+        sections: document.sections,
+        requestedSlides: requestedSlides ?? null,
+      }),
+      'Return shape: {"title": string, "totalSlides": number, "slides": [{ "slideNumber": number, "title": string, "keyPoint": string, "sourceSectionTitle": string, "layoutHint": "cover" | "title-bullets" | "text-visual" | "comparison" }]}',
+    ].join('\n\n');
+
+    const result = await this.llmService.generateJson<DeckPlan>(prompt);
+    return this.isValidDeckPlan(result) ? result : fallback;
   }
 
   async polishSlides(slides: SlideSpec[]): Promise<SlideSpec[]> {
@@ -100,6 +117,28 @@ export class LlmJsonService {
       typeof candidate.summary === 'string' &&
       Array.isArray(candidate.keyMessages) &&
       candidate.keyMessages.every((item) => typeof item === 'string')
+    );
+  }
+
+  private isValidDeckPlan(value: unknown): value is DeckPlan {
+    if (!value || typeof value !== 'object') {
+      return false;
+    }
+
+    const candidate = value as Partial<DeckPlan>;
+    return (
+      typeof candidate.title === 'string' &&
+      typeof candidate.totalSlides === 'number' &&
+      Array.isArray(candidate.slides) &&
+      candidate.slides.every(
+        (slide) =>
+          slide &&
+          typeof slide.slideNumber === 'number' &&
+          typeof slide.title === 'string' &&
+          typeof slide.keyPoint === 'string' &&
+          typeof slide.sourceSectionTitle === 'string' &&
+          ['cover', 'title-bullets', 'text-visual', 'comparison'].includes(slide.layoutHint),
+      )
     );
   }
 }

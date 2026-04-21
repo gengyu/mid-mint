@@ -8,5 +8,7 @@ export interface SlideSpec {
   bullets: string[];
   paragraph?: string;
   notes?: string;
+  visualGoal?: string;
+  visualType?: 'none' | 'cover-accent' | 'diagram' | 'comparison-card' | 'summary-graphic';
   assetPath?: string;
 }

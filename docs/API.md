@@ -28,6 +28,11 @@ Base URL: `http://localhost:3000`
 - `content` 必填，原始文档内容
 - `sourceType` 可选，第一版目标支持 `markdown`、`txt`、`docx`、`html`
 
+当前约定：
+
+- `markdown` / `txt` / `html` 直接传文本内容
+- `docx` 在当前 JSON 接口中传 base64 字符串内容
+
 响应示例：
 
 ```json

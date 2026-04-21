@@ -7,6 +7,7 @@ import { SlideSpecService } from '../slides/slide-spec.service';
 import { SlideSpec } from '../slides/slide.types';
 import { ProjectStorageService } from '../storage/project-storage.service';
 import { SvgGeneratorService } from '../visuals/svg-generator.service';
+import { VisualPlan } from '../visuals/visual.types';
 import { PipelineResult } from './pipeline.types';
 
 @Injectable()
@@ -25,7 +26,7 @@ export class PipelineService {
     options: { requestedSlides?: number },
   ): Promise<PipelineResult> {
     const input = await this.projectStorageService.readInput(projectId);
-    const parsedDocument = this.parserService.parse(input.content, input.sourceType);
+    const parsedDocument = await this.parserService.parse(input.content, input.sourceType);
     await this.projectStorageService.writeArtifact(projectId, 'parsed-document.json', parsedDocument);
 
     const analysis = await this.llmJsonService.analyzeDocument(parsedDocument);
@@ -39,7 +40,10 @@ export class PipelineService {
     await this.projectStorageService.writeArtifact(projectId, 'deck-plan.json', deckPlan);
 
     const slideSpecs = this.slideSpecService.createSlides(parsedDocument, analysis, deckPlan);
-    const slidesWithAssets = await this.attachAssets(projectId, slideSpecs);
+    const visualPlan = this.svgGeneratorService.createVisualPlan(slideSpecs);
+    await this.projectStorageService.writeArtifact(projectId, 'visual-plan.json', visualPlan);
+
+    const slidesWithAssets = await this.attachAssets(projectId, slideSpecs, visualPlan);
     await this.projectStorageService.writeArtifact(projectId, 'slide-specs.json', slidesWithAssets);
 
     const outputFile = this.projectStorageService.getOutputPptxPath(projectId, deckPlan.title);
@@ -50,13 +54,18 @@ export class PipelineService {
       projectId,
       title: deckPlan.title,
       deckPlan,
+      visualPlan,
       slideSpecs: slidesWithAssets,
       outputFile,
     };
   }
 
-  private async attachAssets(projectId: string, slides: SlideSpec[]): Promise<SlideSpec[]> {
-    const generatedAssets = this.svgGeneratorService.generate(slides);
+  private async attachAssets(
+    projectId: string,
+    slides: SlideSpec[],
+    visualPlan: VisualPlan,
+  ): Promise<SlideSpec[]> {
+    const generatedAssets = this.svgGeneratorService.generate(slides, visualPlan);
     const assetPathBySlide = new Map<number, string>();
 
     for (const asset of generatedAssets) {

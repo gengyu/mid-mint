@@ -20,6 +20,8 @@ export class SlideSpecService {
           layout: 'cover',
           bullets: [],
           notes: `Opening slide for ${document.title}`,
+          visualGoal: 'Use a minimal title accent and keep the opening slide clean.',
+          visualType: 'cover-accent',
         };
       }
 
@@ -37,6 +39,13 @@ export class SlideSpecService {
         bullets: bullets.length > 0 ? bullets : [plannedSlide.keyPoint],
         paragraph: matchedSection?.body || plannedSlide.keyPoint,
         notes: plannedSlide.keyPoint,
+        visualGoal: plannedSlide.keyPoint,
+        visualType:
+          plannedSlide.layoutHint === 'comparison'
+            ? 'comparison-card'
+            : plannedSlide.layoutHint === 'title-bullets'
+              ? 'summary-graphic'
+              : 'diagram',
       };
     });
   }

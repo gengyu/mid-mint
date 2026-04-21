@@ -1,4 +1,5 @@
 import { SlideLayout, SlideSpec } from '../slides/slide.types';
+import { VisualPlan } from '../visuals/visual.types';
 
 export interface PresentationAnalysis {
   mainTopic: string;
@@ -24,6 +25,7 @@ export interface PipelineResult {
   projectId: string;
   title: string;
   deckPlan: DeckPlan;
+  visualPlan: VisualPlan;
   slideSpecs: SlideSpec[];
   outputFile: string;
 }

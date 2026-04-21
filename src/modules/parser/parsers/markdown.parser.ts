@@ -2,11 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { Lexer, Tokens } from 'marked';
 
 import { DocumentSection } from '../types/document-section.type';
-import { ParsedDocument } from '../types/parsed-document.type';
+import { DocumentSourceType, ParsedDocument } from '../types/parsed-document.type';
 
 @Injectable()
 export class MarkdownParser {
-  parse(content: string, sourceType: 'markdown' | 'txt'): ParsedDocument {
+  parse(content: string, sourceType: Extract<DocumentSourceType, 'markdown' | 'txt'>): ParsedDocument {
     if (sourceType === 'txt') {
       return this.parseTxt(content, sourceType);
     }
