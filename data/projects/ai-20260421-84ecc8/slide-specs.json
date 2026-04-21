@@ -1,0 +1,61 @@
+[
+  {
+    "slideNumber": 1,
+    "title": "AI技术趋势报告",
+    "subtitle": "GPT系列持续领先 开源模型快速追赶 多模态能力成为标配",
+    "layout": "cover",
+    "bullets": [],
+    "notes": "Opening slide for AI技术趋势报告"
+  },
+  {
+    "slideNumber": 2,
+    "title": "AI技术趋势报告",
+    "layout": "text-visual",
+    "bullets": [
+      "AI技术趋势报告"
+    ],
+    "paragraph": "AI技术趋势报告",
+    "notes": "AI技术趋势报告",
+    "assetPath": "/sessions/69e74841bf2b359af6ad9419/workspace/data/projects/ai-20260421-84ecc8/assets/slide-002.svg"
+  },
+  {
+    "slideNumber": 3,
+    "title": "大语言模型",
+    "layout": "text-visual",
+    "bullets": [
+      "GPT系列持续领先",
+      "开源模型快速追赶",
+      "多模态能力成为标配"
+    ],
+    "paragraph": "GPT系列持续领先",
+    "notes": "GPT系列持续领先",
+    "assetPath": "/sessions/69e74841bf2b359af6ad9419/workspace/data/projects/ai-20260421-84ecc8/assets/slide-003.svg"
+  },
+  {
+    "slideNumber": 4,
+    "title": "AI应用落地",
+    "layout": "text-visual",
+    "bullets": [
+      "智能客服广泛部署",
+      "代码辅助工具普及",
+      "内容生成工具爆发"
+    ],
+    "paragraph": "智能客服广泛部署",
+    "notes": "智能客服广泛部署",
+    "assetPath": "/sessions/69e74841bf2b359af6ad9419/workspace/data/projects/ai-20260421-84ecc8/assets/slide-004.svg"
+  },
+  {
+    "slideNumber": 5,
+    "title": "Summary",
+    "layout": "title-bullets",
+    "bullets": [
+      "AI技术趋势报告",
+      "大语言模型",
+      "AI应用落地",
+      "未来展望"
+    ],
+    "paragraph": "AI技术趋势报告 / 大语言模型 / AI应用落地",
+    "notes": "AI技术趋势报告 / 大语言模型 / AI应用落地",
+    "assetPath": "/sessions/69e74841bf2b359af6ad9419/workspace/data/projects/ai-20260421-84ecc8/assets/slide-005.svg"
+  }
+]
