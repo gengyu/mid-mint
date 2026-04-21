@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Lexer, Tokens } from 'marked';
 
 import { DocumentSection } from '../types/document-section.type';
 import { ParsedDocument } from '../types/parsed-document.type';
@@ -6,23 +7,21 @@ import { ParsedDocument } from '../types/parsed-document.type';
 @Injectable()
 export class MarkdownParser {
   parse(content: string, sourceType: 'markdown' | 'txt'): ParsedDocument {
-    const lines = content.split(/\r?\n/);
+    if (sourceType === 'txt') {
+      return this.parseTxt(content, sourceType);
+    }
+
+    const tokens = Lexer.lex(content);
     const sections: DocumentSection[] = [];
     const paragraphs: string[] = [];
     let currentSection: DocumentSection | null = null;
     let fallbackTitle = 'Untitled Presentation';
 
-    for (const rawLine of lines) {
-      const line = rawLine.trim();
-      if (!line) {
-        continue;
-      }
-
-      const headingMatch = line.match(/^(#{1,6})\s+(.*)$/);
-      if (headingMatch) {
+    for (const token of tokens) {
+      if (token.type === 'heading') {
         currentSection = {
-          level: headingMatch[1].length,
-          title: headingMatch[2].trim(),
+          level: token.depth,
+          title: token.text.trim(),
           body: '',
           bullets: [],
         };
@@ -33,13 +32,21 @@ export class MarkdownParser {
         continue;
       }
 
-      const bulletMatch = line.match(/^[-*+]\s+(.*)$/);
-      if (bulletMatch) {
-        const bulletText = bulletMatch[1].trim();
+      if (token.type === 'list') {
+        const bullets = this.extractListItems(token as Tokens.List);
         if (currentSection) {
-          currentSection.bullets.push(bulletText);
+          currentSection.bullets.push(...bullets);
         }
-        paragraphs.push(bulletText);
+        paragraphs.push(...bullets);
+        continue;
+      }
+
+      if (token.type !== 'paragraph' && token.type !== 'text') {
+        continue;
+      }
+
+      const line = token.text.trim();
+      if (!line) {
         continue;
       }
 
@@ -70,5 +77,34 @@ export class MarkdownParser {
       sections,
       paragraphs,
     };
+  }
+
+  private parseTxt(content: string, sourceType: 'txt'): ParsedDocument {
+    const paragraphs = content
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    const title = paragraphs[0] ?? 'Untitled Presentation';
+
+    return {
+      title,
+      sourceType,
+      rawText: content,
+      sections: [
+        {
+          level: 1,
+          title,
+          body: paragraphs.join('\n'),
+          bullets: paragraphs.slice(1, 7),
+        },
+      ],
+      paragraphs,
+    };
+  }
+
+  private extractListItems(token: Tokens.List): string[] {
+    return token.items
+      .map((item) => item.text.trim())
+      .filter((item) => item.length > 0);
   }
 }

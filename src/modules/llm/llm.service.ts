@@ -1,14 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import OpenAI from 'openai';
 
 import { getLlmConfig } from '../../config/llm.config';
-
-interface ChatResponse {
-  choices?: Array<{
-    message?: {
-      content?: string;
-    };
-  }>;
-}
 
 @Injectable()
 export class LlmService {
@@ -23,13 +16,13 @@ export class LlmService {
       return null;
     }
 
-    const response = await fetch(`${config.baseUrl.replace(/\/$/, '')}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(config.apiKey ? { Authorization: `Bearer ${config.apiKey}` } : {}),
-      },
-      body: JSON.stringify({
+    const client = new OpenAI({
+      apiKey: config.apiKey || 'mid-mint-local',
+      baseURL: config.baseUrl,
+    });
+
+    try {
+      const response = await client.chat.completions.create({
         model: config.model,
         messages: [
           {
@@ -44,20 +37,13 @@ export class LlmService {
         response_format: {
           type: 'json_object',
         },
-      }),
-    });
+      });
 
-    if (!response.ok) {
-      return null;
-    }
+      const content = response.choices[0]?.message?.content;
+      if (!content) {
+        return null;
+      }
 
-    const payload = (await response.json()) as ChatResponse;
-    const content = payload.choices?.[0]?.message?.content;
-    if (!content) {
-      return null;
-    }
-
-    try {
       return JSON.parse(content) as T;
     } catch {
       return null;
