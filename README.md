@@ -21,12 +21,12 @@
 
 ```txt
 Document
-  -> Parse
-  -> Analyze
-  -> Plan
-  -> Visuals
-  -> Slides
-  -> Render
+  -> Parse    负责把原文变成结构化内容
+  -> Analyze  负责理解内容主题、摘要、核心信息
+  -> Plan     负责决定 PPT 怎么讲、讲几页、每页讲什么
+  -> Visuals  负责决定每页怎么视觉表达、生成什么 SVG
+  -> Slides   负责把内容规划 + 视觉规划合成为最终页面规格
+  -> Render   负责把 SlideSpec[] 渲染成 .pptx
 ```
 
 ## 当前接口
