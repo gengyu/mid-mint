@@ -23,7 +23,8 @@ export class LlmJsonService {
       }),
     ].join('\n\n');
 
-    return (await this.llmService.generateJson<PresentationAnalysis>(prompt)) ?? fallback;
+    const result = await this.llmService.generateJson<PresentationAnalysis>(prompt);
+    return this.isValidAnalysis(result) ? result : fallback;
   }
 
   async planDeck(
@@ -54,6 +55,7 @@ export class LlmJsonService {
     analysis: PresentationAnalysis,
     requestedSlides?: number,
   ): DeckPlan {
+    const keyMessages = Array.isArray(analysis.keyMessages) ? analysis.keyMessages : [];
     const requestedTotal = Math.max(3, Math.min(requestedSlides ?? 6, 10));
     const contentSections = document.sections.slice(0, Math.max(1, requestedTotal - 2));
     const slides = [
@@ -67,14 +69,14 @@ export class LlmJsonService {
       ...contentSections.map((section, index) => ({
         slideNumber: index + 2,
         title: section.title,
-        keyPoint: section.body || section.bullets[0] || analysis.keyMessages[index] || section.title,
+        keyPoint: section.body || section.bullets[0] || keyMessages[index] || section.title,
         sourceSectionTitle: section.title,
         layoutHint: section.bullets.length >= 4 ? ('comparison' as const) : ('text-visual' as const),
       })),
       {
         slideNumber: contentSections.length + 2,
         title: 'Summary',
-        keyPoint: analysis.keyMessages.slice(0, 3).join(' / '),
+        keyPoint: keyMessages.slice(0, 3).join(' / ') || analysis.summary || document.title,
         sourceSectionTitle: 'Summary',
         layoutHint: 'title-bullets' as const,
       },
@@ -85,5 +87,19 @@ export class LlmJsonService {
       totalSlides: slides.length,
       slides,
     };
+  }
+
+  private isValidAnalysis(value: unknown): value is PresentationAnalysis {
+    if (!value || typeof value !== 'object') {
+      return false;
+    }
+
+    const candidate = value as Partial<PresentationAnalysis>;
+    return (
+      typeof candidate.mainTopic === 'string' &&
+      typeof candidate.summary === 'string' &&
+      Array.isArray(candidate.keyMessages) &&
+      candidate.keyMessages.every((item) => typeof item === 'string')
+    );
   }
 }

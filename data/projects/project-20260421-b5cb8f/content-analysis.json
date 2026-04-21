@@ -1,0 +1,30 @@
+{
+  "title": "AI 周报",
+  "sections": [
+    {
+      "level": 1,
+      "title": "AI 周报",
+      "body": "",
+      "bullets": []
+    },
+    {
+      "level": 2,
+      "title": "本周进展",
+      "body": "",
+      "bullets": [
+        "模型接入完成",
+        "生成服务可用"
+      ]
+    },
+    {
+      "level": 2,
+      "title": "下周计划",
+      "body": "",
+      "bullets": [
+        "优化提示词",
+        "提升版式质量"
+      ]
+    }
+  ],
+  "status": "analyzed"
+}
