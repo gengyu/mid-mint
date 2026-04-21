@@ -1,0 +1,89 @@
+import { Injectable } from '@nestjs/common';
+
+import { ParsedDocument } from '../parser/types/parsed-document.type';
+import { DeckPlan, PresentationAnalysis } from '../pipeline/pipeline.types';
+import { SlideSpec } from '../slides/slide.types';
+import { LlmService } from './llm.service';
+
+@Injectable()
+export class LlmJsonService {
+  constructor(private readonly llmService: LlmService) {}
+
+  async analyzeDocument(document: ParsedDocument): Promise<PresentationAnalysis> {
+    const fallback = this.buildFallbackAnalysis(document);
+    if (!this.llmService.isConfigured()) {
+      return fallback;
+    }
+
+    const prompt = [
+      'Analyze this presentation source and return JSON.',
+      JSON.stringify({
+        title: document.title,
+        sections: document.sections,
+      }),
+    ].join('\n\n');
+
+    return (await this.llmService.generateJson<PresentationAnalysis>(prompt)) ?? fallback;
+  }
+
+  async planDeck(
+    document: ParsedDocument,
+    analysis: PresentationAnalysis,
+    requestedSlides?: number,
+  ): Promise<DeckPlan> {
+    const fallback = this.buildFallbackDeckPlan(document, analysis, requestedSlides);
+    return fallback;
+  }
+
+  async polishSlides(slides: SlideSpec[]): Promise<SlideSpec[]> {
+    return slides;
+  }
+
+  private buildFallbackAnalysis(document: ParsedDocument): PresentationAnalysis {
+    const sectionTitles = document.sections.map((section) => section.title).slice(0, 5);
+    const summarySource = document.paragraphs.slice(0, 3).join(' ');
+    return {
+      mainTopic: document.title,
+      summary: summarySource || document.rawText.slice(0, 240),
+      keyMessages: sectionTitles.length > 0 ? sectionTitles : document.paragraphs.slice(0, 5),
+    };
+  }
+
+  private buildFallbackDeckPlan(
+    document: ParsedDocument,
+    analysis: PresentationAnalysis,
+    requestedSlides?: number,
+  ): DeckPlan {
+    const requestedTotal = Math.max(3, Math.min(requestedSlides ?? 6, 10));
+    const contentSections = document.sections.slice(0, Math.max(1, requestedTotal - 2));
+    const slides = [
+      {
+        slideNumber: 1,
+        title: document.title,
+        keyPoint: analysis.summary,
+        sourceSectionTitle: document.sections[0]?.title ?? document.title,
+        layoutHint: 'cover' as const,
+      },
+      ...contentSections.map((section, index) => ({
+        slideNumber: index + 2,
+        title: section.title,
+        keyPoint: section.body || section.bullets[0] || analysis.keyMessages[index] || section.title,
+        sourceSectionTitle: section.title,
+        layoutHint: section.bullets.length >= 4 ? ('comparison' as const) : ('text-visual' as const),
+      })),
+      {
+        slideNumber: contentSections.length + 2,
+        title: 'Summary',
+        keyPoint: analysis.keyMessages.slice(0, 3).join(' / '),
+        sourceSectionTitle: 'Summary',
+        layoutHint: 'title-bullets' as const,
+      },
+    ].slice(0, requestedTotal);
+
+    return {
+      title: document.title,
+      totalSlides: slides.length,
+      slides,
+    };
+  }
+}

@@ -1,21 +1,21 @@
-import "reflect-metadata";
-import path from "path";
-import { fileURLToPath } from "url";
-import { NestFactory } from "@nestjs/core";
-import { AppModule } from "@/app/app.module";
-import { loadProjectEnv } from "@/config/env";
-import { resolveApiPort } from "@/config/ports";
+import { ValidationPipe } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const rootDir = path.resolve(__dirname, "..");
+import { APP_PORT } from './config/app.config';
+import { AppModule } from './app.module';
 
-loadProjectEnv(rootDir);
-
-async function bootstrap() {
+async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
-  app.enableCors();
-  const port = resolveApiPort(process.env);
-  await app.listen(port);
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
+
+  await app.listen(APP_PORT);
 }
 
-bootstrap();
+void bootstrap();
