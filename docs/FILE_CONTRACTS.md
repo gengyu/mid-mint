@@ -29,11 +29,13 @@ data/projects/<projectId>/
 ├── deck-plan.json
 ├── visual-plan.json
 ├── slide-specs.json
+├── iterations/
+│   └── round-xx/
 ├── assets/
 │   ├── slide-002.svg
 │   └── ...
 └── output/
-    └── <title>.pptx
+    └── presentation.pptx
 ```
 
 ## project.json
@@ -120,17 +122,41 @@ data/projects/<projectId>/
   "slides": [
     {
       "slideNumber": 2,
+      "role": "content",
       "layout": "process",
       "visualType": "diagram",
+      "visualTechnique": "mermaid",
+      "textTechnique": "short-bullets",
+      "visualPriority": "high",
       "goal": "Explain the core pipeline",
       "composition": "right-panel",
       "density": "medium",
       "accentTone": "teal",
+      "requiresAsset": true,
       "assetFile": "slide-002.svg"
     }
   ]
 }
 ```
+
+字段建议说明：
+
+- `role`
+  页面的演讲角色，例如 `cover / section / content / closing`
+- `layout`
+  固定 8 类页面角色 / 布局类型之一
+- `visualTechnique`
+  页内视觉表达技术，例如 `mermaid / svg / table / formula / image`
+- `textTechnique`
+  页内文字表达方式，例如 `short-bullets / statement / two-column-summary`
+- `visualPriority`
+  `low / medium / high`
+- `composition`
+  图文结构，例如 `full-bleed / left-panel / right-panel / two-column`
+- `density`
+  页面文字密度，例如 `low / medium / high`
+- `requiresAsset`
+  是否必须生成 SVG 或图片素材
 
 ## slide-specs.json
 
@@ -208,6 +234,18 @@ iterations/round-02/slide-specs.json
 - `code-block`
 - `formula`
 - `image`
+
+## 页面映射约束
+
+建议遵守这些主路径规则：
+
+1. 顶部 H1 只生成 `cover`
+2. `agenda` 通常只出现 0 或 1 页
+3. 章节切换时可插入 `section-divider`
+4. 流程、路线、步骤优先映射到 `process`
+5. 表格和左右对照优先映射到 `comparison`
+6. 长代码和长公式不直接原样塞进普通正文页
+7. 连续正文页不要无限复用同一 layout
 
 ## assets/
 

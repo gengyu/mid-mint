@@ -135,6 +135,52 @@
 - 支持 8 类页面角色 / 布局类型
 - 渲染层只负责 PPT 生成
 
+## 第二版近期迭代计划
+
+### Iteration A: 巩固视觉规划
+
+- 让 `visual-plan.json` 成为真正的设计决策层
+- 增加 `visualTechnique / textTechnique / density / composition / visualPriority`
+- 明确“哪些页必须图示、哪些页优先文字”
+
+验收：
+
+- `visual-plan.json` 能独立解释每页为什么这么排
+- renderer 不再自己猜大部分版式
+
+### Iteration B: 接入高频技术内容
+
+- 优先接 `mermaid`
+- 补 `table`
+- 补 `code-block`
+
+验收：
+
+- 文档中的 Mermaid、表格、代码块能进入页内表达技术分流
+- 不再把这些内容一律降级成普通 bullet
+
+### Iteration C: 强化演讲感
+
+- 给 `quote` 和 `summary / closing` 更多稳定版式
+- 强化 `section-divider`
+- 控制布局重复
+
+验收：
+
+- 长文档输出不再是连续几页同模板
+- 收尾页具备明显结束感
+
+### Iteration D: 技术型页面增强
+
+- 接入 `formula`
+- 继续增强 SVG scene 能力
+- 视情况补数据卡片、时间线、架构块图
+
+验收：
+
+- 技术文档里的公式和结构图能更自然进入 PPT
+- 技术型 deck 不只剩 bullet 和普通说明文
+
 ## 优先阅读和编辑文件
 
 1. `src/modules/projects/projects.controller.ts`

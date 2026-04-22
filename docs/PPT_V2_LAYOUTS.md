@@ -238,10 +238,11 @@
 建议视觉规划层至少回答这几个问题：
 
 1. 这页是什么页面角色 / 布局类型
-2. 这页主要是文字优先、图优先，还是混合
-3. 这页应该使用什么页面内部表达技术
-4. 这页是否必须生成图示素材
-5. 这页的文字密度预算是多少
+2. 这页属于封面、过渡、正文还是收尾
+3. 这页主要是文字优先、图优先，还是混合
+4. 这页应该使用什么页面内部表达技术
+5. 这页是否必须生成图示素材
+6. 这页的文字密度预算是多少
 
 一个典型的 `visual-plan` 条目可以是：
 
@@ -251,9 +252,148 @@
   "role": "content",
   "layout": "process",
   "visualTechnique": "mermaid",
-  "textTechnique": "short-bullets"
+  "textTechnique": "short-bullets",
+  "visualPriority": "high",
+  "composition": "right-panel",
+  "density": "medium"
 }
 ```
+
+## 文档块到页型的映射规则
+
+### 顶部标题
+
+默认映射：
+
+- 第一个 `# 标题` -> `cover`
+
+规则：
+
+- 顶部标题只生成封面，不再重复生成一个同标题正文页
+- 如果文档很短，可省略独立 `agenda`
+
+### 章节标题
+
+默认映射：
+
+- `##` 或同等级章节 -> `text-visual / comparison / process`
+
+规则：
+
+- 如果文档总页数大于等于 7，可在章节切换处插入 `section-divider`
+- 同一章节内不要连续使用 3 页完全相同的布局
+
+### Bullet List
+
+默认映射：
+
+- 2 到 4 条普通 bullet -> `text-visual`
+- 3 到 5 条存在明确顺序 -> `process`
+- 两组 bullet 明显对照 -> `comparison`
+
+规则：
+
+- 每页 bullet 默认不超过 4 条
+- 单条 bullet 默认不超过 18 到 24 个汉字的密度
+
+### 表格
+
+默认映射：
+
+- Markdown table -> `comparison`
+
+规则：
+
+- 列数过多时优先转成双栏摘要，而不是硬塞完整表格
+- 只保留最值得展示的 3 到 5 行
+
+### Mermaid
+
+默认映射：
+
+- `mermaid` 流程图 -> `process`
+- `mermaid` 架构图 -> `text-visual`
+- `mermaid` 时序或状态图 -> `text-visual` 或 `section-divider`
+
+规则：
+
+- Mermaid 是页内表达技术，不单独占一个新页型
+- 优先输出 SVG 再交给 renderer 放入页面
+
+### 代码块
+
+默认映射：
+
+- 短代码块 + 解释 -> `text-visual`
+- 需要强调一句关键实现 -> `quote`
+
+规则：
+
+- 一页代码行数默认不超过 8 到 12 行
+- 不把整段长代码原样搬进 PPT
+
+### 公式
+
+默认映射：
+
+- 单个核心公式 -> `quote`
+- 公式 + 解释 -> `text-visual`
+
+规则：
+
+- 公式页默认只承载一个关键公式
+- 必须配一句“这条公式说明什么”
+
+## 版式重复控制
+
+为了避免“每页都像一个模板”，第二版建议至少遵守这些约束：
+
+1. `agenda` 之后的前两页不要连续使用相同布局
+2. 连续正文页中，相同布局最多连续出现 2 次
+3. 出现 `process` 或 `comparison` 后，下一页优先切到 `text-visual / quote / section-divider`
+4. `summary / closing` 不再复用普通正文模板
+5. 长文档中每 3 到 4 页应该出现一次明显节奏变化
+
+## 密度预算
+
+第二版建议把单页信息量限制在可讲述范围内：
+
+### cover
+
+- 标题 1 行
+- 副标题 1 到 2 行
+- 不放正文段落
+
+### agenda
+
+- 3 到 5 项
+- 每项尽量是短语
+
+### text-visual
+
+- bullet 2 到 4 条
+- paragraph 1 段
+- 图示 1 个
+
+### comparison
+
+- 左右各 2 到 4 条
+- 每栏只讲一个中心主题
+
+### process
+
+- 3 到 5 步
+- 每步 1 行短语
+
+### quote
+
+- 1 个核心句
+- 可配 1 行解释
+
+### summary / closing
+
+- 3 条 takeaway
+- 1 个 action 或结束句
 
 ## 多轮迭代原则
 
