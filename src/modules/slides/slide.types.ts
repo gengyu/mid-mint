@@ -2,11 +2,11 @@ export type SlideLayout =
   | 'cover'
   | 'agenda'
   | 'section-divider'
-  | 'title-bullets'
   | 'text-visual'
   | 'comparison'
   | 'process'
-  | 'quote';
+  | 'quote'
+  | 'summary-closing';
 
 export type SlideRole =
   | 'cover'
@@ -29,8 +29,12 @@ export interface SlideSpec {
   highlight?: string;
   notes?: string;
   visualGoal?: string;
+  visualTechnique?: 'none' | 'svg' | 'mermaid' | 'table' | 'code-block' | 'formula' | 'image';
+  textTechnique?: 'none' | 'statement' | 'short-bullets' | 'two-column-summary' | 'agenda-list';
+  visualPriority?: 'low' | 'medium' | 'high';
   visualType?: 'none' | 'cover-accent' | 'diagram' | 'comparison-card' | 'summary-graphic';
-  visualComposition?: 'none' | 'hero' | 'right-panel' | 'center-panel';
+  visualComposition?: 'none' | 'hero' | 'full-bleed' | 'left-panel' | 'right-panel' | 'center-panel' | 'two-column';
+  density?: 'low' | 'medium' | 'high';
   accentTone?: 'teal' | 'blue' | 'amber';
   assetPath?: string;
 }

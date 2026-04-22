@@ -25,12 +25,17 @@ export class SvgGeneratorService {
         if (slide.layoutHint === 'cover') {
           return {
             slideNumber: slide.slideNumber,
+            role: 'cover',
             layout: slide.layoutHint,
             visualType: 'cover-accent',
+            visualTechnique: 'image',
+            textTechnique: 'statement',
+            visualPriority: 'high',
             goal: `Introduce ${analysis.mainTopic} with a confident editorial hero composition.`,
             composition: 'hero',
             density: 'low',
             accentTone: 'teal',
+            requiresAsset: false,
           };
         }
 
@@ -41,31 +46,52 @@ export class SvgGeneratorService {
         ) {
           return {
             slideNumber: slide.slideNumber,
+            role: slide.layoutHint === 'section-divider' ? 'section' : 'content',
             layout: slide.layoutHint,
             visualType: 'none',
+            visualTechnique: 'none',
+            textTechnique:
+              slide.layoutHint === 'agenda'
+                ? 'agenda-list'
+                : slide.layoutHint === 'quote'
+                  ? 'statement'
+                  : 'none',
+            visualPriority: 'low',
             goal: slide.objective,
             composition: 'none',
             density: 'low',
             accentTone: this.pickAccentTone(slide.slideNumber),
+            requiresAsset: false,
           };
         }
 
-        const assetFile = `slide-${String(slide.slideNumber).padStart(3, '0')}.svg`;
         const visualType =
           slide.layoutHint === 'comparison'
             ? 'comparison-card'
-            : slide.layoutHint === 'title-bullets'
+            : slide.layoutHint === 'summary-closing'
               ? 'summary-graphic'
               : 'diagram';
+        const visualTechnique = this.pickVisualTechnique(slide.layoutHint);
+        const composition = this.pickComposition(slide.layoutHint);
+        const density = this.pickDensity(slide.layoutHint);
+        const requiresAsset = visualTechnique !== 'none';
+        const assetFile = requiresAsset
+          ? `slide-${String(slide.slideNumber).padStart(3, '0')}.svg`
+          : undefined;
 
         return {
           slideNumber: slide.slideNumber,
+          role: slide.role === 'closing' ? 'closing' : 'content',
           layout: slide.layoutHint,
           visualType,
+          visualTechnique,
+          textTechnique: this.pickTextTechnique(slide.layoutHint),
+          visualPriority: this.pickVisualPriority(slide.layoutHint),
           goal: this.buildGoal(slide.title, slide.keyPoint, visualType),
-          composition: slide.layoutHint === 'title-bullets' ? 'center-panel' : 'right-panel',
-          density: slide.layoutHint === 'comparison' ? 'high' : 'medium',
+          composition,
+          density,
           accentTone: this.pickAccentTone(slide.slideNumber),
+          requiresAsset,
           assetFile,
         };
       }),
@@ -230,6 +256,92 @@ export class SvgGeneratorService {
     }
 
     return `Translate "${keyPoint}" into a clean process-style visual for ${title}.`;
+  }
+
+  private pickVisualTechnique(
+    layout: DeckPlan['slides'][number]['layoutHint'],
+  ): VisualPlan['slides'][number]['visualTechnique'] {
+    if (layout === 'comparison' || layout === 'process' || layout === 'text-visual') {
+      return 'svg';
+    }
+
+    if (layout === 'summary-closing') {
+      return 'svg';
+    }
+
+    return 'none';
+  }
+
+  private pickTextTechnique(
+    layout: DeckPlan['slides'][number]['layoutHint'],
+  ): VisualPlan['slides'][number]['textTechnique'] {
+    if (layout === 'agenda') {
+      return 'agenda-list';
+    }
+
+    if (layout === 'comparison') {
+      return 'two-column-summary';
+    }
+
+    if (layout === 'quote' || layout === 'cover') {
+      return 'statement';
+    }
+
+    if (layout === 'section-divider') {
+      return 'none';
+    }
+
+    return 'short-bullets';
+  }
+
+  private pickVisualPriority(
+    layout: DeckPlan['slides'][number]['layoutHint'],
+  ): VisualPlan['slides'][number]['visualPriority'] {
+    if (layout === 'cover' || layout === 'process') {
+      return 'high';
+    }
+
+    if (layout === 'text-visual' || layout === 'comparison' || layout === 'summary-closing') {
+      return 'medium';
+    }
+
+    return 'low';
+  }
+
+  private pickComposition(
+    layout: DeckPlan['slides'][number]['layoutHint'],
+  ): VisualPlan['slides'][number]['composition'] {
+    if (layout === 'cover') {
+      return 'hero';
+    }
+
+    if (layout === 'comparison') {
+      return 'two-column';
+    }
+
+    if (layout === 'summary-closing') {
+      return 'center-panel';
+    }
+
+    if (layout === 'agenda' || layout === 'quote' || layout === 'section-divider') {
+      return 'none';
+    }
+
+    return 'right-panel';
+  }
+
+  private pickDensity(
+    layout: DeckPlan['slides'][number]['layoutHint'],
+  ): VisualPlan['slides'][number]['density'] {
+    if (layout === 'comparison') {
+      return 'high';
+    }
+
+    if (layout === 'cover' || layout === 'quote' || layout === 'agenda' || layout === 'section-divider') {
+      return 'low';
+    }
+
+    return 'medium';
   }
 
   private pickAccentTone(slideNumber: number): 'teal' | 'blue' | 'amber' {

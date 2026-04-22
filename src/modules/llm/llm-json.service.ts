@@ -167,7 +167,7 @@ export class LlmJsonService {
         title: requestedTotal >= 6 ? 'Closing Takeaways' : 'Summary',
         keyPoint: keyMessages.slice(0, 3).join(' / ') || analysis.summary || document.title,
         sourceSectionTitle: 'Summary',
-        layoutHint: 'title-bullets' as const,
+        layoutHint: 'summary-closing' as const,
         role: requestedTotal >= 6 ? ('closing' as const) : ('summary' as const),
         visualFocus: 'text' as const,
         objective: 'Land the presentation with memorable takeaways and a clear next step.',
@@ -254,7 +254,7 @@ export class LlmJsonService {
           typeof slide.keyPoint === 'string' &&
           typeof slide.sourceSectionTitle === 'string' &&
           typeof slide.objective === 'string' &&
-          ['cover', 'agenda', 'section-divider', 'title-bullets', 'text-visual', 'comparison', 'process', 'quote'].includes(slide.layoutHint),
+          ['cover', 'agenda', 'section-divider', 'text-visual', 'comparison', 'process', 'quote', 'summary-closing'].includes(slide.layoutHint),
       )
     );
   }

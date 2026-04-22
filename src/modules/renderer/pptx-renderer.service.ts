@@ -57,7 +57,7 @@ export class PptxRendererService {
         case 'text-visual':
           renderTextVisualTemplate(slide, spec);
           break;
-        case 'title-bullets':
+        case 'summary-closing':
         default:
           renderTitleBulletsTemplate(slide, spec);
           break;

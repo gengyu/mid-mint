@@ -34,8 +34,12 @@ export class SlideSpecService {
           highlight: analysis.mainTopic,
           notes: `Opening slide for ${document.title}`,
           visualGoal: 'Use a minimal title accent and keep the opening slide clean.',
+          visualTechnique: plannedVisual?.visualTechnique ?? 'image',
+          textTechnique: plannedVisual?.textTechnique ?? 'statement',
+          visualPriority: plannedVisual?.visualPriority ?? 'high',
           visualType: plannedVisual?.visualType ?? 'cover-accent',
           visualComposition: plannedVisual?.composition ?? 'hero',
+          density: plannedVisual?.density ?? 'low',
           accentTone: plannedVisual?.accentTone ?? 'teal',
         };
       }
@@ -53,8 +57,12 @@ export class SlideSpecService {
           highlight: analysis.storyArc?.join(' -> ') || analysis.summary,
           notes: 'Agenda overview',
           visualGoal: plannedVisual?.goal ?? 'Show the audience the talk structure and set expectations.',
+          visualTechnique: plannedVisual?.visualTechnique ?? 'none',
+          textTechnique: plannedVisual?.textTechnique ?? 'agenda-list',
+          visualPriority: plannedVisual?.visualPriority ?? 'low',
           visualType: plannedVisual?.visualType ?? 'none',
           visualComposition: plannedVisual?.composition ?? 'none',
+          density: plannedVisual?.density ?? 'low',
           accentTone: plannedVisual?.accentTone ?? 'teal',
         };
       }
@@ -65,15 +73,19 @@ export class SlideSpecService {
           title: plannedSlide.title,
           eyebrow: plannedSlide.role === 'closing' ? 'Final message' : 'Summary',
           sectionLabel: this.buildSectionLabel(plannedSlide.slideNumber, deckPlan.totalSlides),
-          layout: 'title-bullets',
+          layout: 'summary-closing',
           role: plannedSlide.role,
           bullets: analysis.keyMessages.slice(0, 5),
           paragraph: analysis.summary,
           highlight: analysis.summary,
           notes: plannedSlide.keyPoint,
           visualGoal: plannedVisual?.goal ?? plannedSlide.objective,
+          visualTechnique: plannedVisual?.visualTechnique ?? 'svg',
+          textTechnique: plannedVisual?.textTechnique ?? 'short-bullets',
+          visualPriority: plannedVisual?.visualPriority ?? 'medium',
           visualType: plannedVisual?.visualType ?? 'summary-graphic',
           visualComposition: plannedVisual?.composition ?? 'center-panel',
+          density: plannedVisual?.density ?? 'medium',
           accentTone: plannedVisual?.accentTone ?? this.pickAccentTone(plannedSlide.slideNumber),
         };
       }
@@ -98,10 +110,12 @@ export class SlideSpecService {
         highlight,
         notes: plannedSlide.keyPoint,
         visualGoal: plannedVisual?.goal ?? plannedSlide.keyPoint,
+        visualTechnique: plannedVisual?.visualTechnique ?? this.defaultVisualTechnique(plannedSlide.layoutHint),
+        textTechnique: plannedVisual?.textTechnique ?? this.defaultTextTechnique(plannedSlide.layoutHint),
+        visualPriority: plannedVisual?.visualPriority ?? this.defaultVisualPriority(plannedSlide.layoutHint),
         visualType: plannedVisual?.visualType ?? this.defaultVisualType(plannedSlide.layoutHint),
-        visualComposition:
-          plannedVisual?.composition ??
-          (plannedSlide.layoutHint === 'title-bullets' ? 'center-panel' : 'right-panel'),
+        visualComposition: plannedVisual?.composition ?? this.defaultComposition(plannedSlide.layoutHint),
+        density: plannedVisual?.density ?? this.defaultDensity(plannedSlide.layoutHint),
         accentTone: plannedVisual?.accentTone ?? this.pickAccentTone(plannedSlide.slideNumber),
       };
     });
@@ -139,7 +153,7 @@ export class SlideSpecService {
       return 'comparison-card';
     }
 
-    if (layout === 'title-bullets') {
+    if (layout === 'summary-closing') {
       return 'summary-graphic';
     }
 
@@ -148,6 +162,82 @@ export class SlideSpecService {
     }
 
     return 'diagram';
+  }
+
+  private defaultVisualTechnique(layout: SlideSpec['layout']): SlideSpec['visualTechnique'] {
+    if (layout === 'text-visual' || layout === 'comparison' || layout === 'process' || layout === 'summary-closing') {
+      return 'svg';
+    }
+
+    if (layout === 'cover') {
+      return 'image';
+    }
+
+    return 'none';
+  }
+
+  private defaultTextTechnique(layout: SlideSpec['layout']): SlideSpec['textTechnique'] {
+    if (layout === 'agenda') {
+      return 'agenda-list';
+    }
+
+    if (layout === 'comparison') {
+      return 'two-column-summary';
+    }
+
+    if (layout === 'quote' || layout === 'cover') {
+      return 'statement';
+    }
+
+    if (layout === 'section-divider') {
+      return 'none';
+    }
+
+    return 'short-bullets';
+  }
+
+  private defaultVisualPriority(layout: SlideSpec['layout']): SlideSpec['visualPriority'] {
+    if (layout === 'cover' || layout === 'process') {
+      return 'high';
+    }
+
+    if (layout === 'text-visual' || layout === 'comparison' || layout === 'summary-closing') {
+      return 'medium';
+    }
+
+    return 'low';
+  }
+
+  private defaultComposition(layout: SlideSpec['layout']): NonNullable<SlideSpec['visualComposition']> {
+    if (layout === 'cover') {
+      return 'hero';
+    }
+
+    if (layout === 'comparison') {
+      return 'two-column';
+    }
+
+    if (layout === 'summary-closing') {
+      return 'center-panel';
+    }
+
+    if (layout === 'agenda' || layout === 'quote' || layout === 'section-divider') {
+      return 'none';
+    }
+
+    return 'right-panel';
+  }
+
+  private defaultDensity(layout: SlideSpec['layout']): NonNullable<SlideSpec['density']> {
+    if (layout === 'comparison') {
+      return 'high';
+    }
+
+    if (layout === 'cover' || layout === 'agenda' || layout === 'quote' || layout === 'section-divider') {
+      return 'low';
+    }
+
+    return 'medium';
   }
 
   private pickAccentTone(slideNumber: number): SlideSpec['accentTone'] {
