@@ -35,6 +35,7 @@ export function renderAgendaTemplate(slide: PptSlideLike, spec: SlideSpec): void
     h: 1.0,
     fontSize: 14,
     color: THEME.muted,
+    fit: 'shrink',
     fontFace: 'Aptos',
   });
 
@@ -65,9 +66,10 @@ export function renderAgendaTemplate(slide: PptSlideLike, spec: SlideSpec): void
       y: y - 0.02,
       w: 6.4,
       h: 0.35,
-      fontSize: 20,
+      fontSize: 18,
       color: THEME.text,
       bold: index === 0,
+      fit: 'shrink',
       fontFace: 'Aptos',
     });
   });
@@ -97,10 +99,11 @@ export function renderAgendaTemplate(slide: PptSlideLike, spec: SlideSpec): void
       y: 2.45,
       w: 2.7,
       h: 1.7,
-      fontSize: 18,
+      fontSize: 16,
       color: THEME.ink,
       bold: true,
       valign: 'mid',
+      fit: 'shrink',
       fontFace: 'Aptos Display',
     });
   }

@@ -1,6 +1,8 @@
 import { SlideLayout, SlideSpec } from '../slides/slide.types';
 import { VisualPlan } from '../visuals/visual.types';
 
+export type StoryArcPhase = 'context' | 'key-ideas' | 'action';
+
 export interface PresentationAnalysis {
   mainTopic: string;
   summary: string;
@@ -25,6 +27,9 @@ export interface PlannedSlide {
     | 'closing';
   visualFocus: 'text' | 'visual' | 'mixed';
   objective: string;
+  storyArcPhase?: StoryArcPhase;
+  sectionWeight?: number;
+  transitionReason?: 'story-arc' | 'section-weight' | 'layout-balance';
 }
 
 export interface DeckPlan {

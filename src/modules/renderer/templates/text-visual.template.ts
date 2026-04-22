@@ -28,6 +28,68 @@ export function renderTextVisualTemplate(slide: PptSlideLike, spec: SlideSpec): 
     color: THEME.ink,
     fontFace: 'Aptos Display',
   });
+
+  if (spec.visualTechnique === 'code-block' && spec.codeBlock?.content) {
+    slide.addShape('roundRect', {
+      x: 0.7,
+      y: 1.7,
+      w: 4.3,
+      h: 4.7,
+      rectRadius: 0.12,
+      fill: { color: THEME.white },
+      line: { color: THEME.sky, width: 1.1 },
+    });
+    slide.addText(spec.paragraph ?? spec.highlight ?? '', {
+      x: 1.0,
+      y: 2.0,
+      w: 3.7,
+      h: 2.3,
+      fontSize: 15,
+      color: THEME.text,
+      valign: 'top',
+      fontFace: 'Aptos',
+    });
+    slide.addShape('roundRect', {
+      x: 5.35,
+      y: 1.7,
+      w: 6.15,
+      h: 4.7,
+      rectRadius: 0.12,
+      fill: { color: '102033' },
+      line: { color: '102033', width: 1.1 },
+    });
+    slide.addText((spec.codeBlock.language || 'CODE').toUpperCase(), {
+      x: 5.7,
+      y: 2.0,
+      w: 1.8,
+      h: 0.25,
+      fontSize: 11,
+      bold: true,
+      color: 'D9F2F5',
+      fontFace: 'Aptos',
+    });
+    slide.addText(
+      spec.codeBlock.content
+        .split('\n')
+        .slice(0, 10)
+        .map((line) => line.replace(/\t/g, '  '))
+        .join('\n'),
+      {
+        x: 5.7,
+        y: 2.45,
+        w: 5.4,
+        h: 3.5,
+        fontSize: 12,
+        color: 'F8FAFC',
+        breakLine: true,
+        margin: 0.03,
+        valign: 'top',
+        fontFace: 'Courier New',
+      },
+    );
+    return;
+  }
+
   slide.addShape('roundRect', {
     x: 0.7,
     y: 1.7,

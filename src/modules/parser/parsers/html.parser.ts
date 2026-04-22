@@ -18,13 +18,31 @@ export class HtmlParser {
 
   parse(content: string): ParsedDocument {
     const rawText = this.toText(content);
-    return this.structuredTextParser.parse(rawText, 'html', {
+    const parsed = this.structuredTextParser.parse(rawText, 'html', {
       titleOverride: this.extractTitle(content) ?? undefined,
     });
+    const formulas = this.extractFormulas(content);
+
+    if (formulas.length > 0) {
+      parsed.sections = parsed.sections.map((section, index) =>
+        index === 0
+          ? {
+              ...section,
+              formulas: Array.from(new Set([...(section.formulas ?? []), ...formulas])),
+            }
+          : section,
+      );
+    }
+
+    return parsed;
   }
 
   private extractTitle(content: string): string | null {
     const titleMatch = content.match(/<title[^>]*>(.*?)<\/title>/i);
     return titleMatch?.[1]?.trim() || null;
+  }
+
+  private extractFormulas(content: string): string[] {
+    return (content.match(/\$\$[\s\S]+?\$\$|\$[^$\n]+\$/g) ?? []).map((item) => item.trim());
   }
 }

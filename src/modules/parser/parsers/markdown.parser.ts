@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Lexer, Tokens } from 'marked';
 
-import { DocumentSection } from '../types/document-section.type';
+import { DocumentCodeBlock, DocumentSection, DocumentTableData } from '../types/document-section.type';
 import { ParsedDocument } from '../types/parsed-document.type';
 
 @Injectable()
@@ -32,6 +32,9 @@ export class MarkdownParser {
           title: headingTitle,
           body: '',
           bullets: [],
+          codeBlocks: [],
+          formulas: [],
+          mermaidDefinitions: [],
         };
         sections.push(currentSection);
         if (title === 'Untitled Presentation') {
@@ -82,20 +85,93 @@ export class MarkdownParser {
       }
 
       if (this.isCodeToken(token)) {
-        const codeText = this.normalizeText(token.text);
-        if (!codeText) {
+        const codeContent = token.text.trim();
+        if (!codeContent) {
+          continue;
+        }
+
+        if (currentSection) {
+          if (token.lang?.trim().toLowerCase() === 'mermaid') {
+            currentSection.mermaidDefinitions = [
+              ...(currentSection.mermaidDefinitions ?? []),
+              codeContent,
+            ];
+            const summarized = this.summarizeCodeBlock(codeContent);
+            if (summarized) {
+              currentSection.body = currentSection.body
+                ? `${currentSection.body}\n${summarized}`
+                : summarized;
+            }
+          } else {
+            currentSection.codeBlocks = [
+              ...(currentSection.codeBlocks ?? []),
+              {
+                language: token.lang?.trim() || undefined,
+                content: codeContent,
+              } satisfies DocumentCodeBlock,
+            ];
+            const summarized = this.summarizeCodeBlock(codeContent);
+            currentSection.body = currentSection.body
+              ? `${currentSection.body}\n${summarized}`
+              : summarized;
+          }
+
+          currentSection.formulas = this.mergeFormulas(
+            currentSection.formulas,
+            this.extractFormulas(codeContent),
+          );
+        } else {
+          introParagraphs.push(this.summarizeCodeBlock(codeContent));
+        }
+
+        paragraphs.push(codeContent);
+        continue;
+      }
+
+      if (this.isTableToken(token)) {
+        const tableData = this.extractTableData(token);
+        if (!tableData) {
+          continue;
+        }
+
+        if (currentSection) {
+          currentSection.tableData = tableData;
+          currentSection.bullets.push(
+            ...tableData.rows
+              .map((row) => row.filter(Boolean).join(' vs '))
+              .filter((row) => row.length > 0)
+              .slice(0, 4),
+          );
+        } else {
+          introParagraphs.push(...tableData.rows.map((row) => row.join(' | ')));
+        }
+
+        paragraphs.push(
+          ...(tableData.headers ?? []),
+          ...tableData.rows.map((row) => row.join(' | ')),
+        );
+        continue;
+      }
+
+      if (this.isHtmlToken(token)) {
+        const htmlText = this.normalizeText(token.text);
+        if (!htmlText) {
           continue;
         }
 
         if (currentSection) {
           currentSection.body = currentSection.body
-            ? `${currentSection.body}\n${codeText}`
-            : codeText;
+            ? `${currentSection.body}\n${htmlText}`
+            : htmlText;
+          currentSection.formulas = this.mergeFormulas(
+            currentSection.formulas,
+            this.extractFormulas(htmlText),
+          );
         } else {
-          introParagraphs.push(codeText);
+          introParagraphs.push(htmlText);
         }
 
-        paragraphs.push(codeText);
+        paragraphs.push(htmlText);
       }
     }
 
@@ -130,6 +206,48 @@ export class MarkdownParser {
     return value.replace(/\s+/g, ' ').trim();
   }
 
+  private summarizeCodeBlock(value: string): string {
+    const compact = value
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .slice(0, 4)
+      .join(' ');
+
+    return this.normalizeText(compact);
+  }
+
+  private extractFormulas(content: string): string[] {
+    const matches = content.match(/\$\$[\s\S]+?\$\$|\$[^$\n]+\$/g) ?? [];
+    return matches.map((item) => item.trim()).filter(Boolean);
+  }
+
+  private mergeFormulas(existing: string[] | undefined, incoming: string[]): string[] {
+    return Array.from(new Set([...(existing ?? []), ...incoming]));
+  }
+
+  private extractTableData(token: Tokens.Table): DocumentTableData | null {
+    const headers = token.header
+      ?.map((cell) => this.normalizeText(cell.text))
+      .filter((cell) => cell.length > 0);
+    const rows = token.rows
+      ?.map((row) =>
+        row
+          .map((cell) => this.normalizeText(cell.text))
+          .filter((cell) => cell.length > 0),
+      )
+      .filter((row) => row.length > 0);
+
+    if (!rows?.length) {
+      return null;
+    }
+
+    return {
+      headers: headers?.length ? headers : undefined,
+      rows,
+    };
+  }
+
   private isHeadingToken(token: Tokens.Generic): token is Tokens.Heading {
     return token.type === 'heading';
   }
@@ -144,5 +262,13 @@ export class MarkdownParser {
 
   private isCodeToken(token: Tokens.Generic): token is Tokens.Code {
     return token.type === 'code';
+  }
+
+  private isTableToken(token: Tokens.Generic): token is Tokens.Table {
+    return token.type === 'table';
+  }
+
+  private isHtmlToken(token: Tokens.Generic): token is Tokens.HTML {
+    return token.type === 'html';
   }
 }

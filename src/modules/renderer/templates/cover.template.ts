@@ -38,9 +38,10 @@ export function renderCoverTemplate(slide: PptSlideLike, spec: SlideSpec): void 
     y: 1.45,
     w: 8.1,
     h: 1.2,
-    fontSize: 28,
+    fontSize: spec.title.length > 32 ? 24 : 28,
     bold: true,
     color: THEME.white,
+    fit: 'shrink',
     fontFace: 'Aptos Display',
   });
   slide.addText(spec.subtitle ?? '', {
@@ -48,9 +49,10 @@ export function renderCoverTemplate(slide: PptSlideLike, spec: SlideSpec): void 
     y: 2.9,
     w: 6.8,
     h: 1.2,
-    fontSize: 17,
+    fontSize: 15,
     color: THEME.sky,
     breakLine: true,
+    fit: 'shrink',
     fontFace: 'Aptos',
   });
   if (spec.highlight) {

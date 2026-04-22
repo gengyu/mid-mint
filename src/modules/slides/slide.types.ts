@@ -23,6 +23,16 @@ export type SlideRole =
   | 'summary'
   | 'closing';
 
+export interface SlideTableData {
+  headers?: string[];
+  rows: string[][];
+}
+
+export interface SlideCodeBlock {
+  language?: string;
+  content: string;
+}
+
 export interface SlideSpec {
   slideNumber: number;
   title: string;
@@ -43,5 +53,12 @@ export interface SlideSpec {
   visualComposition?: 'none' | 'hero' | 'full-bleed' | 'left-panel' | 'right-panel' | 'center-panel' | 'two-column';
   density?: 'low' | 'medium' | 'high';
   accentTone?: 'teal' | 'blue' | 'amber';
+  contentBalance?: 'text-first' | 'visual-first' | 'balanced';
+  textBudget?: number;
+  mustGenerateVisual?: boolean;
+  tableData?: SlideTableData;
+  codeBlock?: SlideCodeBlock;
+  formulaText?: string;
+  mermaidDefinition?: string;
   assetPath?: string;
 }

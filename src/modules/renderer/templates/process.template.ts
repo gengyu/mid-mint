@@ -2,6 +2,7 @@ import { SlideSpec } from '../../slides/slide.types';
 import { THEME } from './rendering-theme';
 
 interface PptSlideLike {
+  addImage: (...args: any[]) => unknown;
   addShape: (...args: any[]) => unknown;
   addText: (...args: any[]) => unknown;
 }
@@ -36,6 +37,65 @@ export function renderProcessTemplate(slide: PptSlideLike, spec: SlideSpec): voi
     color: THEME.muted,
     fontFace: 'Aptos',
   });
+
+  if (spec.assetPath) {
+    slide.addShape('roundRect', {
+      x: 0.7,
+      y: 2.0,
+      w: 11.3,
+      h: 2.6,
+      rectRadius: 0.12,
+      fill: { color: THEME.white },
+      line: { color: THEME.sky, width: 1.1 },
+    });
+    slide.addImage({
+      path: spec.assetPath,
+      x: 0.95,
+      y: 2.2,
+      w: 10.8,
+      h: 2.2,
+    });
+
+    const steps = spec.bullets.slice(0, 5);
+    const cardWidth = steps.length <= 3 ? 3.3 : 2.12;
+    const gap = 0.18;
+    const startX = 0.82;
+
+    steps.forEach((step, index) => {
+      const x = startX + index * (cardWidth + gap);
+      slide.addShape('roundRect', {
+        x,
+        y: 4.95,
+        w: cardWidth,
+        h: 1.15,
+        rectRadius: 0.1,
+        fill: { color: index % 2 === 0 ? THEME.white : THEME.pale },
+        line: { color: THEME.sky, width: 1 },
+      });
+      slide.addText(String(index + 1).padStart(2, '0'), {
+        x: x + 0.12,
+        y: 5.15,
+        w: 0.42,
+        h: 0.2,
+        fontSize: 11,
+        bold: true,
+        color: THEME.cyan,
+        fontFace: 'Aptos',
+      });
+      slide.addText(step, {
+        x: x + 0.12,
+        y: 5.42,
+        w: cardWidth - 0.24,
+        h: 0.45,
+        fontSize: 13,
+        bold: true,
+        color: THEME.ink,
+        valign: 'mid',
+        fontFace: 'Aptos',
+      });
+    });
+    return;
+  }
 
   const steps = spec.bullets.slice(0, 5);
   const cardWidth = steps.length <= 3 ? 3.4 : 2.35;

@@ -1,6 +1,15 @@
 import { Injectable } from '@nestjs/common';
 
 import { ParsedDocument } from '../parser/types/parsed-document.type';
+import {
+  assignStoryArcPhase,
+  buildSlideObjective,
+  isSummaryLikeTitle,
+  pickDividerInsertion,
+  pickLayoutHintForSection,
+  pickVisualFocusForSection,
+  scoreSection,
+} from '../pipeline/ppt-v2-layouts';
 import { DeckPlan, PresentationAnalysis } from '../pipeline/pipeline.types';
 import { isSlideLayout, SlideSpec } from '../slides/slide.types';
 import { LlmService } from './llm.service';
@@ -40,6 +49,8 @@ export class LlmJsonService {
     const prompt = [
       'Create a PPT deck plan and return JSON only.',
       'Keep the response compact and practical for a presentation generator.',
+      'Use only these layoutHint values: cover, agenda, section-divider, text-visual, comparison, process, quote, summary-closing.',
+      'Follow the PPT v2 rule: decide page role/layout first, then leave internal visual technique decisions to the visual plan stage.',
       JSON.stringify({
         title: document.title,
         requestedSlides,
@@ -122,63 +133,123 @@ export class LlmJsonService {
       Math.max(1, requestedTotal - 2),
     );
     const includeAgendaSlide = requestedTotal >= 5 && contentSections.length >= 2;
-    const agendaSlide = includeAgendaSlide
-      ? [
-          {
-            slideNumber: 2,
-            title: 'Agenda',
-            keyPoint: keyMessages.slice(0, 4).join(' / ') || analysis.summary || document.title,
-            sourceSectionTitle: 'Agenda',
-            layoutHint: 'agenda' as const,
-            role: 'agenda' as const,
-            visualFocus: 'text' as const,
-            objective: 'Show the audience the talk structure and set expectations.',
-          },
-        ]
-      : [];
-    const contentStartNumber = includeAgendaSlide ? 3 : 2;
-    const contentCapacity = requestedTotal - 2 - agendaSlide.length;
-    const selectedSections = contentSections.slice(0, Math.max(1, contentCapacity));
-    const contentLayouts = this.planContentLayouts(selectedSections);
+    const availableContentSlots = requestedTotal - 2 - (includeAgendaSlide ? 1 : 0);
+    const contentCapacity = Math.max(1, availableContentSlots - (requestedTotal >= 7 ? 1 : 0));
+    const selectedSections = contentSections.slice(0, contentCapacity);
+    const selectedSectionLayouts = selectedSections.map((section, index) =>
+      isSummaryLikeTitle(section.title)
+        ? 'summary-closing'
+        : pickLayoutHintForSection(
+            section,
+            selectedSections
+              .slice(0, index)
+              .map((previousSection) =>
+                isSummaryLikeTitle(previousSection.title)
+                  ? 'summary-closing'
+                  : pickLayoutHintForSection(previousSection),
+              ),
+          ),
+    );
+    const dividerPlacement = pickDividerInsertion(
+      selectedSections,
+      requestedTotal,
+      analysis.storyArc,
+      selectedSectionLayouts,
+    );
 
-    const slides = [
+    const slides: DeckPlan['slides'] = [
       {
         slideNumber: 1,
         title: document.title,
         keyPoint: analysis.summary,
         sourceSectionTitle: selectedSections[0]?.title ?? document.title,
-        layoutHint: 'cover' as const,
-        role: 'cover' as const,
-        visualFocus: 'visual' as const,
+        layoutHint: 'cover',
+        role: 'cover',
+        visualFocus: 'visual',
         objective: 'Open with a clear promise and establish the talk narrative.',
       },
-      ...agendaSlide,
-      ...selectedSections.map((section, index) => ({
-        slideNumber: index + contentStartNumber,
+    ];
+
+    if (includeAgendaSlide) {
+      slides.push({
+        slideNumber: slides.length + 1,
+        title: 'Agenda',
+        keyPoint: keyMessages.slice(0, 4).join(' / ') || analysis.summary || document.title,
+        sourceSectionTitle: 'Agenda',
+        layoutHint: 'agenda',
+        role: 'agenda',
+        visualFocus: 'text',
+        objective: 'Show the audience the talk structure and set expectations.',
+      });
+    }
+
+    const recentLayouts: Array<DeckPlan['slides'][number]['layoutHint']> = [];
+
+    selectedSections.forEach((section, index) => {
+      const storyArcPhase = assignStoryArcPhase(
+        section,
+        index,
+        selectedSections.length,
+        analysis.storyArc,
+      );
+      const sectionWeight = scoreSection(section);
+
+      if (index === dividerPlacement.index) {
+        slides.push({
+          slideNumber: slides.length + 1,
+          title: section.title,
+          keyPoint: section.body || section.bullets[0] || section.title,
+          sourceSectionTitle: section.title,
+          layoutHint: 'section-divider',
+          role: 'section-divider',
+          visualFocus: 'text',
+          objective: `Transition into ${section.title} with a clear chapter break.`,
+          storyArcPhase,
+          sectionWeight,
+          transitionReason: dividerPlacement.reason,
+        });
+      }
+
+      const layoutHint = isSummaryLikeTitle(section.title)
+        ? 'summary-closing'
+        : pickLayoutHintForSection(section, recentLayouts);
+      recentLayouts.push(layoutHint);
+
+      slides.push({
+        slideNumber: slides.length + 1,
         title: section.title,
         keyPoint: section.body || section.bullets[0] || keyMessages[index] || section.title,
         sourceSectionTitle: section.title,
-        layoutHint: contentLayouts[index],
-        role: 'content' as const,
-        visualFocus: this.pickVisualFocus(section),
-        objective: this.buildSlideObjective(section.title),
-      })),
-      {
-        slideNumber: selectedSections.length + contentStartNumber,
-        title: requestedTotal >= 6 ? 'Closing Takeaways' : 'Summary',
-        keyPoint: keyMessages.slice(0, 3).join(' / ') || analysis.summary || document.title,
-        sourceSectionTitle: 'Summary',
-        layoutHint: 'summary-closing' as const,
-        role: requestedTotal >= 6 ? ('closing' as const) : ('summary' as const),
-        visualFocus: 'text' as const,
-        objective: 'Land the presentation with memorable takeaways and a clear next step.',
-      },
-    ].slice(0, requestedTotal);
+        layoutHint,
+        role: 'content',
+        visualFocus: pickVisualFocusForSection(section),
+        objective: buildSlideObjective(section.title, layoutHint),
+        storyArcPhase,
+        sectionWeight,
+      });
+    });
+
+    slides.push({
+      slideNumber: slides.length + 1,
+      title: requestedTotal >= 6 ? 'Closing Takeaways' : 'Summary',
+      keyPoint: keyMessages.slice(0, 3).join(' / ') || analysis.summary || document.title,
+      sourceSectionTitle: 'Summary',
+      layoutHint: 'summary-closing',
+      role: requestedTotal >= 6 ? 'closing' : 'summary',
+      visualFocus: 'text',
+      objective: 'Land the presentation with memorable takeaways and a clear next step.',
+      storyArcPhase: 'action',
+    });
+
+    const normalizedSlides = slides.slice(0, requestedTotal).map((slide, index) => ({
+      ...slide,
+      slideNumber: index + 1,
+    }));
 
     return {
       title: document.title,
-      totalSlides: slides.length,
-      slides,
+      totalSlides: normalizedSlides.length,
+      slides: normalizedSlides,
     };
   }
 
@@ -211,12 +282,13 @@ export class LlmJsonService {
 
       return {
         ...slide,
-        bullets: slide.layout === 'quote' ? [] : trimmedBullets,
-        highlight,
+        bullets:
+          slide.layout === 'quote' || slide.layout === 'section-divider' ? [] : trimmedBullets,
+        highlight: slide.layout === 'quote' && slide.visualTechnique === 'formula' ? undefined : highlight,
         eyebrow: slide.eyebrow || this.buildEyebrow(slide),
         notes: `${baseNotes}\n\nSpeaker cue: ${speakingPrompt}`,
         paragraph:
-          slide.layout === 'quote'
+          slide.layout === 'quote' || slide.layout === 'section-divider'
             ? this.shortenText(slide.paragraph || baseNotes || highlight, 160)
             : this.shortenText(slide.paragraph || '', this.maxParagraphLength(slide.layout)),
       };
@@ -284,101 +356,6 @@ export class LlmJsonService {
     return sections.length > 0 ? sections : document.sections;
   }
 
-  private pickLayoutHint(section: ParsedDocument['sections'][number]): DeckPlan['slides'][number]['layoutHint'] {
-    const title = section.title.toLowerCase();
-    if (
-      ['process', 'workflow', 'pipeline', 'roadmap', 'steps', 'framework', 'journey'].some(
-        (keyword) => title.includes(keyword),
-      ) &&
-      section.bullets.length >= 3
-    ) {
-      return 'process';
-    }
-
-    if (section.bullets.length <= 1 && section.body.trim().length > 80) {
-      return 'quote';
-    }
-
-    if (section.bullets.length >= 4) {
-      return 'comparison';
-    }
-
-    return 'text-visual';
-  }
-
-  private planContentLayouts(
-    sections: ParsedDocument['sections'],
-  ): Array<DeckPlan['slides'][number]['layoutHint']> {
-    const layouts: Array<DeckPlan['slides'][number]['layoutHint']> = [];
-
-    sections.forEach((section) => {
-      const preferred = this.pickLayoutHint(section);
-      const previous = layouts[layouts.length - 1];
-      const beforePrevious = layouts[layouts.length - 2];
-
-      if (!(preferred === previous && preferred === beforePrevious)) {
-        layouts.push(preferred);
-        return;
-      }
-
-      layouts.push(this.pickAlternativeLayout(section, preferred));
-    });
-
-    return layouts;
-  }
-
-  private pickAlternativeLayout(
-    section: ParsedDocument['sections'][number],
-    preferred: DeckPlan['slides'][number]['layoutHint'],
-  ): DeckPlan['slides'][number]['layoutHint'] {
-    const candidates: Array<DeckPlan['slides'][number]['layoutHint']> = [
-      'text-visual',
-      'process',
-      'comparison',
-      'quote',
-    ];
-
-    for (const candidate of candidates) {
-      if (candidate === preferred) {
-        continue;
-      }
-
-      if (candidate === 'process' && section.bullets.length < 3) {
-        continue;
-      }
-
-      if (candidate === 'comparison' && section.bullets.length < 4) {
-        continue;
-      }
-
-      if (candidate === 'quote' && section.body.trim().length < 60) {
-        continue;
-      }
-
-      return candidate;
-    }
-
-    return 'text-visual';
-  }
-
-  private pickVisualFocus(
-    section: ParsedDocument['sections'][number],
-  ): DeckPlan['slides'][number]['visualFocus'] {
-    if (section.bullets.length >= 3) {
-      return 'mixed';
-    }
-
-    if (section.body.trim().length > 80) {
-      return 'text';
-    }
-
-    return 'visual';
-  }
-
-  private buildSlideObjective(sectionTitle: string): string {
-    return `Explain why "${sectionTitle}" matters and make the audience remember the core message.`;
-  }
-
   private buildEyebrow(slide: SlideSpec): string {
     switch (slide.role) {
       case 'cover':
@@ -389,6 +366,8 @@ export class LlmJsonService {
         return 'Closing';
       case 'summary':
         return 'Key Takeaways';
+      case 'section-divider':
+        return 'Section';
       default:
         return 'Core Idea';
     }
@@ -420,6 +399,7 @@ export class LlmJsonService {
       case 'summary-closing':
         return 4;
       case 'quote':
+      case 'section-divider':
         return 0;
       default:
         return 3;
@@ -441,9 +421,11 @@ export class LlmJsonService {
   private maxParagraphLength(layout: SlideSpec['layout']): number {
     switch (layout) {
       case 'cover':
-        return 120;
+        return 140;
       case 'text-visual':
         return 180;
+      case 'quote':
+        return 120;
       case 'summary-closing':
       case 'agenda':
         return 120;

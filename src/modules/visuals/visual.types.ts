@@ -19,6 +19,7 @@ export type VisualComposition =
   | 'two-column';
 export type VisualDensity = 'low' | 'medium' | 'high';
 export type AccentTone = 'teal' | 'blue' | 'amber';
+export type ContentBalance = 'text-first' | 'visual-first' | 'balanced';
 
 export interface VisualPlanSlide {
   slideNumber: number;
@@ -32,6 +33,9 @@ export interface VisualPlanSlide {
   composition: VisualComposition;
   density: VisualDensity;
   accentTone: AccentTone;
+  contentBalance: ContentBalance;
+  textBudget: number;
+  mustGenerateVisual: boolean;
   requiresAsset: boolean;
   assetFile?: string;
 }

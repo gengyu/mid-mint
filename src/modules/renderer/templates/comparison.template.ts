@@ -4,6 +4,7 @@ import { THEME, splitBullets } from './rendering-theme';
 interface PptSlideLike {
   addImage: (...args: any[]) => unknown;
   addShape: (...args: any[]) => unknown;
+  addTable: (...args: any[]) => unknown;
   addText: (...args: any[]) => unknown;
 }
 
@@ -28,6 +29,52 @@ export function renderComparisonTemplate(slide: PptSlideLike, spec: SlideSpec): 
     color: THEME.ink,
     fontFace: 'Aptos Display',
   });
+
+  if (spec.visualTechnique === 'table' && spec.tableData?.rows?.length) {
+    const rows = [
+      ...(spec.tableData.headers ? [spec.tableData.headers] : []),
+      ...spec.tableData.rows,
+    ];
+
+    slide.addShape('roundRect', {
+      x: 0.7,
+      y: 1.75,
+      w: 11.3,
+      h: 4.8,
+      rectRadius: 0.12,
+      fill: { color: THEME.white },
+      line: { color: THEME.sky, width: 1.1 },
+    });
+    slide.addTable(rows, {
+      x: 0.95,
+      y: 2.05,
+      w: 10.8,
+      h: 4.0,
+      border: { type: 'solid', color: THEME.sky, pt: 1 },
+      fill: THEME.white,
+      color: THEME.text,
+      fontFace: 'Aptos',
+      fontSize: 14,
+      margin: 0.08,
+      rowH: 0.48,
+      bold: !!spec.tableData.headers,
+      valign: 'mid',
+      align: 'left',
+    });
+
+    if (spec.highlight) {
+      slide.addText(spec.highlight, {
+        x: 0.95,
+        y: 6.15,
+        w: 10.6,
+        h: 0.3,
+        fontSize: 13,
+        color: THEME.muted,
+        fontFace: 'Aptos',
+      });
+    }
+    return;
+  }
 
   const [leftBullets, rightBullets] = splitBullets(spec.bullets);
   slide.addShape('roundRect', {

@@ -1,12 +1,21 @@
 import { Injectable } from '@nestjs/common';
+import katex from 'katex';
+import { JSDOM } from 'jsdom';
+import mermaid from 'mermaid';
 
+import { ParsedDocument } from '../parser/types/parsed-document.type';
+import { resolveVisualDecision } from '../pipeline/ppt-v2-layouts';
 import { DeckPlan, PresentationAnalysis } from '../pipeline/pipeline.types';
 import { SlideSpec } from '../slides/slide.types';
 import { GeneratedAsset, VisualPlan } from './visual.types';
 
 @Injectable()
 export class SvgGeneratorService {
-  createVisualPlan(deckPlan: DeckPlan, analysis: PresentationAnalysis): VisualPlan {
+  createVisualPlan(
+    deckPlan: DeckPlan,
+    analysis: PresentationAnalysis,
+    document: ParsedDocument,
+  ): VisualPlan {
     const palette = {
       background: '#F3F6FB',
       surface: '#FFFFFF',
@@ -22,101 +31,107 @@ export class SvgGeneratorService {
       theme: 'editorial-soft',
       palette,
       slides: deckPlan.slides.map((slide) => {
-        if (slide.layoutHint === 'cover') {
-          return {
-            slideNumber: slide.slideNumber,
-            role: 'cover',
-            layout: slide.layoutHint,
-            visualType: 'cover-accent',
-            visualTechnique: 'image',
-            textTechnique: 'statement',
-            visualPriority: 'high',
-            goal: `Introduce ${analysis.mainTopic} with a confident editorial hero composition.`,
-            composition: 'hero',
-            density: 'low',
-            accentTone: 'teal',
-            requiresAsset: false,
-          };
-        }
-
-        if (
-          slide.layoutHint === 'agenda' ||
-          slide.layoutHint === 'quote' ||
-          slide.layoutHint === 'section-divider'
-        ) {
-          return {
-            slideNumber: slide.slideNumber,
-            role: slide.layoutHint === 'section-divider' ? 'section' : 'content',
-            layout: slide.layoutHint,
-            visualType: 'none',
-            visualTechnique: 'none',
-            textTechnique:
-              slide.layoutHint === 'agenda'
-                ? 'agenda-list'
-                : slide.layoutHint === 'quote'
-                  ? 'statement'
-                  : 'none',
-            visualPriority: 'low',
-            goal: slide.objective,
-            composition: 'none',
-            density: 'low',
-            accentTone: this.pickAccentTone(slide.slideNumber),
-            requiresAsset: false,
-          };
-        }
-
-        const visualType =
-          slide.layoutHint === 'comparison'
-            ? 'comparison-card'
-            : slide.layoutHint === 'summary-closing'
-              ? 'summary-graphic'
-              : 'diagram';
-        const visualTechnique = this.pickVisualTechnique(slide.layoutHint);
-        const composition = this.pickComposition(slide.layoutHint);
-        const density = this.pickDensity(slide.layoutHint);
-        const requiresAsset = visualTechnique !== 'none';
-        const assetFile = requiresAsset
-          ? `slide-${String(slide.slideNumber).padStart(3, '0')}.svg`
-          : undefined;
+        const matchedSection = document.sections.find(
+          (section) => section.title === slide.sourceSectionTitle,
+        );
+        const decision = resolveVisualDecision(
+          slide.layoutHint,
+          slide.slideNumber,
+          {
+            title: slide.title,
+            keyPoint: slide.keyPoint,
+            body: matchedSection?.body ?? slide.keyPoint,
+            bullets: matchedSection?.bullets ?? [],
+            tableRows: matchedSection?.tableData?.rows,
+            formulaText: matchedSection?.formulas?.[0],
+            mermaidDefinition: matchedSection?.mermaidDefinitions?.[0],
+            codeBlockContent: matchedSection?.codeBlocks?.[0]?.content,
+          },
+          slide.role,
+        );
 
         return {
           slideNumber: slide.slideNumber,
-          role: slide.role === 'closing' ? 'closing' : 'content',
+          role:
+            slide.layoutHint === 'cover'
+              ? 'cover'
+              : slide.layoutHint === 'section-divider'
+                ? 'section'
+                : slide.role === 'closing'
+                  ? 'closing'
+                  : 'content',
           layout: slide.layoutHint,
-          visualType,
-          visualTechnique,
-          textTechnique: this.pickTextTechnique(slide.layoutHint),
-          visualPriority: this.pickVisualPriority(slide.layoutHint),
-          goal: this.buildGoal(slide.title, slide.keyPoint, visualType),
-          composition,
-          density,
-          accentTone: this.pickAccentTone(slide.slideNumber),
-          requiresAsset,
-          assetFile,
+          visualType: decision.visualType,
+          visualTechnique: decision.visualTechnique,
+          textTechnique: decision.textTechnique,
+          visualPriority: decision.visualPriority,
+          goal: decision.goal,
+          composition: decision.composition,
+          density: decision.density,
+          accentTone: decision.accentTone,
+          contentBalance: decision.contentBalance,
+          textBudget: decision.textBudget,
+          mustGenerateVisual: decision.mustGenerateVisual,
+          requiresAsset: decision.requiresAsset,
+          assetFile: decision.requiresAsset
+            ? this.buildAssetFileName(slide.slideNumber, decision.visualTechnique)
+            : undefined,
         };
       }),
     };
   }
 
-  generate(slides: SlideSpec[], visualPlan: VisualPlan): GeneratedAsset[] {
-    return visualPlan.slides
-      .filter((plan) => Boolean(plan.assetFile))
-      .map((plan) => {
-        const slide = slides.find((item) => item.slideNumber === plan.slideNumber);
-        if (!slide || !plan.assetFile) {
-          return null;
-        }
+  async generate(slides: SlideSpec[], visualPlan: VisualPlan): Promise<GeneratedAsset[]> {
+    const assets = await Promise.all(
+      visualPlan.slides
+        .filter((plan) => Boolean(plan.assetFile))
+        .map(async (plan) => {
+          const slide = slides.find((item) => item.slideNumber === plan.slideNumber);
+          if (!slide || !plan.assetFile) {
+            return null;
+          }
 
-        return {
-          slideNumber: slide.slideNumber,
-          fileName: plan.assetFile,
-          svg: this.buildSvg(slide, plan.goal),
-        };
-      })
-      .filter((asset): asset is GeneratedAsset => asset !== null);
+          const svg = await this.buildSvg(slide, plan.goal);
+          if (!svg) {
+            return null;
+          }
+
+          return {
+            slideNumber: slide.slideNumber,
+            fileName: plan.assetFile,
+            svg,
+          };
+        }),
+    );
+
+    return assets.filter((asset): asset is GeneratedAsset => asset !== null);
   }
 
-  private buildSvg(slide: SlideSpec, goal: string): string {
+  private async buildSvg(slide: SlideSpec, goal: string): Promise<string | null> {
+    if (slide.visualTechnique === 'mermaid' && slide.mermaidDefinition) {
+      try {
+        return await this.renderMermaidSvg(slide.mermaidDefinition, slide.slideNumber);
+      } catch {
+        if (slide.visualType !== 'none') {
+          return this.buildDiagramSvg(slide, goal);
+        }
+
+        return null;
+      }
+    }
+
+    if (slide.visualTechnique === 'formula' && slide.formulaText) {
+      try {
+        return this.renderFormulaSvg(slide.formulaText, slide.title);
+      } catch {
+        if (slide.visualType !== 'none') {
+          return this.buildDiagramSvg(slide, goal);
+        }
+
+        return null;
+      }
+    }
+
     if (slide.visualType === 'comparison-card') {
       return this.buildComparisonSvg(slide);
     }
@@ -126,6 +141,110 @@ export class SvgGeneratorService {
     }
 
     return this.buildDiagramSvg(slide, goal);
+  }
+
+  private async renderMermaidSvg(definition: string, slideNumber: number): Promise<string> {
+    return this.withMermaidEnvironment(async () => {
+      mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: 'loose',
+        theme: 'neutral',
+        fontFamily: 'Aptos, Arial, sans-serif',
+      });
+      const { svg } = await mermaid.render(`slide-${slideNumber}-${Date.now()}`, definition);
+      return svg
+        .replace(/height="[^"]*"/, 'height="720"')
+        .replace(/width="[^"]*"/, 'width="1280"')
+        .replace(/style="max-width:\s*[^;"]+;?"/g, '')
+        .replace('<svg ', '<svg viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" ');
+    });
+  }
+
+  private renderFormulaSvg(formula: string, title: string): string {
+    const rendered = katex.renderToString(this.stripFormulaDelimiters(formula), {
+      throwOnError: false,
+      displayMode: true,
+      output: 'html',
+      strict: 'ignore',
+    });
+    const safeTitle = this.escape(title);
+    const safeFormula = this.escape(this.stripFormulaDelimiters(formula));
+
+    return [
+      '<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">',
+      '<rect width="1280" height="720" fill="#F4F8FC" />',
+      '<rect x="72" y="68" width="1136" height="584" rx="36" fill="#FFFFFF" stroke="#D9E3F0" />',
+      `<text x="110" y="156" font-size="18" font-weight="700" fill="#0F766E">${safeTitle}</text>`,
+      '<foreignObject x="120" y="210" width="1040" height="300">',
+      '<div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;height:100%;align-items:center;justify-content:center;padding:24px;color:#102033;font-size:32px;">',
+      rendered,
+      '</div>',
+      '</foreignObject>',
+      `<text x="640" y="610" text-anchor="middle" font-size="24" fill="#5B6B7D">${safeFormula}</text>`,
+      '</svg>',
+    ].join('');
+  }
+
+  private async withMermaidEnvironment<T>(fn: () => Promise<T>): Promise<T> {
+    const dom = new JSDOM('<div id="mermaid-root"></div>');
+    const globalScope = globalThis as any;
+    const previousValues = {
+      window: globalScope.window,
+      document: globalScope.document,
+      navigator: globalScope.navigator,
+      HTMLElement: globalScope.HTMLElement,
+      SVGElement: globalScope.SVGElement,
+      Node: globalScope.Node,
+      DOMPurify: globalScope.DOMPurify,
+    };
+
+    globalScope.window = dom.window;
+    globalScope.document = dom.window.document;
+    globalScope.navigator = dom.window.navigator;
+    globalScope.HTMLElement = dom.window.HTMLElement;
+    globalScope.SVGElement = dom.window.SVGElement;
+    globalScope.Node = dom.window.Node;
+    globalScope.DOMPurify = {
+      sanitize: (value: string) => value,
+    };
+
+    try {
+      return await fn();
+    } finally {
+      this.restoreGlobalValue(globalScope, 'window', previousValues.window);
+      this.restoreGlobalValue(globalScope, 'document', previousValues.document);
+      this.restoreGlobalValue(globalScope, 'navigator', previousValues.navigator);
+      this.restoreGlobalValue(globalScope, 'HTMLElement', previousValues.HTMLElement);
+      this.restoreGlobalValue(globalScope, 'SVGElement', previousValues.SVGElement);
+      this.restoreGlobalValue(globalScope, 'Node', previousValues.Node);
+      this.restoreGlobalValue(globalScope, 'DOMPurify', previousValues.DOMPurify);
+    }
+  }
+
+  private buildAssetFileName(slideNumber: number, visualTechnique: SlideSpec['visualTechnique']): string {
+    const base = `slide-${String(slideNumber).padStart(3, '0')}`;
+    if (visualTechnique === 'mermaid') {
+      return `${base}-mermaid.svg`;
+    }
+
+    if (visualTechnique === 'formula') {
+      return `${base}-formula.svg`;
+    }
+
+    return `${base}.svg`;
+  }
+
+  private stripFormulaDelimiters(formula: string): string {
+    return formula.replace(/^\$\$?/, '').replace(/\$\$?$/, '').trim();
+  }
+
+  private restoreGlobalValue(globalScope: any, key: string, value: unknown): void {
+    if (typeof value === 'undefined') {
+      delete globalScope[key];
+      return;
+    }
+
+    globalScope[key] = value;
   }
 
   private buildDiagramSvg(slide: SlideSpec, goal: string): string {
@@ -244,109 +363,6 @@ export class SvgGeneratorService {
       ringMarkup,
       '</svg>',
     ].join('');
-  }
-
-  private buildGoal(title: string, keyPoint: string, visualType: string): string {
-    if (visualType === 'comparison-card') {
-      return `Use modular comparison cards to clarify the structure behind ${title}.`;
-    }
-
-    if (visualType === 'summary-graphic') {
-      return `Create a centered recap motif that reinforces ${title}.`;
-    }
-
-    return `Translate "${keyPoint}" into a clean process-style visual for ${title}.`;
-  }
-
-  private pickVisualTechnique(
-    layout: DeckPlan['slides'][number]['layoutHint'],
-  ): VisualPlan['slides'][number]['visualTechnique'] {
-    if (layout === 'comparison' || layout === 'process' || layout === 'text-visual') {
-      return 'svg';
-    }
-
-    if (layout === 'summary-closing') {
-      return 'svg';
-    }
-
-    return 'none';
-  }
-
-  private pickTextTechnique(
-    layout: DeckPlan['slides'][number]['layoutHint'],
-  ): VisualPlan['slides'][number]['textTechnique'] {
-    if (layout === 'agenda') {
-      return 'agenda-list';
-    }
-
-    if (layout === 'comparison') {
-      return 'two-column-summary';
-    }
-
-    if (layout === 'quote' || layout === 'cover') {
-      return 'statement';
-    }
-
-    if (layout === 'section-divider') {
-      return 'none';
-    }
-
-    return 'short-bullets';
-  }
-
-  private pickVisualPriority(
-    layout: DeckPlan['slides'][number]['layoutHint'],
-  ): VisualPlan['slides'][number]['visualPriority'] {
-    if (layout === 'cover' || layout === 'process') {
-      return 'high';
-    }
-
-    if (layout === 'text-visual' || layout === 'comparison' || layout === 'summary-closing') {
-      return 'medium';
-    }
-
-    return 'low';
-  }
-
-  private pickComposition(
-    layout: DeckPlan['slides'][number]['layoutHint'],
-  ): VisualPlan['slides'][number]['composition'] {
-    if (layout === 'cover') {
-      return 'hero';
-    }
-
-    if (layout === 'comparison') {
-      return 'two-column';
-    }
-
-    if (layout === 'summary-closing') {
-      return 'center-panel';
-    }
-
-    if (layout === 'agenda' || layout === 'quote' || layout === 'section-divider') {
-      return 'none';
-    }
-
-    return 'right-panel';
-  }
-
-  private pickDensity(
-    layout: DeckPlan['slides'][number]['layoutHint'],
-  ): VisualPlan['slides'][number]['density'] {
-    if (layout === 'comparison') {
-      return 'high';
-    }
-
-    if (layout === 'cover' || layout === 'quote' || layout === 'agenda' || layout === 'section-divider') {
-      return 'low';
-    }
-
-    return 'medium';
-  }
-
-  private pickAccentTone(slideNumber: number): 'teal' | 'blue' | 'amber' {
-    const tones: Array<'teal' | 'blue' | 'amber'> = ['teal', 'blue', 'amber'];
-    return tones[(slideNumber - 1) % tones.length];
   }
 
   private resolveAccent(accentTone: SlideSpec['accentTone']): { base: string; soft: string } {

@@ -20,54 +20,93 @@ export class PptxRendererService {
   async render(filePath: string, title: string, slides: SlideSpec[]): Promise<void> {
     await ensureDir(path.dirname(filePath));
 
-    const pptx = new PptxGenJS();
-    pptx.layout = PPT_LAYOUT;
-    pptx.author = PPT_AUTHOR;
-    pptx.company = 'mid-mint';
-    pptx.subject = title;
-    pptx.title = title;
-    pptx.theme = {
-      headFontFace: 'Aptos Display',
-      bodyFontFace: 'Aptos',
+    const globalScope = globalThis as any;
+    const previousValues = {
+      window: globalScope.window,
+      document: globalScope.document,
+      navigator: globalScope.navigator,
+      XMLHttpRequest: globalScope.XMLHttpRequest,
+      FileReader: globalScope.FileReader,
     };
 
-    for (const spec of slides) {
-      const slide = pptx.addSlide();
-      slide.background = { color: spec.layout === 'cover' ? '0B1F33' : 'F6F8FC' };
+    this.clearBrowserGlobals(globalScope);
 
-      switch (spec.layout) {
-        case 'cover':
-          renderCoverTemplate(slide, spec);
-          break;
-        case 'agenda':
-          renderAgendaTemplate(slide, spec);
-          break;
-        case 'section-divider':
-          renderSectionDividerTemplate(slide, spec);
-          break;
-        case 'comparison':
-          renderComparisonTemplate(slide, spec);
-          break;
-        case 'process':
-          renderProcessTemplate(slide, spec);
-          break;
-        case 'quote':
-          renderQuoteTemplate(slide, spec);
-          break;
-        case 'text-visual':
-          renderTextVisualTemplate(slide, spec);
-          break;
-        case 'summary-closing':
-        default:
-          renderTitleBulletsTemplate(slide, spec);
-          break;
+    try {
+      const pptx = new PptxGenJS();
+      pptx.layout = PPT_LAYOUT;
+      pptx.author = PPT_AUTHOR;
+      pptx.company = 'mid-mint';
+      pptx.subject = title;
+      pptx.title = title;
+      pptx.theme = {
+        headFontFace: 'Aptos Display',
+        bodyFontFace: 'Aptos',
+      };
+
+      for (const spec of slides) {
+        const slide = pptx.addSlide();
+        slide.background = { color: spec.layout === 'cover' ? '0B1F33' : 'F6F8FC' };
+
+        this.renderSlide(slide, spec);
+
+        if (spec.notes) {
+          slide.addNotes(spec.notes);
+        }
       }
 
-      if (spec.notes) {
-        slide.addNotes(spec.notes);
-      }
+      await pptx.writeFile({ fileName: filePath, compression: true });
+    } finally {
+      this.restoreGlobalValue(globalScope, 'window', previousValues.window);
+      this.restoreGlobalValue(globalScope, 'document', previousValues.document);
+      this.restoreGlobalValue(globalScope, 'navigator', previousValues.navigator);
+      this.restoreGlobalValue(globalScope, 'XMLHttpRequest', previousValues.XMLHttpRequest);
+      this.restoreGlobalValue(globalScope, 'FileReader', previousValues.FileReader);
+    }
+  }
+
+  private renderSlide(slide: PptxGenJS.Slide, spec: SlideSpec): void {
+    switch (spec.layout) {
+      case 'cover':
+        renderCoverTemplate(slide, spec);
+        return;
+      case 'agenda':
+        renderAgendaTemplate(slide, spec);
+        return;
+      case 'section-divider':
+        renderSectionDividerTemplate(slide, spec);
+        return;
+      case 'comparison':
+        renderComparisonTemplate(slide, spec);
+        return;
+      case 'process':
+        renderProcessTemplate(slide, spec);
+        return;
+      case 'quote':
+        renderQuoteTemplate(slide, spec);
+        return;
+      case 'text-visual':
+        renderTextVisualTemplate(slide, spec);
+        return;
+      case 'summary-closing':
+      default:
+        renderTitleBulletsTemplate(slide, spec);
+    }
+  }
+
+  private clearBrowserGlobals(globalScope: any): void {
+    delete globalScope.window;
+    delete globalScope.document;
+    delete globalScope.navigator;
+    delete globalScope.XMLHttpRequest;
+    delete globalScope.FileReader;
+  }
+
+  private restoreGlobalValue(globalScope: any, key: string, value: unknown): void {
+    if (typeof value === 'undefined') {
+      delete globalScope[key];
+      return;
     }
 
-    await pptx.writeFile({ fileName: filePath, compression: true });
+    globalScope[key] = value;
   }
 }

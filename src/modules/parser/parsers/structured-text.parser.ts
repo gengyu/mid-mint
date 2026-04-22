@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 
-import { DocumentSection } from '../types/document-section.type';
+import {
+  DocumentCodeBlock,
+  DocumentSection,
+  DocumentTableData,
+} from '../types/document-section.type';
 import { DocumentSourceType, ParsedDocument } from '../types/parsed-document.type';
 
 interface StructuredTextParseOptions {
@@ -72,6 +76,15 @@ export class StructuredTextParser {
       .split('\n')
       .map((line) => line.trim())
       .filter(Boolean);
+    const codeBlocks = this.extractCodeBlocks(block);
+    const mermaidDefinitions = codeBlocks
+      .filter((item) => item.language?.toLowerCase() === 'mermaid')
+      .map((item) => item.content);
+    const nonMermaidCodeBlocks = codeBlocks.filter(
+      (item) => item.language?.toLowerCase() !== 'mermaid',
+    );
+    const tableData = this.extractTableData(lines);
+    const formulas = this.extractFormulas(block);
     const bulletLines = lines
       .filter((line) => /^[-*+]\s+/.test(line))
       .map((line) => line.replace(/^[-*+]\s+/, '').trim());
@@ -89,6 +102,10 @@ export class StructuredTextParser {
         title: rawTitle.replace(/[:：]\s*$/, '').trim(),
         body: bodyLines.join('\n'),
         bullets,
+        codeBlocks: nonMermaidCodeBlocks,
+        tableData,
+        formulas,
+        mermaidDefinitions,
       };
     }
 
@@ -97,6 +114,10 @@ export class StructuredTextParser {
       title: this.buildGeneratedTitle(index, plainLines, bulletLines),
       body: plainLines.join('\n'),
       bullets: bulletLines,
+      codeBlocks: nonMermaidCodeBlocks,
+      tableData,
+      formulas,
+      mermaidDefinitions,
     };
   }
 
@@ -148,5 +169,46 @@ export class StructuredTextParser {
     }
 
     return `Section ${index + 1}`;
+  }
+
+  private extractCodeBlocks(block: string): DocumentCodeBlock[] {
+    const matches = Array.from(block.matchAll(/```([\w-]+)?\n([\s\S]*?)```/g));
+    return matches
+      .map((match) => ({
+        language: match[1]?.trim() || undefined,
+        content: match[2]?.trim() || '',
+      }))
+      .filter((item) => item.content.length > 0);
+  }
+
+  private extractTableData(lines: string[]): DocumentTableData | undefined {
+    const tableLines = lines.filter((line) => /\|/.test(line));
+    if (tableLines.length < 2) {
+      return undefined;
+    }
+
+    const normalizedRows = tableLines
+      .filter((line) => !/^\|?[-:\s|]+\|?$/.test(line))
+      .map((line) =>
+        line
+          .split('|')
+          .map((cell) => cell.trim())
+          .filter(Boolean),
+      )
+      .filter((row) => row.length > 1);
+
+    if (normalizedRows.length < 2) {
+      return undefined;
+    }
+
+    const [headers, ...rows] = normalizedRows;
+    return {
+      headers,
+      rows,
+    };
+  }
+
+  private extractFormulas(block: string): string[] {
+    return (block.match(/\$\$[\s\S]+?\$\$|\$[^$\n]+\$/g) ?? []).map((item) => item.trim());
   }
 }

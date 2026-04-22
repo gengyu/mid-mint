@@ -22,9 +22,10 @@ export function renderTitleBulletsTemplate(slide: PptSlideLike, spec: SlideSpec)
     y: 0.8,
     w: 7.2,
     h: 0.8,
-    fontSize: 24,
+    fontSize: spec.title.length > 26 ? 22 : 24,
     bold: true,
     color: THEME.ink,
+    fit: 'shrink',
     fontFace: 'Aptos Display',
   });
 
@@ -44,15 +45,16 @@ export function renderTitleBulletsTemplate(slide: PptSlideLike, spec: SlideSpec)
       y: 2.0,
       w: 6.3,
       h: 3.8,
-      fontSize: 16,
+      fontSize: 15,
       color: THEME.text,
       breakLine: true,
       paraSpaceAfterPt: 10,
+      fit: 'shrink',
       fontFace: 'Aptos',
     },
   );
 
-  if (spec.highlight) {
+  if (spec.highlight && spec.highlight.length <= 90) {
     slide.addShape('roundRect', {
       x: 8.4,
       y: 1.9,
@@ -77,10 +79,11 @@ export function renderTitleBulletsTemplate(slide: PptSlideLike, spec: SlideSpec)
       y: 2.65,
       w: 2.7,
       h: 1.35,
-      fontSize: 18,
+      fontSize: 16,
       bold: true,
       color: THEME.ink,
       valign: 'mid',
+      fit: 'shrink',
       fontFace: 'Aptos Display',
     });
   }

@@ -40,7 +40,7 @@ export class PipelineService {
     );
     await this.projectStorageService.writeArtifact(projectId, 'deck-plan.json', deckPlan);
 
-    const visualPlan = this.svgGeneratorService.createVisualPlan(deckPlan, analysis);
+    const visualPlan = this.svgGeneratorService.createVisualPlan(deckPlan, analysis, parsedDocument);
     await this.projectStorageService.writeArtifact(projectId, 'visual-plan.json', visualPlan);
 
     let slideSpecs = this.slideSpecService.createSlides(
@@ -101,7 +101,7 @@ export class PipelineService {
     slides: SlideSpec[],
     visualPlan: VisualPlan,
   ): Promise<SlideSpec[]> {
-    const generatedAssets = this.svgGeneratorService.generate(slides, visualPlan);
+    const generatedAssets = await this.svgGeneratorService.generate(slides, visualPlan);
     const assetPathBySlide = new Map<number, string>();
 
     for (const asset of generatedAssets) {

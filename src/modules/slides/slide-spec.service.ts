@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
+import { DocumentSection } from '../parser/types/document-section.type';
+import { resolveVisualDecision } from '../pipeline/ppt-v2-layouts';
 import { DeckPlan, PresentationAnalysis } from '../pipeline/pipeline.types';
 import { ParsedDocument } from '../parser/types/parsed-document.type';
 import { VisualPlan } from '../visuals/visual.types';
@@ -20,31 +22,49 @@ export class SlideSpecService {
       const matchedSection = document.sections.find(
         (section) => section.title === plannedSlide.sourceSectionTitle,
       );
+      const fallbackDecision = resolveVisualDecision(
+        plannedSlide.layoutHint,
+        plannedSlide.slideNumber,
+        {
+          title: plannedSlide.title,
+          keyPoint: plannedSlide.keyPoint,
+          body: matchedSection?.body ?? plannedSlide.keyPoint,
+          bullets: matchedSection?.bullets ?? [],
+          tableRows: matchedSection?.tableData?.rows,
+          formulaText: this.extractFormulaText(matchedSection, plannedSlide.keyPoint),
+          mermaidDefinition: this.extractMermaidDefinition(matchedSection, plannedSlide.keyPoint),
+          codeBlockContent: matchedSection?.codeBlocks?.[0]?.content,
+        },
+        plannedSlide.role,
+      );
 
       if (plannedSlide.layoutHint === 'cover') {
         return {
           slideNumber: plannedSlide.slideNumber,
           title: plannedSlide.title,
-          subtitle: analysis.summary,
+          subtitle: this.pickCoverSubtitle(analysis.summary, plannedSlide.keyPoint),
           eyebrow: analysis.tone || 'Presentation',
-          sectionLabel: analysis.mainTopic.toUpperCase(),
+          sectionLabel: this.compact(analysis.mainTopic.toUpperCase(), 64),
           layout: 'cover',
           role: plannedSlide.role,
           bullets: [],
-          highlight: analysis.mainTopic,
+          highlight: this.compact(analysis.mainTopic, 56),
           notes: `Opening slide for ${document.title}`,
-          visualGoal: 'Use a minimal title accent and keep the opening slide clean.',
-          visualTechnique: plannedVisual?.visualTechnique ?? 'image',
-          textTechnique: plannedVisual?.textTechnique ?? 'statement',
-          visualPriority: plannedVisual?.visualPriority ?? 'high',
-          visualType: plannedVisual?.visualType ?? 'cover-accent',
-          visualComposition: plannedVisual?.composition ?? 'hero',
-          density: plannedVisual?.density ?? 'low',
-          accentTone: plannedVisual?.accentTone ?? 'teal',
+          visualGoal: plannedVisual?.goal ?? fallbackDecision.goal,
+          visualTechnique: plannedVisual?.visualTechnique ?? fallbackDecision.visualTechnique,
+          textTechnique: plannedVisual?.textTechnique ?? fallbackDecision.textTechnique,
+          visualPriority: plannedVisual?.visualPriority ?? fallbackDecision.visualPriority,
+          visualType: plannedVisual?.visualType ?? fallbackDecision.visualType,
+          visualComposition: plannedVisual?.composition ?? fallbackDecision.composition,
+          density: plannedVisual?.density ?? fallbackDecision.density,
+          accentTone: plannedVisual?.accentTone ?? fallbackDecision.accentTone,
+          contentBalance: plannedVisual?.contentBalance ?? fallbackDecision.contentBalance,
+          textBudget: plannedVisual?.textBudget ?? fallbackDecision.textBudget,
+          mustGenerateVisual: plannedVisual?.mustGenerateVisual ?? fallbackDecision.mustGenerateVisual,
         };
       }
 
-      if (plannedSlide.sourceSectionTitle === 'Agenda') {
+      if (plannedSlide.layoutHint === 'agenda') {
         return {
           slideNumber: plannedSlide.slideNumber,
           title: plannedSlide.title,
@@ -52,18 +72,52 @@ export class SlideSpecService {
           sectionLabel: this.buildSectionLabel(plannedSlide.slideNumber, deckPlan.totalSlides),
           layout: 'agenda',
           role: plannedSlide.role,
-          bullets: document.sections.map((section) => section.title).slice(0, 5),
-          paragraph: analysis.summary,
+          bullets: document.sections.map((section) => this.compact(section.title, 30)).slice(0, 5),
+          paragraph: this.pickParagraph(analysis.summary, analysis.summary, 120),
           highlight: analysis.storyArc?.join(' -> ') || analysis.summary,
           notes: 'Agenda overview',
-          visualGoal: plannedVisual?.goal ?? 'Show the audience the talk structure and set expectations.',
-          visualTechnique: plannedVisual?.visualTechnique ?? 'none',
-          textTechnique: plannedVisual?.textTechnique ?? 'agenda-list',
-          visualPriority: plannedVisual?.visualPriority ?? 'low',
-          visualType: plannedVisual?.visualType ?? 'none',
-          visualComposition: plannedVisual?.composition ?? 'none',
-          density: plannedVisual?.density ?? 'low',
-          accentTone: plannedVisual?.accentTone ?? 'teal',
+          visualGoal: plannedVisual?.goal ?? fallbackDecision.goal,
+          visualTechnique: plannedVisual?.visualTechnique ?? fallbackDecision.visualTechnique,
+          textTechnique: plannedVisual?.textTechnique ?? fallbackDecision.textTechnique,
+          visualPriority: plannedVisual?.visualPriority ?? fallbackDecision.visualPriority,
+          visualType: plannedVisual?.visualType ?? fallbackDecision.visualType,
+          visualComposition: plannedVisual?.composition ?? fallbackDecision.composition,
+          density: plannedVisual?.density ?? fallbackDecision.density,
+          accentTone: plannedVisual?.accentTone ?? fallbackDecision.accentTone,
+          contentBalance: plannedVisual?.contentBalance ?? fallbackDecision.contentBalance,
+          textBudget: plannedVisual?.textBudget ?? fallbackDecision.textBudget,
+          mustGenerateVisual: plannedVisual?.mustGenerateVisual ?? fallbackDecision.mustGenerateVisual,
+        };
+      }
+
+      if (plannedSlide.layoutHint === 'section-divider') {
+        return {
+          slideNumber: plannedSlide.slideNumber,
+          title: plannedSlide.title,
+          eyebrow: 'Section',
+          sectionLabel: this.buildSectionLabel(plannedSlide.slideNumber, deckPlan.totalSlides),
+          layout: 'section-divider',
+          role: plannedSlide.role,
+          bullets: [],
+          paragraph: this.pickParagraph(matchedSection?.body, plannedSlide.keyPoint, 110),
+          highlight: this.pickHighlight(
+            matchedSection?.bullets ?? [],
+            matchedSection?.body ?? '',
+            plannedSlide.keyPoint,
+            72,
+          ),
+          notes: plannedSlide.objective,
+          visualGoal: plannedVisual?.goal ?? fallbackDecision.goal,
+          visualTechnique: plannedVisual?.visualTechnique ?? fallbackDecision.visualTechnique,
+          textTechnique: plannedVisual?.textTechnique ?? fallbackDecision.textTechnique,
+          visualPriority: plannedVisual?.visualPriority ?? fallbackDecision.visualPriority,
+          visualType: plannedVisual?.visualType ?? fallbackDecision.visualType,
+          visualComposition: plannedVisual?.composition ?? fallbackDecision.composition,
+          density: plannedVisual?.density ?? fallbackDecision.density,
+          accentTone: plannedVisual?.accentTone ?? fallbackDecision.accentTone,
+          contentBalance: plannedVisual?.contentBalance ?? fallbackDecision.contentBalance,
+          textBudget: plannedVisual?.textBudget ?? fallbackDecision.textBudget,
+          mustGenerateVisual: plannedVisual?.mustGenerateVisual ?? fallbackDecision.mustGenerateVisual,
         };
       }
 
@@ -75,53 +129,85 @@ export class SlideSpecService {
           sectionLabel: this.buildSectionLabel(plannedSlide.slideNumber, deckPlan.totalSlides),
           layout: 'summary-closing',
           role: plannedSlide.role,
-          bullets: analysis.keyMessages.slice(0, 5),
-          paragraph: analysis.summary,
-          highlight: analysis.summary,
+          bullets: analysis.keyMessages.map((item) => this.compact(item, 32)).slice(0, 4),
+          paragraph: this.pickParagraph(analysis.summary, plannedSlide.keyPoint, 120),
+          highlight: this.pickHighlight(analysis.keyMessages, analysis.summary, plannedSlide.keyPoint, 64),
           notes: plannedSlide.keyPoint,
-          visualGoal: plannedVisual?.goal ?? plannedSlide.objective,
-          visualTechnique: plannedVisual?.visualTechnique ?? 'svg',
-          textTechnique: plannedVisual?.textTechnique ?? 'short-bullets',
-          visualPriority: plannedVisual?.visualPriority ?? 'medium',
-          visualType: plannedVisual?.visualType ?? 'summary-graphic',
-          visualComposition: plannedVisual?.composition ?? 'center-panel',
-          density: plannedVisual?.density ?? 'medium',
-          accentTone: plannedVisual?.accentTone ?? this.pickAccentTone(plannedSlide.slideNumber),
+          visualGoal: plannedVisual?.goal ?? fallbackDecision.goal,
+          visualTechnique: plannedVisual?.visualTechnique ?? fallbackDecision.visualTechnique,
+          textTechnique: plannedVisual?.textTechnique ?? fallbackDecision.textTechnique,
+          visualPriority: plannedVisual?.visualPriority ?? fallbackDecision.visualPriority,
+          visualType: plannedVisual?.visualType ?? fallbackDecision.visualType,
+          visualComposition: plannedVisual?.composition ?? fallbackDecision.composition,
+          density: plannedVisual?.density ?? fallbackDecision.density,
+          accentTone: plannedVisual?.accentTone ?? fallbackDecision.accentTone,
+          contentBalance: plannedVisual?.contentBalance ?? fallbackDecision.contentBalance,
+          textBudget: plannedVisual?.textBudget ?? fallbackDecision.textBudget,
+          mustGenerateVisual: plannedVisual?.mustGenerateVisual ?? fallbackDecision.mustGenerateVisual,
         };
       }
 
       const bullets = this.pickBullets(
+        plannedSlide.layoutHint,
         matchedSection?.bullets,
         analysis.keyMessages,
         plannedSlide.keyPoint,
       );
       const paragraph = this.pickParagraph(matchedSection?.body, plannedSlide.keyPoint);
-      const highlight = plannedSlide.objective || this.pickHighlight(bullets, paragraph, plannedSlide.keyPoint);
+      const highlight = this.pickHighlight(
+        bullets,
+        paragraph,
+        plannedSlide.keyPoint,
+        plannedSlide.layoutHint === 'quote' ? 110 : 90,
+      );
+      const isFormulaSlide =
+        (plannedVisual?.visualTechnique ?? fallbackDecision.visualTechnique) === 'formula';
 
       return {
         slideNumber: plannedSlide.slideNumber,
         title: plannedSlide.title,
-        eyebrow: matchedSection ? 'Section insight' : 'Insight',
+        eyebrow: plannedSlide.layoutHint === 'quote' ? 'Key idea' : matchedSection ? 'Section insight' : 'Insight',
         sectionLabel: this.buildSectionLabel(plannedSlide.slideNumber, deckPlan.totalSlides),
         layout: plannedSlide.layoutHint,
         role: plannedSlide.role,
-        bullets,
-        paragraph,
-        highlight,
+        bullets: plannedSlide.layoutHint === 'quote' ? [] : bullets,
+        paragraph:
+          plannedSlide.layoutHint === 'quote'
+            ? this.pickQuoteParagraph(matchedSection?.body, plannedSlide.keyPoint)
+            : paragraph,
+        highlight:
+          plannedSlide.layoutHint === 'quote'
+            ? isFormulaSlide
+              ? undefined
+              : this.pickHighlight(
+                  matchedSection?.bullets ?? [],
+                  matchedSection?.body ?? plannedSlide.keyPoint,
+                  plannedSlide.keyPoint,
+                  68,
+                )
+            : plannedSlide.objective || highlight,
         notes: plannedSlide.keyPoint,
-        visualGoal: plannedVisual?.goal ?? plannedSlide.keyPoint,
-        visualTechnique: plannedVisual?.visualTechnique ?? this.defaultVisualTechnique(plannedSlide.layoutHint),
-        textTechnique: plannedVisual?.textTechnique ?? this.defaultTextTechnique(plannedSlide.layoutHint),
-        visualPriority: plannedVisual?.visualPriority ?? this.defaultVisualPriority(plannedSlide.layoutHint),
-        visualType: plannedVisual?.visualType ?? this.defaultVisualType(plannedSlide.layoutHint),
-        visualComposition: plannedVisual?.composition ?? this.defaultComposition(plannedSlide.layoutHint),
-        density: plannedVisual?.density ?? this.defaultDensity(plannedSlide.layoutHint),
-        accentTone: plannedVisual?.accentTone ?? this.pickAccentTone(plannedSlide.slideNumber),
+        visualGoal: plannedVisual?.goal ?? fallbackDecision.goal,
+        visualTechnique: plannedVisual?.visualTechnique ?? fallbackDecision.visualTechnique,
+        textTechnique: plannedVisual?.textTechnique ?? fallbackDecision.textTechnique,
+        visualPriority: plannedVisual?.visualPriority ?? fallbackDecision.visualPriority,
+        visualType: plannedVisual?.visualType ?? fallbackDecision.visualType,
+        visualComposition: plannedVisual?.composition ?? fallbackDecision.composition,
+        density: plannedVisual?.density ?? fallbackDecision.density,
+        accentTone: plannedVisual?.accentTone ?? fallbackDecision.accentTone,
+        contentBalance: plannedVisual?.contentBalance ?? fallbackDecision.contentBalance,
+        textBudget: plannedVisual?.textBudget ?? fallbackDecision.textBudget,
+        mustGenerateVisual: plannedVisual?.mustGenerateVisual ?? fallbackDecision.mustGenerateVisual,
+        tableData: matchedSection?.tableData,
+        codeBlock: matchedSection?.codeBlocks?.[0],
+        formulaText: this.extractFormulaText(matchedSection, plannedSlide.keyPoint),
+        mermaidDefinition: this.extractMermaidDefinition(matchedSection, plannedSlide.keyPoint),
       };
     });
   }
 
   private pickBullets(
+    layout: SlideSpec['layout'],
     sectionBullets: string[] | undefined,
     keyMessages: string[],
     keyPoint: string,
@@ -129,119 +215,102 @@ export class SlideSpecService {
     const candidates = [...(sectionBullets ?? []), ...keyMessages.map((message) => message.trim()), keyPoint]
       .map((item) => item.trim())
       .filter(Boolean);
+    const limit =
+      layout === 'process' ? 5 : layout === 'comparison' || layout === 'summary-closing' ? 4 : 3;
 
-    return Array.from(new Set(candidates)).slice(0, 5);
+    return Array.from(new Set(candidates)).slice(0, limit);
   }
 
-  private pickParagraph(sectionBody: string | undefined, keyPoint: string): string {
-    const paragraph = (sectionBody || keyPoint).trim();
-    return paragraph.length > 220 ? `${paragraph.slice(0, 217).trim()}...` : paragraph;
+  private pickParagraph(
+    sectionBody: string | undefined,
+    keyPoint: string,
+    maxLength = 220,
+  ): string {
+    const paragraph = (sectionBody || keyPoint).replace(/\s+/g, ' ').trim();
+    return paragraph.length > maxLength ? `${paragraph.slice(0, maxLength - 3).trim()}...` : paragraph;
   }
 
-  private pickHighlight(bullets: string[], paragraph: string, keyPoint: string): string {
+  private pickHighlight(bullets: string[], paragraph: string, keyPoint: string, maxLength = 90): string {
     const source = bullets[0] || paragraph || keyPoint;
     const compact = source.trim();
-    return compact.length > 90 ? `${compact.slice(0, 87).trim()}...` : compact;
+    return compact.length > maxLength ? `${compact.slice(0, maxLength - 3).trim()}...` : compact;
   }
 
   private buildSectionLabel(slideNumber: number, totalSlides: number): string {
     return `SECTION ${String(slideNumber).padStart(2, '0')} / ${String(totalSlides).padStart(2, '0')}`;
   }
 
-  private defaultVisualType(layout: SlideSpec['layout']): SlideSpec['visualType'] {
-    if (layout === 'comparison') {
-      return 'comparison-card';
-    }
-
-    if (layout === 'summary-closing') {
-      return 'summary-graphic';
-    }
-
-    if (layout === 'agenda' || layout === 'quote' || layout === 'section-divider') {
-      return 'none';
-    }
-
-    return 'diagram';
+  private pickCoverSubtitle(summary: string, fallback: string): string {
+    const normalized = (summary || fallback).replace(/\s+/g, ' ').trim();
+    const sentences = normalized
+      .split(/(?<=[。！？.!?])\s+/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+    const candidate = sentences.slice(0, 2).join(' ');
+    return this.compact(candidate || normalized, 140);
   }
 
-  private defaultVisualTechnique(layout: SlideSpec['layout']): SlideSpec['visualTechnique'] {
-    if (layout === 'text-visual' || layout === 'comparison' || layout === 'process' || layout === 'summary-closing') {
-      return 'svg';
-    }
-
-    if (layout === 'cover') {
-      return 'image';
-    }
-
-    return 'none';
+  private pickQuoteParagraph(sectionBody: string | undefined, keyPoint: string): string {
+    const normalized = (sectionBody || keyPoint).replace(/\s+/g, ' ').trim();
+    const sentences = normalized
+      .split(/(?<=[。！？.!?])\s+/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+    const candidate = sentences[0] || normalized;
+    return this.compact(candidate, 120);
   }
 
-  private defaultTextTechnique(layout: SlideSpec['layout']): SlideSpec['textTechnique'] {
-    if (layout === 'agenda') {
-      return 'agenda-list';
+  private compact(value: string, maxLength: number): string {
+    const normalized = value.replace(/\s+/g, ' ').trim();
+    if (normalized.length <= maxLength) {
+      return normalized;
     }
 
-    if (layout === 'comparison') {
-      return 'two-column-summary';
-    }
-
-    if (layout === 'quote' || layout === 'cover') {
-      return 'statement';
-    }
-
-    if (layout === 'section-divider') {
-      return 'none';
-    }
-
-    return 'short-bullets';
+    return `${normalized.slice(0, maxLength - 3).trim()}...`;
   }
 
-  private defaultVisualPriority(layout: SlideSpec['layout']): SlideSpec['visualPriority'] {
-    if (layout === 'cover' || layout === 'process') {
-      return 'high';
-    }
-
-    if (layout === 'text-visual' || layout === 'comparison' || layout === 'summary-closing') {
-      return 'medium';
-    }
-
-    return 'low';
+  private extractFormulaText(section: DocumentSection | undefined, fallback: string): string | undefined {
+    const formula = section?.formulas?.find((item) => item.trim().length > 0) ?? this.matchFormula(fallback);
+    return formula?.trim() || undefined;
   }
 
-  private defaultComposition(layout: SlideSpec['layout']): NonNullable<SlideSpec['visualComposition']> {
-    if (layout === 'cover') {
-      return 'hero';
+  private extractMermaidDefinition(
+    section: DocumentSection | undefined,
+    fallback: string,
+  ): string | undefined {
+    const explicit = section?.mermaidDefinitions?.find((item) => item.trim().length > 0);
+    if (explicit) {
+      return explicit;
     }
 
-    if (layout === 'comparison') {
-      return 'two-column';
+    const bullets = section?.bullets?.filter(Boolean) ?? [];
+    if (bullets.length >= 3) {
+      const nodes = bullets.slice(0, 5);
+      const edges = nodes
+        .map((bullet, index) => `N${index}["${this.escapeMermaidLabel(bullet)}"]`)
+        .join('\n');
+      const flows = nodes
+        .slice(1)
+        .map((_, index) => `N${index} --> N${index + 1}`)
+        .join('\n');
+
+      return `flowchart LR\n${edges}\n${flows}`;
     }
 
-    if (layout === 'summary-closing') {
-      return 'center-panel';
+    if (fallback.trim()) {
+      return `flowchart LR\nA["${this.escapeMermaidLabel(section?.title || 'Idea')}"] --> B["${this.escapeMermaidLabel(
+        fallback,
+      )}"]`;
     }
 
-    if (layout === 'agenda' || layout === 'quote' || layout === 'section-divider') {
-      return 'none';
-    }
-
-    return 'right-panel';
+    return undefined;
   }
 
-  private defaultDensity(layout: SlideSpec['layout']): NonNullable<SlideSpec['density']> {
-    if (layout === 'comparison') {
-      return 'high';
-    }
-
-    if (layout === 'cover' || layout === 'agenda' || layout === 'quote' || layout === 'section-divider') {
-      return 'low';
-    }
-
-    return 'medium';
+  private matchFormula(value: string): string | undefined {
+    return value.match(/\$\$[\s\S]+?\$\$|\$[^$\n]+\$/)?.[0];
   }
 
-  private pickAccentTone(slideNumber: number): SlideSpec['accentTone'] {
-    const tones: Array<NonNullable<SlideSpec['accentTone']>> = ['teal', 'blue', 'amber'];
-    return tones[(slideNumber - 1) % tones.length];
+  private escapeMermaidLabel(value: string): string {
+    return value.replace(/"/g, '\\"');
   }
 }
