@@ -1,0 +1,95 @@
+[
+  {
+    "slideNumber": 1,
+    "title": "RAG Engineering",
+    "subtitle": "RAG is not just a prompt trick. It is a system problem involving ingestion, indexing, retrieval, ranking, and evaluation.",
+    "sectionLabel": "RAG ENGINEERING",
+    "layout": "cover",
+    "bullets": [],
+    "notes": "Opening slide for RAG Engineering",
+    "visualGoal": "Use a minimal title accent and keep the opening slide clean.",
+    "visualType": "cover-accent",
+    "visualComposition": "hero",
+    "accentTone": "teal"
+  },
+  {
+    "slideNumber": 2,
+    "title": "Why It Matters",
+    "sectionLabel": "SECTION 02 / 05",
+    "layout": "text-visual",
+    "bullets": [
+      "Better grounding improves answer quality",
+      "Retrieval quality directly affects trust",
+      "System design impacts latency and cost",
+      "Ingest documents"
+    ],
+    "paragraph": "RAG is not just a prompt trick. It is a system problem involving ingestion, indexing, retrieval, ranking, and evaluation.",
+    "highlight": "Better grounding improves answer quality",
+    "notes": "RAG is not just a prompt trick. It is a system problem involving ingestion, indexing, retrieval, ranking, and evaluation.",
+    "visualGoal": "Translate \"RAG is not just a prompt trick. It is a system problem involving ingestion, indexing, retrieval, ranking, and evaluation.\" into a clean process-style visual for Why It Matters.",
+    "visualType": "diagram",
+    "visualComposition": "right-panel",
+    "accentTone": "blue",
+    "assetPath": "/Users/gengyu/code/mid-mint/data/projects/sample-visual-pass-v2-20260421-b8e19b/assets/slide-002.svg"
+  },
+  {
+    "slideNumber": 3,
+    "title": "Core Pipeline",
+    "sectionLabel": "SECTION 03 / 05",
+    "layout": "comparison",
+    "bullets": [
+      "Ingest documents",
+      "Chunk and clean text",
+      "Build embeddings",
+      "Retrieve top candidates"
+    ],
+    "paragraph": "The most common failure is not the model itself, but poor context selection.",
+    "highlight": "Ingest documents",
+    "notes": "The most common failure is not the model itself, but poor context selection.",
+    "visualGoal": "Use modular comparison cards to clarify the structure behind Core Pipeline.",
+    "visualType": "comparison-card",
+    "visualComposition": "right-panel",
+    "accentTone": "amber",
+    "assetPath": "/Users/gengyu/code/mid-mint/data/projects/sample-visual-pass-v2-20260421-b8e19b/assets/slide-003.svg"
+  },
+  {
+    "slideNumber": 4,
+    "title": "Practical Rules",
+    "sectionLabel": "SECTION 04 / 05",
+    "layout": "comparison",
+    "bullets": [
+      "Keep chunking strategy explicit",
+      "Measure retrieval before tuning prompts",
+      "Separate offline evaluation and online behavior",
+      "Design for observability from the start"
+    ],
+    "paragraph": "Teams usually improve faster when they treat RAG as a product pipeline rather than a single model call.",
+    "highlight": "Keep chunking strategy explicit",
+    "notes": "Teams usually improve faster when they treat RAG as a product pipeline rather than a single model call.",
+    "visualGoal": "Use modular comparison cards to clarify the structure behind Practical Rules.",
+    "visualType": "comparison-card",
+    "visualComposition": "right-panel",
+    "accentTone": "teal",
+    "assetPath": "/Users/gengyu/code/mid-mint/data/projects/sample-visual-pass-v2-20260421-b8e19b/assets/slide-004.svg"
+  },
+  {
+    "slideNumber": 5,
+    "title": "Summary",
+    "sectionLabel": "SECTION 05 / 05",
+    "layout": "title-bullets",
+    "bullets": [
+      "Better grounding improves answer quality",
+      "Retrieval quality directly affects trust",
+      "System design impacts latency and cost",
+      "Ingest documents"
+    ],
+    "paragraph": "Better grounding improves answer quality / Retrieval quality directly affects trust / System design impacts latency and cost",
+    "highlight": "Better grounding improves answer quality",
+    "notes": "Better grounding improves answer quality / Retrieval quality directly affects trust / System design impacts latency and cost",
+    "visualGoal": "Create a centered recap motif that reinforces Summary.",
+    "visualType": "summary-graphic",
+    "visualComposition": "center-panel",
+    "accentTone": "blue",
+    "assetPath": "/Users/gengyu/code/mid-mint/data/projects/sample-visual-pass-v2-20260421-b8e19b/assets/slide-005.svg"
+  }
+]

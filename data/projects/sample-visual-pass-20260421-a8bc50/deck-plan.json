@@ -1,0 +1,41 @@
+{
+  "title": "RAG Engineering",
+  "totalSlides": 5,
+  "slides": [
+    {
+      "slideNumber": 1,
+      "title": "RAG Engineering",
+      "keyPoint": "Better grounding improves answer quality Retrieval quality directly affects trust System design impacts latency and cost",
+      "sourceSectionTitle": "RAG Engineering",
+      "layoutHint": "cover"
+    },
+    {
+      "slideNumber": 2,
+      "title": "RAG Engineering",
+      "keyPoint": "RAG Engineering",
+      "sourceSectionTitle": "RAG Engineering",
+      "layoutHint": "text-visual"
+    },
+    {
+      "slideNumber": 3,
+      "title": "Why It Matters",
+      "keyPoint": "RAG is not just a prompt trick. It is a system problem involving ingestion, indexing, retrieval, ranking, and evaluation.",
+      "sourceSectionTitle": "Why It Matters",
+      "layoutHint": "text-visual"
+    },
+    {
+      "slideNumber": 4,
+      "title": "Core Pipeline",
+      "keyPoint": "The most common failure is not the model itself, but poor context selection.",
+      "sourceSectionTitle": "Core Pipeline",
+      "layoutHint": "comparison"
+    },
+    {
+      "slideNumber": 5,
+      "title": "Summary",
+      "keyPoint": "RAG Engineering / Why It Matters / Core Pipeline",
+      "sourceSectionTitle": "Summary",
+      "layoutHint": "title-bullets"
+    }
+  ]
+}

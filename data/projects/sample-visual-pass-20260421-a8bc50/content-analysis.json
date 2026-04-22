@@ -1,0 +1,10 @@
+{
+  "mainTopic": "RAG Engineering",
+  "summary": "Better grounding improves answer quality Retrieval quality directly affects trust System design impacts latency and cost",
+  "keyMessages": [
+    "RAG Engineering",
+    "Why It Matters",
+    "Core Pipeline",
+    "Practical Rules"
+  ]
+}

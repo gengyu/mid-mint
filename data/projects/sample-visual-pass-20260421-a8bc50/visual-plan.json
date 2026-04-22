@@ -1,0 +1,64 @@
+{
+  "theme": "editorial-soft",
+  "palette": {
+    "background": "#F3F6FB",
+    "surface": "#FFFFFF",
+    "surfaceAlt": "#EEF4FF",
+    "text": "#102033",
+    "mutedText": "#5B6B7D",
+    "border": "#D9E3F0",
+    "accent": "#0F766E",
+    "accentSoft": "#D7F3EE"
+  },
+  "slides": [
+    {
+      "slideNumber": 1,
+      "layout": "cover",
+      "visualType": "cover-accent",
+      "goal": "Introduce RAG Engineering with a confident editorial hero composition.",
+      "composition": "hero",
+      "density": "low",
+      "accentTone": "teal"
+    },
+    {
+      "slideNumber": 2,
+      "layout": "text-visual",
+      "visualType": "diagram",
+      "goal": "Translate \"RAG Engineering\" into a clean process-style visual for RAG Engineering.",
+      "composition": "right-panel",
+      "density": "medium",
+      "accentTone": "blue",
+      "assetFile": "slide-002.svg"
+    },
+    {
+      "slideNumber": 3,
+      "layout": "text-visual",
+      "visualType": "diagram",
+      "goal": "Translate \"RAG is not just a prompt trick. It is a system problem involving ingestion, indexing, retrieval, ranking, and evaluation.\" into a clean process-style visual for Why It Matters.",
+      "composition": "right-panel",
+      "density": "medium",
+      "accentTone": "amber",
+      "assetFile": "slide-003.svg"
+    },
+    {
+      "slideNumber": 4,
+      "layout": "comparison",
+      "visualType": "comparison-card",
+      "goal": "Use modular comparison cards to clarify the structure behind Core Pipeline.",
+      "composition": "right-panel",
+      "density": "high",
+      "accentTone": "teal",
+      "assetFile": "slide-004.svg"
+    },
+    {
+      "slideNumber": 5,
+      "layout": "title-bullets",
+      "visualType": "summary-graphic",
+      "goal": "Create a centered recap motif that reinforces Summary.",
+      "composition": "center-panel",
+      "density": "medium",
+      "accentTone": "blue",
+      "assetFile": "slide-005.svg"
+    }
+  ]
+}

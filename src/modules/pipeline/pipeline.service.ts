@@ -39,10 +39,15 @@ export class PipelineService {
     );
     await this.projectStorageService.writeArtifact(projectId, 'deck-plan.json', deckPlan);
 
-    const slideSpecs = this.slideSpecService.createSlides(parsedDocument, analysis, deckPlan);
-    const visualPlan = this.svgGeneratorService.createVisualPlan(slideSpecs);
+    const visualPlan = this.svgGeneratorService.createVisualPlan(deckPlan, analysis);
     await this.projectStorageService.writeArtifact(projectId, 'visual-plan.json', visualPlan);
 
+    const slideSpecs = this.slideSpecService.createSlides(
+      parsedDocument,
+      analysis,
+      deckPlan,
+      visualPlan,
+    );
     const slidesWithAssets = await this.attachAssets(projectId, slideSpecs, visualPlan);
     await this.projectStorageService.writeArtifact(projectId, 'slide-specs.json', slidesWithAssets);
 

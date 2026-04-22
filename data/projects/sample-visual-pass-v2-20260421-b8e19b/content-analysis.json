@@ -1,0 +1,11 @@
+{
+  "mainTopic": "RAG Engineering",
+  "summary": "RAG is not just a prompt trick. It is a system problem involving ingestion, indexing, retrieval, ranking, and evaluation.",
+  "keyMessages": [
+    "Better grounding improves answer quality",
+    "Retrieval quality directly affects trust",
+    "System design impacts latency and cost",
+    "Ingest documents",
+    "Chunk and clean text"
+  ]
+}

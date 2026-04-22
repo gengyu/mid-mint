@@ -58,12 +58,27 @@ export class LlmJsonService {
   }
 
   private buildFallbackAnalysis(document: ParsedDocument): PresentationAnalysis {
-    const sectionTitles = document.sections.map((section) => section.title).slice(0, 5);
-    const summarySource = document.paragraphs.slice(0, 3).join(' ');
+    const contentSections = this.getContentSections(document);
+    const summarySource =
+      contentSections.map((section) => section.body.trim()).find(Boolean) ??
+      document.paragraphs.find((paragraph) => paragraph.trim().includes(' ')) ??
+      document.rawText.slice(0, 240);
+    const keyMessages = Array.from(
+      new Set(
+        contentSections
+          .flatMap((section) => section.bullets)
+          .map((item) => item.trim())
+          .filter(Boolean),
+      ),
+    ).slice(0, 5);
+
     return {
       mainTopic: document.title,
-      summary: summarySource || document.rawText.slice(0, 240),
-      keyMessages: sectionTitles.length > 0 ? sectionTitles : document.paragraphs.slice(0, 5),
+      summary: summarySource,
+      keyMessages:
+        keyMessages.length > 0
+          ? keyMessages
+          : contentSections.map((section) => section.title).slice(0, 5),
     };
   }
 
@@ -74,13 +89,16 @@ export class LlmJsonService {
   ): DeckPlan {
     const keyMessages = Array.isArray(analysis.keyMessages) ? analysis.keyMessages : [];
     const requestedTotal = Math.max(3, Math.min(requestedSlides ?? 6, 10));
-    const contentSections = document.sections.slice(0, Math.max(1, requestedTotal - 2));
+    const contentSections = this.getContentSections(document).slice(
+      0,
+      Math.max(1, requestedTotal - 2),
+    );
     const slides = [
       {
         slideNumber: 1,
         title: document.title,
         keyPoint: analysis.summary,
-        sourceSectionTitle: document.sections[0]?.title ?? document.title,
+        sourceSectionTitle: contentSections[0]?.title ?? document.title,
         layoutHint: 'cover' as const,
       },
       ...contentSections.map((section, index) => ({
@@ -140,5 +158,15 @@ export class LlmJsonService {
           ['cover', 'title-bullets', 'text-visual', 'comparison'].includes(slide.layoutHint),
       )
     );
+  }
+
+  private getContentSections(document: ParsedDocument): ParsedDocument['sections'] {
+    const sections = document.sections.filter(
+      (section) =>
+        section.title.trim().toLowerCase() !== document.title.trim().toLowerCase() &&
+        (section.body.trim().length > 0 || section.bullets.length > 0),
+    );
+
+    return sections.length > 0 ? sections : document.sections;
   }
 }
