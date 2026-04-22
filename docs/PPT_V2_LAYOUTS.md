@@ -165,6 +165,12 @@
 - `formula`
 - `image`
 
+需要特别说明的是：
+
+- 上面是第二版目标中的技术集合
+- 当前代码主路径已经稳定落地的是 `svg / image / none`
+- `mermaid / table / code-block / formula` 仍是下一阶段接入重点
+
 ### Mermaid
 
 适合：
@@ -252,6 +258,21 @@
   "role": "content",
   "layout": "process",
   "visualTechnique": "mermaid",
+  "textTechnique": "short-bullets",
+  "visualPriority": "high",
+  "composition": "right-panel",
+  "density": "medium"
+}
+```
+
+如果按当前代码主路径，更接近真实输出的条目会是：
+
+```json
+{
+  "slideNumber": 4,
+  "role": "content",
+  "layout": "process",
+  "visualTechnique": "svg",
   "textTechnique": "short-bullets",
   "visualPriority": "high",
   "composition": "right-panel",

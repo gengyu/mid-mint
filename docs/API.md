@@ -26,12 +26,11 @@ Base URL: `http://localhost:3000`
 
 - `title` 可选，项目标题
 - `content` 必填，原始文档内容
-- `sourceType` 可选，当前支持 `markdown`、`txt`、`docx`、`html`
+- `sourceType` 可选，当前支持 `markdown`、`txt`、`html`
 
 当前约定：
 
 - `markdown` / `txt` / `html` 直接传文本内容
-- `docx` 在当前 JSON 接口中传 base64 字符串内容
 
 响应示例：
 
@@ -139,6 +138,12 @@ Base URL: `http://localhost:3000`
   }
 }
 ```
+
+说明：
+
+- 当前 `visualPlan` 已经包含更细的设计决策字段
+- 主链路里稳定输出的 `visualTechnique` 以 `none / image / svg` 为主
+- `mermaid / table / code-block / formula` 目前仍属于待接入能力
 
 ## 生成结果目录
 

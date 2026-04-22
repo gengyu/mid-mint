@@ -2,7 +2,7 @@
 
 一个本地优先的 AI PPT 生成服务。
 
-当前项目按 PPT 第二版推进，目标不是“把文案切成几页”，而是把一份 `Markdown / Docx / Txt / HTML` 文档变成一套真正可用于演讲的 `.pptx`。
+当前项目按 PPT 第二版推进，目标不是“把文案切成几页”，而是把一份 `Markdown / Txt / HTML` 文档变成一套真正可用于演讲的 `.pptx`。
 
 ## 当前目标
 
@@ -39,6 +39,14 @@
 - `code-block`
 - `formula`
 - `image`
+
+当前代码主路径已经稳定落地的表达技术主要是：
+
+- `none`
+- `image`
+- `svg`
+
+`mermaid / table / code-block / formula` 目前仍属于第二版后续接入能力。
 
 ## 当前主流程
 

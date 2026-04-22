@@ -8,7 +8,7 @@
 
 第二版目标：
 
-- 接收 `Markdown / Docx / Txt / HTML`
+- 接收 `Markdown / Txt / HTML`
 - 解析文档结构
 - 分析内容并生成演示规划
 - 先判断页面角色 / 布局类型
@@ -23,7 +23,7 @@
 
 1. 创建项目
 2. 保存输入文档
-3. 解析 `Markdown / Docx / Txt / HTML`
+3. 解析 `Markdown / Txt / HTML`
 4. 生成 `parsed-document.json`
 5. 生成 `content-analysis.json`
 6. 生成 `deck-plan.json`
@@ -117,7 +117,7 @@ Document
   - LLM 调用使用官方 SDK 或成熟封装
   - 文档解析使用成熟解析库
   - PPT 生成使用成熟 PPT 库
-  - Mermaid / HTML / Docx / 公式等内容表达优先使用成熟库
+  - Mermaid / HTML / 公式等内容表达优先使用成熟库
 - 只有在没有合适库、或引入库会显著增加复杂度时，才允许自己写最小实现
 - 如果保留自写实现，必须先说明为什么不能直接用现成库
 
@@ -143,7 +143,7 @@ data/projects/<projectId>/
 
 ```txt
 data/projects/<projectId>/
-├── input.md | input.txt | input.docx | input.html
+├── input.md | input.txt | input.html
 ├── project.json
 ├── parsed-document.json
 ├── content-analysis.json

@@ -10,17 +10,8 @@ export async function writeTextFile(filePath: string, content: string): Promise<
   await writeFile(filePath, content, 'utf-8');
 }
 
-export async function writeBinaryFile(filePath: string, content: Buffer): Promise<void> {
-  await ensureDir(path.dirname(filePath));
-  await writeFile(filePath, content);
-}
-
 export async function readTextFile(filePath: string): Promise<string> {
   return readFile(filePath, 'utf-8');
-}
-
-export async function readBinaryFile(filePath: string): Promise<Buffer> {
-  return readFile(filePath);
 }
 
 export async function pathExists(targetPath: string): Promise<boolean> {

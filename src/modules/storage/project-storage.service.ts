@@ -6,9 +6,7 @@ import {
   ensureDir,
   listChildDirectories,
   pathExists,
-  readBinaryFile,
   readTextFile,
-  writeBinaryFile,
   writeTextFile,
 } from '../../common/utils/file.util';
 import { createProjectId } from '../../common/utils/id.util';
@@ -77,13 +75,6 @@ export class ProjectStorageService {
   async readInput(projectId: string): Promise<{ content: string; sourceType: DocumentSourceType }> {
     const record = await this.readProjectRecord(projectId);
     const inputPath = this.getInputPath(projectId, record.sourceType);
-
-    if (record.sourceType === 'docx') {
-      return {
-        content: (await readBinaryFile(inputPath)).toString('base64'),
-        sourceType: record.sourceType,
-      };
-    }
 
     return {
       content: await readTextFile(inputPath),
@@ -162,8 +153,6 @@ export class ProjectStorageService {
         return 'input.txt';
       case 'html':
         return 'input.html';
-      case 'docx':
-        return 'input.docx';
       case 'markdown':
       default:
         return 'input.md';
@@ -176,11 +165,6 @@ export class ProjectStorageService {
     content: string,
   ): Promise<void> {
     const inputPath = this.getInputPath(projectId, sourceType);
-    if (sourceType === 'docx') {
-      await writeBinaryFile(inputPath, Buffer.from(content, 'base64'));
-      return;
-    }
-
     await writeTextFile(inputPath, content);
   }
 }

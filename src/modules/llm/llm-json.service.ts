@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import { ParsedDocument } from '../parser/types/parsed-document.type';
 import { DeckPlan, PresentationAnalysis } from '../pipeline/pipeline.types';
-import { SlideSpec } from '../slides/slide.types';
+import { isSlideLayout, SlideSpec } from '../slides/slide.types';
 import { LlmService } from './llm.service';
 
 @Injectable()
@@ -139,6 +139,7 @@ export class LlmJsonService {
     const contentStartNumber = includeAgendaSlide ? 3 : 2;
     const contentCapacity = requestedTotal - 2 - agendaSlide.length;
     const selectedSections = contentSections.slice(0, Math.max(1, contentCapacity));
+    const contentLayouts = this.planContentLayouts(selectedSections);
 
     const slides = [
       {
@@ -157,7 +158,7 @@ export class LlmJsonService {
         title: section.title,
         keyPoint: section.body || section.bullets[0] || keyMessages[index] || section.title,
         sourceSectionTitle: section.title,
-        layoutHint: this.pickLayoutHint(section),
+        layoutHint: contentLayouts[index],
         role: 'content' as const,
         visualFocus: this.pickVisualFocus(section),
         objective: this.buildSlideObjective(section.title),
@@ -189,9 +190,9 @@ export class LlmJsonService {
   ): SlideSpec[] {
     return slides.map((slide) => {
       const trimmedBullets = slide.bullets
-        .map((bullet) => bullet.trim())
+        .map((bullet) => this.shortenText(bullet.trim(), this.maxBulletLength(slide.layout)))
         .filter((bullet) => bullet.length > 0)
-        .slice(0, slide.layout === 'process' ? 5 : 4);
+        .slice(0, this.maxBulletCount(slide.layout));
       const highlight =
         slide.highlight ||
         (slide.layout === 'cover'
@@ -210,14 +211,14 @@ export class LlmJsonService {
 
       return {
         ...slide,
-        bullets: trimmedBullets,
+        bullets: slide.layout === 'quote' ? [] : trimmedBullets,
         highlight,
         eyebrow: slide.eyebrow || this.buildEyebrow(slide),
         notes: `${baseNotes}\n\nSpeaker cue: ${speakingPrompt}`,
         paragraph:
           slide.layout === 'quote'
-            ? this.shortenText(slide.paragraph || baseNotes, 180)
-            : this.shortenText(slide.paragraph || '', slide.layout === 'text-visual' ? 220 : 140),
+            ? this.shortenText(slide.paragraph || baseNotes || highlight, 160)
+            : this.shortenText(slide.paragraph || '', this.maxParagraphLength(slide.layout)),
       };
     });
   }
@@ -254,7 +255,7 @@ export class LlmJsonService {
           typeof slide.keyPoint === 'string' &&
           typeof slide.sourceSectionTitle === 'string' &&
           typeof slide.objective === 'string' &&
-          ['cover', 'agenda', 'section-divider', 'text-visual', 'comparison', 'process', 'quote', 'summary-closing'].includes(slide.layoutHint),
+          isSlideLayout(slide.layoutHint),
       )
     );
   }
@@ -300,6 +301,61 @@ export class LlmJsonService {
 
     if (section.bullets.length >= 4) {
       return 'comparison';
+    }
+
+    return 'text-visual';
+  }
+
+  private planContentLayouts(
+    sections: ParsedDocument['sections'],
+  ): Array<DeckPlan['slides'][number]['layoutHint']> {
+    const layouts: Array<DeckPlan['slides'][number]['layoutHint']> = [];
+
+    sections.forEach((section) => {
+      const preferred = this.pickLayoutHint(section);
+      const previous = layouts[layouts.length - 1];
+      const beforePrevious = layouts[layouts.length - 2];
+
+      if (!(preferred === previous && preferred === beforePrevious)) {
+        layouts.push(preferred);
+        return;
+      }
+
+      layouts.push(this.pickAlternativeLayout(section, preferred));
+    });
+
+    return layouts;
+  }
+
+  private pickAlternativeLayout(
+    section: ParsedDocument['sections'][number],
+    preferred: DeckPlan['slides'][number]['layoutHint'],
+  ): DeckPlan['slides'][number]['layoutHint'] {
+    const candidates: Array<DeckPlan['slides'][number]['layoutHint']> = [
+      'text-visual',
+      'process',
+      'comparison',
+      'quote',
+    ];
+
+    for (const candidate of candidates) {
+      if (candidate === preferred) {
+        continue;
+      }
+
+      if (candidate === 'process' && section.bullets.length < 3) {
+        continue;
+      }
+
+      if (candidate === 'comparison' && section.bullets.length < 4) {
+        continue;
+      }
+
+      if (candidate === 'quote' && section.body.trim().length < 60) {
+        continue;
+      }
+
+      return candidate;
     }
 
     return 'text-visual';
@@ -353,5 +409,48 @@ export class LlmJsonService {
       .filter((line) => !line.trim().startsWith('Speaker cue:'))
       .join('\n')
       .trim();
+  }
+
+  private maxBulletCount(layout: SlideSpec['layout']): number {
+    switch (layout) {
+      case 'process':
+        return 5;
+      case 'comparison':
+      case 'agenda':
+      case 'summary-closing':
+        return 4;
+      case 'quote':
+        return 0;
+      default:
+        return 3;
+    }
+  }
+
+  private maxBulletLength(layout: SlideSpec['layout']): number {
+    switch (layout) {
+      case 'process':
+        return 24;
+      case 'comparison':
+      case 'summary-closing':
+        return 28;
+      default:
+        return 36;
+    }
+  }
+
+  private maxParagraphLength(layout: SlideSpec['layout']): number {
+    switch (layout) {
+      case 'cover':
+        return 120;
+      case 'text-visual':
+        return 180;
+      case 'summary-closing':
+      case 'agenda':
+        return 120;
+      case 'section-divider':
+        return 100;
+      default:
+        return 140;
+    }
   }
 }

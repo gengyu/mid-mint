@@ -1,12 +1,19 @@
-export type SlideLayout =
-  | 'cover'
-  | 'agenda'
-  | 'section-divider'
-  | 'text-visual'
-  | 'comparison'
-  | 'process'
-  | 'quote'
-  | 'summary-closing';
+export const SLIDE_LAYOUTS = [
+  'cover',
+  'agenda',
+  'section-divider',
+  'text-visual',
+  'comparison',
+  'process',
+  'quote',
+  'summary-closing',
+] as const;
+
+export type SlideLayout = (typeof SLIDE_LAYOUTS)[number];
+
+export function isSlideLayout(value: unknown): value is SlideLayout {
+  return typeof value === 'string' && (SLIDE_LAYOUTS as readonly string[]).includes(value);
+}
 
 export type SlideRole =
   | 'cover'

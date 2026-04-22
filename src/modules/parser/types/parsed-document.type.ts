@@ -1,6 +1,6 @@
 import { DocumentSection } from './document-section.type';
 
-export type DocumentSourceType = 'markdown' | 'txt' | 'html' | 'docx';
+export type DocumentSourceType = 'markdown' | 'txt' | 'html';
 
 export interface ParsedDocument {
   title: string;

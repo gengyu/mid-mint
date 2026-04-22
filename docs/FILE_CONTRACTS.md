@@ -22,7 +22,7 @@ data/projects/<projectId>/
 
 ```txt
 data/projects/<projectId>/
-├── input.md | input.txt | input.docx | input.html
+├── input.md | input.txt | input.html
 ├── project.json
 ├── parsed-document.json
 ├── content-analysis.json
@@ -125,7 +125,7 @@ data/projects/<projectId>/
       "role": "content",
       "layout": "process",
       "visualType": "diagram",
-      "visualTechnique": "mermaid",
+      "visualTechnique": "svg",
       "textTechnique": "short-bullets",
       "visualPriority": "high",
       "goal": "Explain the core pipeline",
@@ -157,6 +157,12 @@ data/projects/<projectId>/
   页面文字密度，例如 `low / medium / high`
 - `requiresAsset`
   是否必须生成 SVG 或图片素材
+
+当前实现说明：
+
+- 当前主链路稳定输出的 `visualTechnique` 主要是 `none / image / svg`
+- `mermaid / table / code-block / formula` 目前是规划字段，还没有在主链路中自动产出
+- `txt / html` 当前共用同一套纯文本结构化解析逻辑
 
 ## slide-specs.json
 
@@ -234,6 +240,8 @@ iterations/round-02/slide-specs.json
 - `code-block`
 - `formula`
 - `image`
+
+当前实现中已稳定落地的是 `svg / image / none`，其他技术仍按后续迭代接入。
 
 ## 页面映射约束
 

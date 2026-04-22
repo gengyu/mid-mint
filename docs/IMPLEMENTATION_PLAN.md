@@ -49,7 +49,6 @@
 
 - 支持 `markdown`
 - 支持 `txt`
-- 支持 `docx`
 - 支持 `html`
 
 要求：
