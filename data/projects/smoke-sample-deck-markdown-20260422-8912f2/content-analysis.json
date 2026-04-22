@@ -1,0 +1,16 @@
+{
+  "mainTopic": "RAG Engineering",
+  "summary": "RAG is not just a prompt trick. It is a system problem involving ingestion, indexing, retrieval, ranking, and evaluation.",
+  "keyMessages": [
+    "Why It Matters",
+    "Core Pipeline",
+    "Practical Rules"
+  ],
+  "audience": "General business audience",
+  "tone": "Confident and practical",
+  "storyArc": [
+    "Context",
+    "Key ideas",
+    "Action"
+  ]
+}

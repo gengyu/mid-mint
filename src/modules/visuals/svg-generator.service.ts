@@ -7,7 +7,12 @@ import { GeneratedAsset } from './visual.types';
 export class SvgGeneratorService {
   generate(slides: SlideSpec[]): GeneratedAsset[] {
     return slides
-      .filter((slide) => slide.layout !== 'cover')
+      .filter(
+        (slide) =>
+          slide.layout === 'text-visual' ||
+          slide.layout === 'comparison' ||
+          slide.layout === 'process',
+      )
       .map((slide) => ({
         slideNumber: slide.slideNumber,
         fileName: `slide-${String(slide.slideNumber).padStart(3, '0')}.svg`,

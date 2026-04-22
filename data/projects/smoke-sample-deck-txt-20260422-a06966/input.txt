@@ -1,0 +1,13 @@
+AI Delivery Playbook
+
+Why this matters
+- Faster iteration reduces risk
+- Clear artifacts help teams align
+
+Execution model
+- Parse source content
+- Build a deck plan
+- Render presentation output
+
+Practical advice
+Keep the workflow observable and simple.

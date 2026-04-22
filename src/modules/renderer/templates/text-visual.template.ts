@@ -1,37 +1,102 @@
 import { SlideSpec } from '../../slides/slide.types';
+import { THEME } from './rendering-theme';
 
 interface PptSlideLike {
   addImage: (...args: any[]) => unknown;
+  addShape: (...args: any[]) => unknown;
   addText: (...args: any[]) => unknown;
 }
 
 export function renderTextVisualTemplate(slide: PptSlideLike, spec: SlideSpec): void {
-  slide.addText(spec.title, {
-    x: 0.6,
-    y: 0.4,
-    w: 11.2,
-    h: 0.8,
-    fontSize: 20,
+  slide.addText(spec.eyebrow ?? 'Insight', {
+    x: 0.7,
+    y: 0.45,
+    w: 2.5,
+    h: 0.3,
+    fontSize: 12,
     bold: true,
-    color: '0F172A',
+    color: THEME.teal,
+    fontFace: 'Aptos',
+  });
+  slide.addText(spec.title, {
+    x: 0.7,
+    y: 0.8,
+    w: 10.4,
+    h: 0.8,
+    fontSize: 24,
+    bold: true,
+    color: THEME.ink,
+    fontFace: 'Aptos Display',
+  });
+  slide.addShape('roundRect', {
+    x: 0.7,
+    y: 1.7,
+    w: 5.0,
+    h: 4.5,
+    rectRadius: 0.12,
+    fill: { color: THEME.white },
+    line: { color: THEME.sky, width: 1.1 },
   });
   slide.addText(spec.paragraph ?? spec.bullets.join('\n'), {
-    x: 0.7,
-    y: 1.4,
-    w: 5.0,
-    h: 4.8,
+    x: 1.0,
+    y: 2.0,
+    w: 4.35,
+    h: 2.2,
     fontSize: 15,
-    color: '1F2937',
+    color: THEME.text,
     valign: 'top',
+    fontFace: 'Aptos',
   });
+  if (spec.highlight) {
+    slide.addText(spec.highlight, {
+      x: 1.0,
+      y: 4.95,
+      w: 4.1,
+      h: 0.8,
+      fontSize: 13,
+      bold: true,
+      color: THEME.teal,
+      fontFace: 'Aptos',
+    });
+  }
 
   if (spec.assetPath) {
+    slide.addShape('roundRect', {
+      x: 6.1,
+      y: 1.7,
+      w: 5.4,
+      h: 4.5,
+      rectRadius: 0.12,
+      fill: { color: THEME.white },
+      line: { color: THEME.sky, width: 1.1 },
+    });
     slide.addImage({
       path: spec.assetPath,
-      x: 6.2,
-      y: 1.3,
-      w: 5.2,
-      h: 3.8,
+      x: 6.35,
+      y: 1.95,
+      w: 4.9,
+      h: 3.6,
+    });
+  } else {
+    slide.addShape('roundRect', {
+      x: 6.1,
+      y: 1.7,
+      w: 5.4,
+      h: 4.5,
+      rectRadius: 0.12,
+      fill: { color: THEME.pale },
+      line: { color: THEME.pale },
+    });
+    slide.addText('Visual area', {
+      x: 7.95,
+      y: 3.6,
+      w: 1.8,
+      h: 0.3,
+      fontSize: 16,
+      bold: true,
+      color: THEME.muted,
+      align: 'center',
+      fontFace: 'Aptos',
     });
   }
 }

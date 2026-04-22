@@ -1,0 +1,59 @@
+[
+  {
+    "slideNumber": 1,
+    "title": "AI Delivery Playbook",
+    "subtitle": "Faster iteration reduces risk Clear artifacts help teams align",
+    "layout": "cover",
+    "bullets": [],
+    "notes": "Opening slide for AI Delivery Playbook"
+  },
+  {
+    "slideNumber": 2,
+    "title": "Agenda",
+    "layout": "title-bullets",
+    "bullets": [
+      "Why this matters",
+      "Execution model",
+      "Practical advice"
+    ],
+    "paragraph": "Faster iteration reduces risk Clear artifacts help teams align",
+    "notes": "Agenda overview"
+  },
+  {
+    "slideNumber": 3,
+    "title": "Why this matters",
+    "layout": "text-visual",
+    "bullets": [
+      "Faster iteration reduces risk",
+      "Clear artifacts help teams align"
+    ],
+    "paragraph": "Faster iteration reduces risk\nClear artifacts help teams align",
+    "notes": "Faster iteration reduces risk",
+    "assetPath": "/Users/gengyu/github/mid-mint/data/projects/smoke-sample-deck-txt-20260422-8f31d5/assets/slide-003.svg"
+  },
+  {
+    "slideNumber": 4,
+    "title": "Execution model",
+    "layout": "text-visual",
+    "bullets": [
+      "Parse source content",
+      "Build a deck plan",
+      "Render presentation output"
+    ],
+    "paragraph": "Parse source content\nBuild a deck plan\nRender presentation output",
+    "notes": "Parse source content",
+    "assetPath": "/Users/gengyu/github/mid-mint/data/projects/smoke-sample-deck-txt-20260422-8f31d5/assets/slide-004.svg"
+  },
+  {
+    "slideNumber": 5,
+    "title": "Summary",
+    "layout": "title-bullets",
+    "bullets": [
+      "Why this matters",
+      "Execution model",
+      "Practical advice"
+    ],
+    "paragraph": "Faster iteration reduces risk Clear artifacts help teams align",
+    "notes": "Why this matters / Execution model / Practical advice"
+  }
+]

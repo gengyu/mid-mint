@@ -1,0 +1,41 @@
+{
+  "title": "AI Delivery Playbook",
+  "totalSlides": 5,
+  "slides": [
+    {
+      "slideNumber": 1,
+      "title": "AI Delivery Playbook",
+      "keyPoint": "Faster iteration reduces risk Clear artifacts help teams align",
+      "sourceSectionTitle": "Why this matters",
+      "layoutHint": "cover"
+    },
+    {
+      "slideNumber": 2,
+      "title": "Agenda",
+      "keyPoint": "Why this matters / Execution model / Practical advice",
+      "sourceSectionTitle": "Agenda",
+      "layoutHint": "title-bullets"
+    },
+    {
+      "slideNumber": 3,
+      "title": "Why this matters",
+      "keyPoint": "Faster iteration reduces risk",
+      "sourceSectionTitle": "Why this matters",
+      "layoutHint": "text-visual"
+    },
+    {
+      "slideNumber": 4,
+      "title": "Execution model",
+      "keyPoint": "Parse source content",
+      "sourceSectionTitle": "Execution model",
+      "layoutHint": "text-visual"
+    },
+    {
+      "slideNumber": 5,
+      "title": "Summary",
+      "keyPoint": "Why this matters / Execution model / Practical advice",
+      "sourceSectionTitle": "Summary",
+      "layoutHint": "title-bullets"
+    }
+  ]
+}

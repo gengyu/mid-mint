@@ -1,0 +1,89 @@
+[
+  {
+    "slideNumber": 1,
+    "title": "AI Delivery Playbook",
+    "subtitle": "Faster iteration reduces risk Clear artifacts help teams align",
+    "eyebrow": "Confident and practical",
+    "layout": "cover",
+    "role": "cover",
+    "bullets": [],
+    "highlight": "AI Delivery Playbook",
+    "notes": "Opening slide for AI Delivery Playbook\n\nSpeaker cue: Tighten the story and reduce repetition.\n\nSpeaker cue: Close with conviction and a next action.",
+    "paragraph": ""
+  },
+  {
+    "slideNumber": 2,
+    "title": "Agenda",
+    "eyebrow": "Talk flow",
+    "layout": "agenda",
+    "role": "agenda",
+    "bullets": [
+      "Why this matters",
+      "Execution model",
+      "Practical advice"
+    ],
+    "paragraph": "Faster iteration reduces risk Clear artifacts help teams align",
+    "highlight": "Context -> Key ideas -> Action",
+    "notes": "Agenda overview\n\nSpeaker cue: Tighten the story and reduce repetition.\n\nSpeaker cue: Close with conviction and a next action."
+  },
+  {
+    "slideNumber": 3,
+    "title": "Why this matters",
+    "layout": "text-visual",
+    "role": "content",
+    "eyebrow": "Section insight",
+    "bullets": [
+      "Faster iteration reduces risk",
+      "Clear artifacts help teams align"
+    ],
+    "paragraph": "Faster iteration reduces risk Clear artifacts help teams align",
+    "highlight": "Explain why \"Why this matters\" matters and make the audience remember the core message.",
+    "notes": "Faster iteration reduces risk\n\nSpeaker cue: Tighten the story and reduce repetition.\n\nSpeaker cue: Close with conviction and a next action.",
+    "assetPath": "/Users/gengyu/github/mid-mint/data/projects/smoke-sample-deck-txt-20260422-81b53a/assets/slide-003.svg"
+  },
+  {
+    "slideNumber": 4,
+    "title": "Execution model",
+    "layout": "text-visual",
+    "role": "content",
+    "eyebrow": "Section insight",
+    "bullets": [
+      "Parse source content",
+      "Build a deck plan",
+      "Render presentation output"
+    ],
+    "paragraph": "Parse source content Build a deck plan Render presentation output",
+    "highlight": "Explain why \"Execution model\" matters and make the audience remember the core message.",
+    "notes": "Parse source content\n\nSpeaker cue: Tighten the story and reduce repetition.\n\nSpeaker cue: Close with conviction and a next action.",
+    "assetPath": "/Users/gengyu/github/mid-mint/data/projects/smoke-sample-deck-txt-20260422-81b53a/assets/slide-004.svg"
+  },
+  {
+    "slideNumber": 5,
+    "title": "Practical advice",
+    "layout": "text-visual",
+    "role": "content",
+    "eyebrow": "Section insight",
+    "bullets": [
+      "Keep the workflow observable and simple."
+    ],
+    "paragraph": "Keep the workflow observable and simple.",
+    "highlight": "Explain why \"Practical advice\" matters and make the audience remember the core message.",
+    "notes": "Keep the workflow observable and simple.\n\nSpeaker cue: Tighten the story and reduce repetition.\n\nSpeaker cue: Close with conviction and a next action.",
+    "assetPath": "/Users/gengyu/github/mid-mint/data/projects/smoke-sample-deck-txt-20260422-81b53a/assets/slide-005.svg"
+  },
+  {
+    "slideNumber": 6,
+    "title": "Closing Takeaways",
+    "eyebrow": "Final message",
+    "layout": "title-bullets",
+    "role": "closing",
+    "bullets": [
+      "Why this matters",
+      "Execution model",
+      "Practical advice"
+    ],
+    "paragraph": "Faster iteration reduces risk Clear artifacts help teams align",
+    "highlight": "Faster iteration reduces risk Clear artifacts help teams align",
+    "notes": "Why this matters / Execution model / Practical advice\n\nSpeaker cue: Tighten the story and reduce repetition.\n\nSpeaker cue: Close with conviction and a next action."
+  }
+]

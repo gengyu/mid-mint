@@ -1,0 +1,75 @@
+[
+  {
+    "slideNumber": 1,
+    "title": "RAG Engineering",
+    "subtitle": "RAG Engineering Why It Matters Better grounding improves answer quality",
+    "layout": "cover",
+    "bullets": [],
+    "notes": "Opening slide for RAG Engineering"
+  },
+  {
+    "slideNumber": 2,
+    "title": "Agenda",
+    "layout": "title-bullets",
+    "bullets": [
+      "Why It Matters",
+      "Core Pipeline",
+      "Practical Rules"
+    ],
+    "paragraph": "RAG Engineering Why It Matters Better grounding improves answer quality",
+    "notes": "Agenda overview"
+  },
+  {
+    "slideNumber": 3,
+    "title": "Why It Matters",
+    "layout": "text-visual",
+    "bullets": [
+      "Better grounding improves answer quality",
+      "Retrieval quality directly affects trust",
+      "System design impacts latency and cost"
+    ],
+    "paragraph": "RAG is not just a prompt trick. It is a system problem involving ingestion, indexing, retrieval, ranking, and evaluation.",
+    "notes": "RAG is not just a prompt trick. It is a system problem involving ingestion, indexing, retrieval, ranking, and evaluation.",
+    "assetPath": "/Users/gengyu/github/mid-mint/data/projects/sample-deck-verify-20260422-70ea9c/assets/slide-003.svg"
+  },
+  {
+    "slideNumber": 4,
+    "title": "Core Pipeline",
+    "layout": "comparison",
+    "bullets": [
+      "Ingest documents",
+      "Chunk and clean text",
+      "Build embeddings",
+      "Retrieve top candidates"
+    ],
+    "paragraph": "The most common failure is not the model itself, but poor context selection.",
+    "notes": "The most common failure is not the model itself, but poor context selection.",
+    "assetPath": "/Users/gengyu/github/mid-mint/data/projects/sample-deck-verify-20260422-70ea9c/assets/slide-004.svg"
+  },
+  {
+    "slideNumber": 5,
+    "title": "Practical Rules",
+    "layout": "comparison",
+    "bullets": [
+      "Keep chunking strategy explicit",
+      "Measure retrieval before tuning prompts",
+      "Separate offline evaluation and online behavior",
+      "Design for observability from the start"
+    ],
+    "paragraph": "Teams usually improve faster when they treat RAG as a product pipeline rather than a single model call.",
+    "notes": "Teams usually improve faster when they treat RAG as a product pipeline rather than a single model call.",
+    "assetPath": "/Users/gengyu/github/mid-mint/data/projects/sample-deck-verify-20260422-70ea9c/assets/slide-005.svg"
+  },
+  {
+    "slideNumber": 6,
+    "title": "Summary",
+    "layout": "title-bullets",
+    "bullets": [
+      "Why It Matters",
+      "Core Pipeline",
+      "Practical Rules"
+    ],
+    "paragraph": "RAG Engineering Why It Matters Better grounding improves answer quality",
+    "notes": "Why It Matters / Core Pipeline / Practical Rules"
+  }
+]

@@ -1,0 +1,41 @@
+{
+  "title": "RAG Engineering",
+  "totalSlides": 5,
+  "slides": [
+    {
+      "slideNumber": 1,
+      "title": "RAG Engineering",
+      "keyPoint": "RAG is not just a prompt trick. It is a system problem involving ingestion, indexing, retrieval, ranking, and evaluation.",
+      "sourceSectionTitle": "Why It Matters",
+      "layoutHint": "cover"
+    },
+    {
+      "slideNumber": 2,
+      "title": "Agenda",
+      "keyPoint": "Why It Matters / Core Pipeline / Practical Rules",
+      "sourceSectionTitle": "Agenda",
+      "layoutHint": "title-bullets"
+    },
+    {
+      "slideNumber": 3,
+      "title": "Why It Matters",
+      "keyPoint": "RAG is not just a prompt trick. It is a system problem involving ingestion, indexing, retrieval, ranking, and evaluation.",
+      "sourceSectionTitle": "Why It Matters",
+      "layoutHint": "text-visual"
+    },
+    {
+      "slideNumber": 4,
+      "title": "Core Pipeline",
+      "keyPoint": "The most common failure is not the model itself, but poor context selection.",
+      "sourceSectionTitle": "Core Pipeline",
+      "layoutHint": "comparison"
+    },
+    {
+      "slideNumber": 5,
+      "title": "Summary",
+      "keyPoint": "Why It Matters / Core Pipeline / Practical Rules",
+      "sourceSectionTitle": "Summary",
+      "layoutHint": "title-bullets"
+    }
+  ]
+}

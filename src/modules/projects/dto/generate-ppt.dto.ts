@@ -6,4 +6,10 @@ export class GeneratePptDto {
   @Min(3)
   @Max(10)
   requestedSlides?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(3)
+  refinementRounds?: number;
 }

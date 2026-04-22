@@ -9,7 +9,8 @@
     "dev": "nest start --watch",
     "build": "nest build",
     "start": "nest start",
-    "start:prod": "node dist/main"
+    "start:prod": "node dist/main",
+    "smoke": "node scripts/smoke.js"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
@@ -17,10 +18,11 @@
     "@nestjs/platform-express": "^10.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
-    "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.8.1",
+    "dotenv": "^16.3.1",
+    "marked": "^18.0.2",
     "pptxgenjs": "^3.12.0",
-    "dotenv": "^16.3.1"
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^7.8.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",

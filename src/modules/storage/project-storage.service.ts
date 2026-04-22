@@ -57,7 +57,9 @@ export class ProjectStorageService {
       projectIds.map(async (projectId) => this.readProjectRecord(projectId).catch(() => null)),
     );
 
-    return records.filter((record): record is ProjectRecord => record !== null);
+    return records
+      .filter((record): record is ProjectRecord => record !== null)
+      .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
   }
 
   async readProjectRecord(projectId: string): Promise<ProjectRecord> {
@@ -85,6 +87,19 @@ export class ProjectStorageService {
     return artifactPath;
   }
 
+  async writeIterationArtifact(
+    projectId: string,
+    round: number,
+    fileName: string,
+    payload: unknown,
+  ): Promise<string> {
+    const iterationDir = path.join(this.getProjectDir(projectId), 'iterations', `round-${String(round).padStart(2, '0')}`);
+    await ensureDir(iterationDir);
+    const artifactPath = path.join(iterationDir, fileName);
+    await writeJsonFile(artifactPath, payload);
+    return artifactPath;
+  }
+
   async writeAsset(projectId: string, fileName: string, content: string): Promise<string> {
     const filePath = path.join(this.getAssetsDir(projectId), fileName);
     await writeTextFile(filePath, content);
@@ -104,11 +119,7 @@ export class ProjectStorageService {
   }
 
   getOutputPptxPath(projectId: string, title: string): string {
-    const safeName = title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-    return path.join(this.getOutputDir(projectId), `${safeName || 'presentation'}.pptx`);
+    return path.join(this.getOutputDir(projectId), 'presentation.pptx');
   }
 
   private async writeProjectRecord(record: ProjectRecord): Promise<void> {

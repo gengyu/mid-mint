@@ -32,6 +32,7 @@ export class ProjectsService {
   async generate(projectId: string, dto: GeneratePptDto): Promise<PipelineResult> {
     return this.pipelineService.generateProjectPpt(projectId, {
       requestedSlides: dto.requestedSlides,
+      refinementRounds: dto.refinementRounds,
     });
   }
 }

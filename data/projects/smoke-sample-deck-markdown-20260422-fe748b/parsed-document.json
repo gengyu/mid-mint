@@ -1,0 +1,63 @@
+{
+  "title": "RAG Engineering",
+  "sourceType": "markdown",
+  "rawText": "# RAG Engineering\n\n## Why It Matters\n\n- Better grounding improves answer quality\n- Retrieval quality directly affects trust\n- System design impacts latency and cost\n\nRAG is not just a prompt trick. It is a system problem involving ingestion, indexing, retrieval, ranking, and evaluation.\n\n## Core Pipeline\n\n- Ingest documents\n- Chunk and clean text\n- Build embeddings\n- Retrieve top candidates\n- Rerank context\n- Generate final answer\n\nThe most common failure is not the model itself, but poor context selection.\n\n## Practical Rules\n\n- Keep chunking strategy explicit\n- Measure retrieval before tuning prompts\n- Separate offline evaluation and online behavior\n- Design for observability from the start\n\nTeams usually improve faster when they treat RAG as a product pipeline rather than a single model call.\n",
+  "sections": [
+    {
+      "level": 2,
+      "title": "Why It Matters",
+      "body": "RAG is not just a prompt trick. It is a system problem involving ingestion, indexing, retrieval, ranking, and evaluation.",
+      "bullets": [
+        "Better grounding improves answer quality",
+        "Retrieval quality directly affects trust",
+        "System design impacts latency and cost"
+      ]
+    },
+    {
+      "level": 2,
+      "title": "Core Pipeline",
+      "body": "The most common failure is not the model itself, but poor context selection.",
+      "bullets": [
+        "Ingest documents",
+        "Chunk and clean text",
+        "Build embeddings",
+        "Retrieve top candidates",
+        "Rerank context",
+        "Generate final answer"
+      ]
+    },
+    {
+      "level": 2,
+      "title": "Practical Rules",
+      "body": "Teams usually improve faster when they treat RAG as a product pipeline rather than a single model call.",
+      "bullets": [
+        "Keep chunking strategy explicit",
+        "Measure retrieval before tuning prompts",
+        "Separate offline evaluation and online behavior",
+        "Design for observability from the start"
+      ]
+    }
+  ],
+  "paragraphs": [
+    "RAG Engineering",
+    "Why It Matters",
+    "Better grounding improves answer quality",
+    "Retrieval quality directly affects trust",
+    "System design impacts latency and cost",
+    "RAG is not just a prompt trick. It is a system problem involving ingestion, indexing, retrieval, ranking, and evaluation.",
+    "Core Pipeline",
+    "Ingest documents",
+    "Chunk and clean text",
+    "Build embeddings",
+    "Retrieve top candidates",
+    "Rerank context",
+    "Generate final answer",
+    "The most common failure is not the model itself, but poor context selection.",
+    "Practical Rules",
+    "Keep chunking strategy explicit",
+    "Measure retrieval before tuning prompts",
+    "Separate offline evaluation and online behavior",
+    "Design for observability from the start",
+    "Teams usually improve faster when they treat RAG as a product pipeline rather than a single model call."
+  ]
+}

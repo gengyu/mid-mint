@@ -1,0 +1,94 @@
+[
+  {
+    "slideNumber": 1,
+    "title": "RAG Engineering",
+    "subtitle": "RAG is not just a prompt trick. It is a system problem involving ingestion, indexing, retrieval, ranking, and evaluation.",
+    "eyebrow": "Confident and practical",
+    "layout": "cover",
+    "role": "cover",
+    "bullets": [],
+    "highlight": "RAG Engineering",
+    "notes": "Opening slide for RAG Engineering\n\nSpeaker cue: Close with conviction and a next action.",
+    "paragraph": ""
+  },
+  {
+    "slideNumber": 2,
+    "title": "Agenda",
+    "eyebrow": "Talk flow",
+    "layout": "agenda",
+    "role": "agenda",
+    "bullets": [
+      "Why It Matters",
+      "Core Pipeline",
+      "Practical Rules"
+    ],
+    "paragraph": "RAG is not just a prompt trick. It is a system problem involving ingestion, indexing, retrieval, ranking, and evaluation.",
+    "highlight": "Context -> Key ideas -> Action",
+    "notes": "Agenda overview\n\nSpeaker cue: Close with conviction and a next action."
+  },
+  {
+    "slideNumber": 3,
+    "title": "Why It Matters",
+    "layout": "text-visual",
+    "role": "content",
+    "eyebrow": "Section insight",
+    "bullets": [
+      "Better grounding improves answer quality",
+      "Retrieval quality directly affects trust",
+      "System design impacts latency and cost"
+    ],
+    "paragraph": "RAG is not just a prompt trick. It is a system problem involving ingestion, indexing, retrieval, ranking, and evaluation.",
+    "highlight": "Explain why \"Why It Matters\" matters and make the audience remember the core message.",
+    "notes": "RAG is not just a prompt trick. It is a system problem involving ingestion, indexing, retrieval, ranking, and evaluation.\n\nSpeaker cue: Close with conviction and a next action.",
+    "assetPath": "/Users/gengyu/github/mid-mint/data/projects/smoke-sample-deck-markdown-20260422-8912f2/assets/slide-003.svg"
+  },
+  {
+    "slideNumber": 4,
+    "title": "Core Pipeline",
+    "layout": "process",
+    "role": "content",
+    "eyebrow": "Section insight",
+    "bullets": [
+      "Ingest documents",
+      "Chunk and clean text",
+      "Build embeddings",
+      "Retrieve top candidates"
+    ],
+    "paragraph": "The most common failure is not the model itself, but poor context selection.",
+    "highlight": "Explain why \"Core Pipeline\" matters and make the audience remember the core message.",
+    "notes": "The most common failure is not the model itself, but poor context selection.\n\nSpeaker cue: Close with conviction and a next action.",
+    "assetPath": "/Users/gengyu/github/mid-mint/data/projects/smoke-sample-deck-markdown-20260422-8912f2/assets/slide-004.svg"
+  },
+  {
+    "slideNumber": 5,
+    "title": "Practical Rules",
+    "layout": "comparison",
+    "role": "content",
+    "eyebrow": "Section insight",
+    "bullets": [
+      "Keep chunking strategy explicit",
+      "Measure retrieval before tuning prompts",
+      "Separate offline evaluation and online behavior",
+      "Design for observability from the start"
+    ],
+    "paragraph": "Teams usually improve faster when they treat RAG as a product pipeline rather than a single model call.",
+    "highlight": "Explain why \"Practical Rules\" matters and make the audience remember the core message.",
+    "notes": "Teams usually improve faster when they treat RAG as a product pipeline rather than a single model call.\n\nSpeaker cue: Close with conviction and a next action.",
+    "assetPath": "/Users/gengyu/github/mid-mint/data/projects/smoke-sample-deck-markdown-20260422-8912f2/assets/slide-005.svg"
+  },
+  {
+    "slideNumber": 6,
+    "title": "Closing Takeaways",
+    "eyebrow": "Final message",
+    "layout": "title-bullets",
+    "role": "closing",
+    "bullets": [
+      "Why It Matters",
+      "Core Pipeline",
+      "Practical Rules"
+    ],
+    "paragraph": "RAG is not just a prompt trick. It is a system problem involving ingestion, indexing, retrieval, ranking, and evaluation.",
+    "highlight": "RAG is not just a prompt trick. It is a system problem involving ingestion, indexing, retrieval, ranking, and evaluation.",
+    "notes": "Why It Matters / Core Pipeline / Practical Rules\n\nSpeaker cue: Close with conviction and a next action."
+  }
+]

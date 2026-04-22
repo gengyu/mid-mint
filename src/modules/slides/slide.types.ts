@@ -1,12 +1,31 @@
-export type SlideLayout = 'cover' | 'title-bullets' | 'text-visual' | 'comparison';
+export type SlideLayout =
+  | 'cover'
+  | 'agenda'
+  | 'section-divider'
+  | 'title-bullets'
+  | 'text-visual'
+  | 'comparison'
+  | 'process'
+  | 'quote';
+
+export type SlideRole =
+  | 'cover'
+  | 'agenda'
+  | 'section-divider'
+  | 'content'
+  | 'summary'
+  | 'closing';
 
 export interface SlideSpec {
   slideNumber: number;
   title: string;
   subtitle?: string;
+  eyebrow?: string;
   layout: SlideLayout;
+  role?: SlideRole;
   bullets: string[];
   paragraph?: string;
+  highlight?: string;
   notes?: string;
   assetPath?: string;
 }
