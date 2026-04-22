@@ -13,6 +13,7 @@ import { renderProcessTemplate } from './templates/process.template';
 import { renderQuoteTemplate } from './templates/quote.template';
 import { renderSectionDividerTemplate } from './templates/section-divider.template';
 import { renderTextVisualTemplate } from './templates/text-visual.template';
+import { renderSummaryClosingTemplate } from './templates/summary-closing.template';
 import { renderTitleBulletsTemplate } from './templates/title-bullets.template';
 
 @Injectable()
@@ -88,6 +89,8 @@ export class PptxRendererService {
         renderTextVisualTemplate(slide, spec);
         return;
       case 'summary-closing':
+        renderSummaryClosingTemplate(slide, spec);
+        return;
       default:
         renderTitleBulletsTemplate(slide, spec);
     }

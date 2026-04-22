@@ -212,9 +212,12 @@ export class SlideSpecService {
     keyMessages: string[],
     keyPoint: string,
   ): string[] {
-    const candidates = [...(sectionBullets ?? []), ...keyMessages.map((message) => message.trim()), keyPoint]
-      .map((item) => item.trim())
-      .filter(Boolean);
+    // PPT_V2_LAYOUTS.md: bullets should come from the source section,
+    // not cross-contaminated with analysis-level keyMessages.
+    // Only fall back to keyMessages when the section has no bullets.
+    const sectionOnly = (sectionBullets ?? []).map((item) => item.trim()).filter(Boolean);
+    const fallback = keyMessages.map((message) => message.trim()).filter(Boolean);
+    const candidates = sectionOnly.length > 0 ? sectionOnly : [...fallback, keyPoint.trim()];
     const limit =
       layout === 'process' ? 5 : layout === 'comparison' || layout === 'summary-closing' ? 4 : 3;
 

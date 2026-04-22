@@ -18,6 +18,17 @@ export function renderQuoteTemplate(slide: PptSlideLike, spec: SlideSpec): void 
     fill: { color: THEME.white },
     line: { color: THEME.sky, width: 1.2 },
   });
+
+  // Left accent bar — visually marks this as a quote/key-idea slide
+  slide.addShape('rect', {
+    x: 0.8,
+    y: 1.0,
+    w: 0.1,
+    h: 4.7,
+    fill: { color: THEME.teal },
+    line: { color: THEME.teal },
+  });
+
   slide.addText(spec.eyebrow ?? 'Key message', {
     x: 1.2,
     y: 1.35,
@@ -48,7 +59,18 @@ export function renderQuoteTemplate(slide: PptSlideLike, spec: SlideSpec): void 
       h: 2.2,
     });
   } else {
-    slide.addText(`“${spec.paragraph ?? spec.highlight ?? spec.title}”`, {
+    // Large decorative opening quote mark (PPT_V2_LAYOUTS.md Iteration C)
+    slide.addText('\u201C', {
+      x: 1.1,
+      y: 2.0,
+      w: 1.2,
+      h: 1.4,
+      fontSize: 72,
+      color: THEME.pale,
+      fontFace: 'Georgia',
+      valign: 'top',
+    });
+    slide.addText(`\u201C${spec.paragraph ?? spec.highlight ?? spec.title}\u201D`, {
       x: 1.4,
       y: 2.45,
       w: 9.8,

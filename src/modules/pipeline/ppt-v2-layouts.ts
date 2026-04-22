@@ -50,9 +50,13 @@ const PROCESS_KEYWORDS = [
   'lifecycle',
   'framework',
   'flow',
-  'architecture',
-  'system',
   'route',
+  'step 1',
+  'step 2',
+  'step 3',
+  'first step',
+  'next step',
+  'final step',
 ];
 
 const COMPARISON_KEYWORDS = [
@@ -97,7 +101,21 @@ const FORMULA_PATTERNS = [
   /\b(loss|objective|probability|variance|precision|recall|f1|accuracy)\b/i,
 ];
 
-const SEQUENCE_PATTERNS = [/^\d+[.)]\s+/, /^(first|second|third|then|next|finally)\b/i];
+const SEQUENCE_PATTERNS = [
+  /^\d+[.)]\s+/,
+  /^(first|second|third|then|next|finally|last|before|after|start|end)\b/i,
+];
+
+// Implicit sequential verb patterns for process-like bullets
+const PROCESS_VERB_PATTERNS = [
+  /^\s*(collect|gather|extract|parse|ingest|load|fetch)\b/i,
+  /^\s*(clean|normalize|preprocess|transform|chunk|split)\b/i,
+  /^\s*(build|create|generate|compute|train|embed|index)\b/i,
+  /^\s*(retrieve|search|query|rank|rerank|filter|select)\b/i,
+  /^\s*(evaluate|review|test|validate|measure|verify)\b/i,
+  /^\s*(generate|produce|output|return|deliver|ship)\b/i,
+  /^\s*(analyze|summarize|synthesize|aggregate)\b/i,
+];
 
 export function pickLayoutHintForSection(
   section: DocumentSection,
@@ -275,7 +293,7 @@ export function resolveVisualDecision(
   const normalized = normalizeSignal(signal);
   const accentTone = pickAccentTone(slideNumber);
   const visualTechnique = pickVisualTechnique(layout, normalized);
-  const mustGenerateVisual = pickMustGenerateVisual(layout, normalized);
+  const mustGenerateVisual = pickMustGenerateVisual(layout, normalized, role);
 
   return {
     visualType: pickVisualType(layout),
@@ -294,7 +312,14 @@ export function resolveVisualDecision(
 }
 
 function inferPreferredLayout(signal: ReturnType<typeof normalizeSignal>): SlideLayout {
-  if (looksProcessLike(signal) && signal.bullets.length >= 3) {
+  // PPT_V2_LAYOUTS.md: "3 到 5 条存在明确顺序 → process" — require BOTH
+  // sequential bullet patterns AND process keywords.
+  // Exception: mermaid definitions always imply process layout.
+  if (signal.mermaidDefinition.length > 0) {
+    return 'process';
+  }
+
+  if (looksProcessLike(signal) && hasSequentialBullets(signal.bullets)) {
     return 'process';
   }
 
@@ -312,7 +337,7 @@ function inferPreferredLayout(signal: ReturnType<typeof normalizeSignal>): Slide
 function canUseLayout(layout: SlideLayout, signal: ReturnType<typeof normalizeSignal>): boolean {
   switch (layout) {
     case 'process':
-      return looksProcessLike(signal) || signal.bullets.length >= 3;
+      return looksProcessLike(signal);
     case 'comparison':
       return looksComparisonLike(signal);
     case 'quote':
@@ -484,12 +509,19 @@ function pickContentBalance(layout: SlideLayout, role?: SlideRole): ContentBalan
 function pickMustGenerateVisual(
   layout: SlideLayout,
   signal: ReturnType<typeof normalizeSignal>,
+  role?: SlideRole,
 ): boolean {
   if (layout === 'agenda' || layout === 'section-divider' || layout === 'quote') {
     return false;
   }
 
   if (layout === 'cover') {
+    return true;
+  }
+
+  // PPT_V2_LAYOUTS.md Iteration C: closing slides benefit from a visual
+  // asset to create a strong ending moment
+  if (layout === 'summary-closing' && role === 'closing') {
     return true;
   }
 
@@ -574,8 +606,12 @@ function shouldUseImage(signal: ReturnType<typeof normalizeSignal>): boolean {
 }
 
 function looksProcessLike(signal: ReturnType<typeof normalizeSignal>): boolean {
+  // PPT_V2_LAYOUTS.md: process requires sequential order signals,
+  // not just keyword presence + bullet count.
   return (
-    PROCESS_KEYWORDS.some((keyword) => signal.combined.includes(keyword)) ||
+    (PROCESS_KEYWORDS.some((keyword) => signal.combined.includes(keyword)) &&
+      (hasSequentialBullets(signal.bullets) || signal.bullets.length >= 3)) ||
+    (signal.mermaidDefinition.length > 0 && signal.bullets.length >= 2) ||
     hasSequentialBullets(signal.bullets)
   );
 }
@@ -615,7 +651,14 @@ function looksFormulaLike(signal: ReturnType<typeof normalizeSignal>): boolean {
 }
 
 function hasSequentialBullets(bullets: string[]): boolean {
-  return bullets.length >= 3 && bullets.some((bullet) => SEQUENCE_PATTERNS.some((pattern) => pattern.test(bullet)));
+  if (bullets.length < 3) return false;
+  if (bullets.some((bullet) => SEQUENCE_PATTERNS.some((pattern) => pattern.test(bullet)))) return true;
+  // Detect implicit sequential patterns: when most bullets start with
+  // process-stage verbs (ingest, clean, build, retrieve, evaluate, ...)
+  const verbMatches = bullets.filter((bullet) =>
+    PROCESS_VERB_PATTERNS.some((pattern) => pattern.test(bullet)),
+  );
+  return verbMatches.length >= 2 && verbMatches.length >= bullets.length * 0.5;
 }
 
 function pickAccentTone(slideNumber: number): AccentTone {

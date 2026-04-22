@@ -208,11 +208,28 @@ export class LlmJsonService {
           sectionWeight,
           transitionReason: dividerPlacement.reason,
         });
+        // section-divider resets layout repetition tracking
+        recentLayouts.length = 0;
       }
 
-      const layoutHint = isSummaryLikeTitle(section.title)
+      let layoutHint = isSummaryLikeTitle(section.title)
         ? 'summary-closing'
         : pickLayoutHintForSection(section, recentLayouts);
+
+      // PPT_V2_LAYOUTS.md: after process or comparison, prefer switching
+      // to text-visual / quote / section-divider to avoid visual monotony
+      const lastLayout = recentLayouts[recentLayouts.length - 1];
+      if (lastLayout === 'process' || lastLayout === 'comparison') {
+        if (layoutHint === lastLayout) {
+          layoutHint = 'text-visual';
+        }
+        // Also avoid the same layout twice after a heavy-visual page
+        const beforeLast = recentLayouts[recentLayouts.length - 2];
+        if (beforeLast !== 'process' && beforeLast !== 'comparison' && layoutHint === beforeLast) {
+          layoutHint = 'text-visual';
+        }
+      }
+
       recentLayouts.push(layoutHint);
 
       slides.push({
@@ -273,12 +290,18 @@ export class LlmJsonService {
       const baseNotes = this.stripSpeakerCue(
         slide.notes || slide.paragraph || highlight || slide.title,
       );
+      // PPT_V2_LAYOUTS.md multi-round refinement:
+      // Round 1: structure and storyline
+      // Round 2: speaking flow and differentiation
+      // Round 3: compress and strengthen closing
       const speakingPrompt =
-        round === totalRounds
-          ? 'Close with conviction and a next action.'
+        totalRounds === 1
+          ? 'Create a clean first-pass deck with a coherent storyline.'
           : round === 1
-            ? 'Tighten the story and reduce repetition.'
-            : 'Increase contrast between insight, evidence, and action.';
+            ? 'Tighten the story structure and reduce repetition.'
+            : round === totalRounds
+              ? 'Polish for delivery — compress text, strengthen the closing moment.'
+              : 'Increase contrast between insight, evidence, and action.';
 
       return {
         ...slide,
