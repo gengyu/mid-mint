@@ -2,13 +2,53 @@
 
 ## 说明
 
-本文件定义第一版中间产物的最小结构。
+本文件定义当前第二版中间产物和输出文件的基础结构。
 
-这些结构不是长期标准，只是为了：
+目标：
 
-1. 让 AI 工具知道每一步该产出什么
-2. 降低模块之间的沟通成本
-3. 方便人工检查结果
+1. 让每一步输入输出清晰
+2. 让模块之间职责边界稳定
+3. 让 AI 和人工都能快速排查问题
+
+## 项目目录
+
+所有生成结果写入：
+
+```txt
+data/projects/<projectId>/
+```
+
+参考结构：
+
+```txt
+data/projects/<projectId>/
+├── input.md | input.txt | input.docx | input.html
+├── project.json
+├── parsed-document.json
+├── content-analysis.json
+├── deck-plan.json
+├── visual-plan.json
+├── slide-specs.json
+├── assets/
+│   ├── slide-002.svg
+│   └── ...
+└── output/
+    └── <title>.pptx
+```
+
+## project.json
+
+```json
+{
+  "id": "rag-demo-20260421-ab12cd",
+  "title": "RAG Demo",
+  "sourceType": "markdown",
+  "createdAt": "2026-04-21T13:00:00.000Z",
+  "updatedAt": "2026-04-21T13:10:00.000Z",
+  "status": "generated",
+  "outputFile": "/abs/path/data/projects/rag-demo-20260421-ab12cd/output/presentation.pptx"
+}
+```
 
 ## parsed-document.json
 
@@ -20,12 +60,17 @@
   "sections": [
     {
       "level": 1,
-      "title": "Problem",
-      "body": "Why RAG matters",
-      "bullets": ["Context quality", "Latency", "Cost"]
+      "title": "Why It Matters",
+      "body": "RAG is not just a prompt trick.",
+      "bullets": [
+        "Better grounding improves answer quality",
+        "Retrieval quality directly affects trust"
+      ]
     }
   ],
-  "paragraphs": ["Why RAG matters"]
+  "paragraphs": [
+    "RAG is not just a prompt trick."
+  ]
 }
 ```
 
@@ -34,12 +79,15 @@
 ```json
 {
   "mainTopic": "RAG Engineering",
-  "summary": "How to build a practical RAG system.",
+  "summary": "RAG is a system problem involving ingestion, retrieval, ranking, and generation.",
+  "audience": "General business audience",
+  "tone": "Confident and practical",
   "keyMessages": [
-    "Context quality matters",
-    "Retrieval must be stable",
-    "Evaluation is required"
-  ]
+    "Better grounding improves answer quality",
+    "Retrieval quality affects trust",
+    "Context selection is a common failure point"
+  ],
+  "storyArc": ["Context", "Key ideas", "Action"]
 }
 ```
 
@@ -53,9 +101,32 @@
     {
       "slideNumber": 1,
       "title": "RAG Engineering",
-      "keyPoint": "Overview of the topic",
+      "keyPoint": "Presentation overview",
       "sourceSectionTitle": "RAG Engineering",
-      "layoutHint": "cover"
+      "layoutHint": "cover",
+      "role": "cover",
+      "visualFocus": "visual",
+      "objective": "Open with a clear promise and establish the talk narrative."
+    }
+  ]
+}
+```
+
+## visual-plan.json
+
+```json
+{
+  "theme": "editorial-soft",
+  "slides": [
+    {
+      "slideNumber": 2,
+      "layout": "process",
+      "visualType": "diagram",
+      "goal": "Explain the core pipeline",
+      "composition": "right-panel",
+      "density": "medium",
+      "accentTone": "teal",
+      "assetFile": "slide-002.svg"
     }
   ]
 }
@@ -68,25 +139,79 @@
   {
     "slideNumber": 1,
     "title": "RAG Engineering",
-    "subtitle": "A practical system view",
+    "subtitle": "A system view of retrieval-augmented generation",
+    "eyebrow": "Presentation",
+    "sectionLabel": "RAG ENGINEERING",
     "layout": "cover",
+    "role": "cover",
     "bullets": [],
+    "highlight": "RAG Engineering",
     "notes": "Opening slide"
   },
   {
     "slideNumber": 2,
-    "title": "Problem",
+    "title": "Why It Matters",
+    "eyebrow": "Section insight",
+    "sectionLabel": "SECTION 02 / 06",
     "layout": "text-visual",
-    "bullets": ["Context quality", "Latency", "Cost"],
-    "paragraph": "Why RAG matters",
-    "assetPath": "data/projects/<projectId>/assets/slide-002.svg"
+    "role": "content",
+    "bullets": [
+      "Better grounding improves answer quality",
+      "Retrieval quality directly affects trust"
+    ],
+    "paragraph": "RAG is not just a prompt trick.",
+    "highlight": "Explain why this matters",
+    "notes": "Explain why retrieval quality matters.",
+    "visualGoal": "Translate the idea into a process-style visual",
+    "visualType": "diagram",
+    "visualComposition": "right-panel",
+    "accentTone": "teal",
+    "assetPath": "/abs/path/data/projects/<projectId>/assets/slide-002.svg"
   }
 ]
 ```
 
+## iterations/
+
+第二版 refinement 每轮应写入：
+
+```txt
+iterations/round-01/objective.json
+iterations/round-01/slide-specs.json
+iterations/round-02/objective.json
+iterations/round-02/slide-specs.json
+```
+
+## 页面角色 / 布局类型
+
+当前固定 8 类：
+
+1. `cover`
+2. `agenda`
+3. `section-divider`
+4. `text-visual`
+5. `comparison`
+6. `process`
+7. `quote`
+8. `summary / closing`
+
+这些不是固定页数，而是固定页型集合。
+
+## 页面内部表达技术
+
+这些不是新的页面类型，而是页面内部内容表达方式：
+
+- `bullets`
+- `mermaid`
+- `svg`
+- `table`
+- `code-block`
+- `formula`
+- `image`
+
 ## assets/
 
-### SVG 资源命名
+命名约定：
 
 ```txt
 slide-002.svg
@@ -94,15 +219,15 @@ slide-003.svg
 slide-004.svg
 ```
 
-### 约束
+当前约束：
 
-- 一页最多一个主图示
-- 第一版只需要简单 SVG
-- 如果引入 Mermaid，最终仍然落成 SVG 文件
+- 一页最多一个主视觉文件
+- 当前优先支持简单 SVG
+- 后续如果接入其他素材来源，最终仍然需要稳定落盘
 
 ## output/
 
-最终输出：
+输出约定：
 
 ```txt
 output/presentation.pptx
@@ -110,5 +235,6 @@ output/presentation.pptx
 
 要求：
 
-- 文件可被 PowerPoint / Keynote / WPS 正常打开
-- 第一版只要求内容完整，不要求视觉非常精细
+- 文件可被常见 PPT 软件打开
+- 输出路径可回写到 `project.json`
+- 第二版要求页面角色清晰、布局不单一、具备基本演讲感

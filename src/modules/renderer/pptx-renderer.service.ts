@@ -1,6 +1,9 @@
+import path from 'node:path';
+
 import { Injectable } from '@nestjs/common';
 import PptxGenJS from 'pptxgenjs';
 
+import { ensureDir } from '../../common/utils/file.util';
 import { PPT_AUTHOR, PPT_LAYOUT } from '../../config/ppt.config';
 import { SlideSpec } from '../slides/slide.types';
 import { renderAgendaTemplate } from './templates/agenda.template';
@@ -15,11 +18,18 @@ import { renderTitleBulletsTemplate } from './templates/title-bullets.template';
 @Injectable()
 export class PptxRendererService {
   async render(filePath: string, title: string, slides: SlideSpec[]): Promise<void> {
+    await ensureDir(path.dirname(filePath));
+
     const pptx = new PptxGenJS();
     pptx.layout = PPT_LAYOUT;
     pptx.author = PPT_AUTHOR;
+    pptx.company = 'mid-mint';
     pptx.subject = title;
     pptx.title = title;
+    pptx.theme = {
+      headFontFace: 'Aptos Display',
+      bodyFontFace: 'Aptos',
+    };
 
     for (const spec of slides) {
       const slide = pptx.addSlide();
@@ -58,6 +68,6 @@ export class PptxRendererService {
       }
     }
 
-    await pptx.writeFile({ fileName: filePath });
+    await pptx.writeFile({ fileName: filePath, compression: true });
   }
 }

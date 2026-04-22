@@ -37,9 +37,8 @@ tmp/*
 !tmp/.gitkeep
 
 # Data and outputs
-data/projects/*/uploads/*
-outputs/*
-!outputs/.gitkeep
+data/
+outputs/
 
 # IDE specific
 public/generated-backgrounds/*

@@ -6,16 +6,19 @@ import {
   ensureDir,
   listChildDirectories,
   pathExists,
+  readBinaryFile,
   readTextFile,
+  writeBinaryFile,
   writeTextFile,
 } from '../../common/utils/file.util';
 import { createProjectId } from '../../common/utils/id.util';
 import { writeJsonFile } from '../../common/utils/json.util';
+import { DocumentSourceType } from '../parser/types/parsed-document.type';
 
 export interface ProjectRecord {
   id: string;
   title: string;
-  sourceType: 'markdown' | 'txt';
+  sourceType: DocumentSourceType;
   createdAt: string;
   updatedAt: string;
   status: 'draft' | 'generated';
@@ -29,7 +32,7 @@ export class ProjectStorageService {
   async createProject(input: {
     title?: string;
     content: string;
-    sourceType: 'markdown' | 'txt';
+    sourceType: DocumentSourceType;
   }): Promise<ProjectRecord> {
     const now = new Date().toISOString();
     const id = createProjectId(input.title);
@@ -45,7 +48,7 @@ export class ProjectStorageService {
     await ensureDir(this.getProjectDir(id));
     await ensureDir(this.getAssetsDir(id));
     await ensureDir(this.getOutputDir(id));
-    await writeTextFile(this.getInputPath(id, input.sourceType), input.content);
+    await this.writeInputFile(id, input.sourceType, input.content);
     await this.writeProjectRecord(record);
 
     return record;
@@ -71,9 +74,16 @@ export class ProjectStorageService {
     return JSON.parse(await readTextFile(manifestPath)) as ProjectRecord;
   }
 
-  async readInput(projectId: string): Promise<{ content: string; sourceType: 'markdown' | 'txt' }> {
+  async readInput(projectId: string): Promise<{ content: string; sourceType: DocumentSourceType }> {
     const record = await this.readProjectRecord(projectId);
     const inputPath = this.getInputPath(projectId, record.sourceType);
+
+    if (record.sourceType === 'docx') {
+      return {
+        content: (await readBinaryFile(inputPath)).toString('base64'),
+        sourceType: record.sourceType,
+      };
+    }
 
     return {
       content: await readTextFile(inputPath),
@@ -134,8 +144,8 @@ export class ProjectStorageService {
     return path.join(this.getProjectDir(projectId), 'project.json');
   }
 
-  private getInputPath(projectId: string, sourceType: 'markdown' | 'txt'): string {
-    return path.join(this.getProjectDir(projectId), sourceType === 'txt' ? 'input.txt' : 'input.md');
+  private getInputPath(projectId: string, sourceType: DocumentSourceType): string {
+    return path.join(this.getProjectDir(projectId), this.getInputFileName(sourceType));
   }
 
   private getAssetsDir(projectId: string): string {
@@ -144,5 +154,33 @@ export class ProjectStorageService {
 
   private getOutputDir(projectId: string): string {
     return path.join(this.getProjectDir(projectId), 'output');
+  }
+
+  private getInputFileName(sourceType: DocumentSourceType): string {
+    switch (sourceType) {
+      case 'txt':
+        return 'input.txt';
+      case 'html':
+        return 'input.html';
+      case 'docx':
+        return 'input.docx';
+      case 'markdown':
+      default:
+        return 'input.md';
+    }
+  }
+
+  private async writeInputFile(
+    projectId: string,
+    sourceType: DocumentSourceType,
+    content: string,
+  ): Promise<void> {
+    const inputPath = this.getInputPath(projectId, sourceType);
+    if (sourceType === 'docx') {
+      await writeBinaryFile(inputPath, Buffer.from(content, 'base64'));
+      return;
+    }
+
+    await writeTextFile(inputPath, content);
   }
 }

@@ -39,7 +39,7 @@ export class LlmJsonService {
 
     const prompt = [
       'Create a PPT deck plan and return JSON only.',
-      'Keep the response compact and practical for a first-version presentation generator.',
+      'Keep the response compact and practical for a presentation generator.',
       JSON.stringify({
         title: document.title,
         requestedSlides,
@@ -71,7 +71,7 @@ export class LlmJsonService {
     const prompt = [
       'Refine these slide specs for a presentation. Return JSON only.',
       `This is refinement round ${round} of ${totalRounds}.`,
-      'Focus on making the slides more presentation-ready, more visually differentiated, and better for speaking aloud.',
+      'Focus on improving speaking flow, visual differentiation, and reducing repetition.',
       JSON.stringify({
         analysis,
         slides,
@@ -83,20 +83,27 @@ export class LlmJsonService {
   }
 
   private buildFallbackAnalysis(document: ParsedDocument): PresentationAnalysis {
-    const sectionTitles = document.sections.map((section) => section.title).slice(0, 5);
-    const sectionSummary = document.sections
-      .map((section) => section.body.trim() || section.bullets.slice(0, 2).join(' '))
-      .find((value) => value.length > 0);
+    const contentSections = this.getContentSections(document);
     const summarySource =
-      sectionSummary ||
-      document.paragraphs
-        .filter((paragraph) => paragraph !== document.title && !sectionTitles.includes(paragraph))
-        .slice(0, 3)
-        .join(' ');
+      contentSections.map((section) => section.body.trim()).find(Boolean) ??
+      document.paragraphs.find((paragraph) => paragraph.trim().includes(' ')) ??
+      document.rawText.slice(0, 240);
+    const keyMessages = Array.from(
+      new Set(
+        contentSections
+          .flatMap((section) => section.bullets)
+          .map((item) => item.trim())
+          .filter(Boolean),
+      ),
+    ).slice(0, 5);
+
     return {
       mainTopic: document.title,
-      summary: summarySource || document.rawText.slice(0, 240),
-      keyMessages: sectionTitles.length > 0 ? sectionTitles : document.paragraphs.slice(0, 5),
+      summary: summarySource,
+      keyMessages:
+        keyMessages.length > 0
+          ? keyMessages
+          : contentSections.map((section) => section.title).slice(0, 5),
       audience: 'General business audience',
       tone: 'Confident and practical',
       storyArc: ['Context', 'Key ideas', 'Action'],
@@ -110,9 +117,10 @@ export class LlmJsonService {
   ): DeckPlan {
     const keyMessages = Array.isArray(analysis.keyMessages) ? analysis.keyMessages : [];
     const requestedTotal = Math.max(3, Math.min(requestedSlides ?? 6, 10));
-    const contentSections = document.sections
-      .filter((section) => !this.isTitleOnlySection(section, document.title))
-      .slice(0, Math.max(1, requestedTotal - 2));
+    const contentSections = this.getContentSections(document).slice(
+      0,
+      Math.max(1, requestedTotal - 2),
+    );
     const includeAgendaSlide = requestedTotal >= 5 && contentSections.length >= 2;
     const agendaSlide = includeAgendaSlide
       ? [
@@ -137,7 +145,7 @@ export class LlmJsonService {
         slideNumber: 1,
         title: document.title,
         keyPoint: analysis.summary,
-        sourceSectionTitle: document.sections[0]?.title ?? document.title,
+        sourceSectionTitle: selectedSections[0]?.title ?? document.title,
         layoutHint: 'cover' as const,
         role: 'cover' as const,
         visualFocus: 'visual' as const,
@@ -171,6 +179,47 @@ export class LlmJsonService {
       totalSlides: slides.length,
       slides,
     };
+  }
+
+  private buildFallbackPolishedSlides(
+    slides: SlideSpec[],
+    analysis: PresentationAnalysis,
+    round: number,
+    totalRounds: number,
+  ): SlideSpec[] {
+    return slides.map((slide) => {
+      const trimmedBullets = slide.bullets
+        .map((bullet) => bullet.trim())
+        .filter((bullet) => bullet.length > 0)
+        .slice(0, slide.layout === 'process' ? 5 : 4);
+      const highlight =
+        slide.highlight ||
+        (slide.layout === 'cover'
+          ? analysis.mainTopic
+          : trimmedBullets[0] || slide.paragraph || analysis.summary);
+
+      const baseNotes = this.stripSpeakerCue(
+        slide.notes || slide.paragraph || highlight || slide.title,
+      );
+      const speakingPrompt =
+        round === totalRounds
+          ? 'Close with conviction and a next action.'
+          : round === 1
+            ? 'Tighten the story and reduce repetition.'
+            : 'Increase contrast between insight, evidence, and action.';
+
+      return {
+        ...slide,
+        bullets: trimmedBullets,
+        highlight,
+        eyebrow: slide.eyebrow || this.buildEyebrow(slide),
+        notes: `${baseNotes}\n\nSpeaker cue: ${speakingPrompt}`,
+        paragraph:
+          slide.layout === 'quote'
+            ? this.shortenText(slide.paragraph || baseNotes, 180)
+            : this.shortenText(slide.paragraph || '', slide.layout === 'text-visual' ? 220 : 140),
+      };
+    });
   }
 
   private isValidAnalysis(value: unknown): value is PresentationAnalysis {
@@ -224,26 +273,21 @@ export class LlmJsonService {
     );
   }
 
-  private isTitleOnlySection(
-    section: ParsedDocument['sections'][number],
-    documentTitle: string,
-  ): boolean {
-    const normalizedSectionTitle = section.title.trim().toLowerCase();
-    const normalizedDocumentTitle = documentTitle.trim().toLowerCase();
-    const body = section.body.trim();
-
-    return (
-      normalizedSectionTitle === normalizedDocumentTitle &&
-      (body.length === 0 || body === section.title) &&
-      section.bullets.length <= 1
+  private getContentSections(document: ParsedDocument): ParsedDocument['sections'] {
+    const sections = document.sections.filter(
+      (section) =>
+        section.title.trim().toLowerCase() !== document.title.trim().toLowerCase() &&
+        (section.body.trim().length > 0 || section.bullets.length > 0),
     );
+
+    return sections.length > 0 ? sections : document.sections;
   }
 
   private pickLayoutHint(section: ParsedDocument['sections'][number]): DeckPlan['slides'][number]['layoutHint'] {
     const title = section.title.toLowerCase();
     if (
-      ['process', 'workflow', 'pipeline', 'roadmap', 'steps', 'framework', 'journey'].some((keyword) =>
-        title.includes(keyword),
+      ['process', 'workflow', 'pipeline', 'roadmap', 'steps', 'framework', 'journey'].some(
+        (keyword) => title.includes(keyword),
       ) &&
       section.bullets.length >= 3
     ) {
@@ -277,45 +321,6 @@ export class LlmJsonService {
 
   private buildSlideObjective(sectionTitle: string): string {
     return `Explain why "${sectionTitle}" matters and make the audience remember the core message.`;
-  }
-
-  private buildFallbackPolishedSlides(
-    slides: SlideSpec[],
-    analysis: PresentationAnalysis,
-    round: number,
-    totalRounds: number,
-  ): SlideSpec[] {
-    return slides.map((slide) => {
-      const trimmedBullets = slide.bullets
-        .map((bullet) => bullet.trim())
-        .filter((bullet) => bullet.length > 0)
-        .slice(0, slide.layout === 'process' ? 5 : 4);
-      const highlight =
-        slide.highlight ||
-        (slide.layout === 'cover'
-          ? analysis.mainTopic
-          : trimmedBullets[0] || slide.paragraph || analysis.summary);
-
-      const baseNotes = this.stripSpeakerCue(slide.notes || slide.paragraph || highlight || slide.title);
-      const speakingPrompt =
-        round === totalRounds
-          ? 'Close with conviction and a next action.'
-          : round === 1
-            ? 'Tighten the story and reduce repetition.'
-            : 'Increase contrast between insight, evidence, and action.';
-
-      return {
-        ...slide,
-        bullets: trimmedBullets,
-        highlight,
-        eyebrow: slide.eyebrow || this.buildEyebrow(slide),
-        notes: `${baseNotes}\n\nSpeaker cue: ${speakingPrompt}`,
-        paragraph:
-          slide.layout === 'quote'
-            ? this.shortenText(slide.paragraph || baseNotes, 180)
-            : this.shortenText(slide.paragraph || '', slide.layout === 'text-visual' ? 220 : 140),
-      };
-    });
   }
 
   private buildEyebrow(slide: SlideSpec): string {

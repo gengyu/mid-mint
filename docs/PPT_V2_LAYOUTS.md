@@ -9,6 +9,7 @@
 1. 一份 `md / txt` 能生成一套真正可讲的 PPT
 2. 每页先判断“这页是什么角色”，再决定“用什么布局”
 3. 流程允许多轮迭代，而不是一次性输出
+4. 页面生成采用“页面角色 / 布局类型 + 页面内部表达技术”两层结构
 
 ## 页型分析
 
@@ -114,6 +115,22 @@
 - 强记忆点
 - 明确下一步
 
+## 页面角色与页内技术的关系
+
+第二版的关键不是“多几个模板”，而是两层结构：
+
+1. 页面角色 / 布局类型
+2. 页面内部表达技术
+
+例如：
+
+- `process + mermaid`
+- `comparison + table`
+- `quote + formula`
+- `text-visual + svg`
+
+这些技术不是新的页面类型，而是页面内部表达方式。
+
 ## 图片与文字分配原则
 
 ### 应该优先放图片的页面
@@ -136,6 +153,108 @@
 - 文字超过 4 条且逻辑具有顺序关系
 - 页面需要帮助观众快速建立空间感或结构感
 
+## 页面内部表达技术
+
+当前建议纳入规划的技术包括：
+
+- `bullets`
+- `mermaid`
+- `svg`
+- `table`
+- `code-block`
+- `formula`
+- `image`
+
+### Mermaid
+
+适合：
+
+- 流程图
+- 架构图
+- 状态流转
+- 技术路线
+
+更适合配合的页面类型：
+
+- `process`
+- `text-visual`
+- `section-divider`
+
+### SVG
+
+适合：
+
+- 结构示意图
+- 对比卡片
+- 总结环图
+- 数据流和关系图
+
+更适合配合的页面类型：
+
+- `text-visual`
+- `comparison`
+- `summary / closing`
+
+### Table
+
+适合：
+
+- 参数对比
+- 版本差异
+- 方案优缺点
+
+更适合配合的页面类型：
+
+- `comparison`
+
+### Code Block
+
+适合：
+
+- API 示例
+- 配置片段
+- SQL / Shell / Python / TypeScript 示例
+
+更适合配合的页面类型：
+
+- `text-visual`
+- `quote`
+
+### Formula
+
+适合：
+
+- 算法定义
+- 优化目标
+- 指标公式
+
+更适合配合的页面类型：
+
+- `quote`
+- `text-visual`
+
+## Visual Plan 规则
+
+建议视觉规划层至少回答这几个问题：
+
+1. 这页是什么页面角色 / 布局类型
+2. 这页主要是文字优先、图优先，还是混合
+3. 这页应该使用什么页面内部表达技术
+4. 这页是否必须生成图示素材
+5. 这页的文字密度预算是多少
+
+一个典型的 `visual-plan` 条目可以是：
+
+```json
+{
+  "slideNumber": 4,
+  "role": "content",
+  "layout": "process",
+  "visualTechnique": "mermaid",
+  "textTechnique": "short-bullets"
+}
+```
+
 ## 多轮迭代原则
 
 ### Round 1
@@ -152,3 +271,13 @@
 
 - 压缩冗余文字
 - 增强演讲感和收尾感
+
+## 当前规划建议
+
+近期优先级建议：
+
+1. 巩固 8 类页面角色 / 布局类型
+2. 完善 `visual-plan.json`
+3. 优先接入 `mermaid / svg / table / code-block`
+4. 再接入 `formula`
+5. 最后再考虑更复杂的设计系统和自动 review

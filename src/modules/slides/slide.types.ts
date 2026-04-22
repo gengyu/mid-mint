@@ -21,11 +21,16 @@ export interface SlideSpec {
   title: string;
   subtitle?: string;
   eyebrow?: string;
+  sectionLabel?: string;
   layout: SlideLayout;
   role?: SlideRole;
   bullets: string[];
   paragraph?: string;
   highlight?: string;
   notes?: string;
+  visualGoal?: string;
+  visualType?: 'none' | 'cover-accent' | 'diagram' | 'comparison-card' | 'summary-graphic';
+  visualComposition?: 'none' | 'hero' | 'right-panel' | 'center-panel';
+  accentTone?: 'teal' | 'blue' | 'amber';
   assetPath?: string;
 }

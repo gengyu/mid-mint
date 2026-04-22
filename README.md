@@ -1,102 +1,127 @@
 # Mid-mint
 
-一个面向本地优先场景的 AI PPT 生成服务。
+一个本地优先的 AI PPT 生成服务。
 
-第一版只追求一件事：
+当前项目按 PPT 第二版推进，目标不是“把文案切成几页”，而是把一份 `Markdown / Docx / Txt / HTML` 文档变成一套真正可用于演讲的 `.pptx`。
 
-输入一段 `Markdown / Txt` 文案，输出一个可以打开的 `.pptx` 文件。
+## 当前目标
 
-## 当前定位
+- 解析输入文档并产出稳定的结构化中间产物
+- 用 LLM 生成内容分析、Deck 规划和多轮 refinement
+- 先判断页面角色 / 布局类型，再决定页内表达技术
+- 生成视觉素材并输出 `.pptx`
+- 将全部中间产物写入项目目录，便于检查和迭代
 
-这是一个适合 `Codex / ChatGPT / Claude Code` 持续开发的 MVP 项目，不追求完整产品化，不追求复杂架构，不追求一次性做全。
+## 核心生成模型
 
-## 第一版原则
+页面生成采用两层结构：
 
-- 先跑通主链路，不做无关工程化
-- 尽量少写自研逻辑，优先复用成熟库
-- 减少模块数量和概念数量
-- 优先文件系统，不依赖外部系统
-- 所有中间结果尽量落成 JSON，方便 AI 理解和调试
+1. 页面角色 / 布局类型
+2. 页面内部表达技术
 
-## 第一版主链路
+当前统一使用 8 类页面角色 / 布局类型：
+
+1. `cover`
+2. `agenda`
+3. `section-divider`
+4. `text-visual`
+5. `comparison`
+6. `process`
+7. `quote`
+8. `summary / closing`
+
+页面内部可逐步接入这些表达技术：
+
+- `bullets`
+- `mermaid`
+- `svg`
+- `table`
+- `code-block`
+- `formula`
+- `image`
+
+## 当前主流程
 
 ```txt
-Create Project
-  -> Save Input
-  -> Parse Document
-  -> LLM Structured Output
-  -> Generate Deck Plan
-  -> Generate Slide Specs
-  -> Generate Simple Visual Assets
-  -> Render PPTX
+Document
+  -> Parse
+  -> Analyze
+  -> Deck Plan
+  -> Visual Plan
+  -> Slide Specs
+  -> Refine
+  -> Assets
+  -> Render
 ```
 
-## 当前推荐模块
+## 当前接口
+
+- `POST /projects`
+- `GET /projects`
+- `GET /projects/:projectId`
+- `POST /projects/:projectId/generate`
+
+接口细节见 [API.md](/Users/gengyu/github/mid-mint/docs/API.md)。
+
+## 项目结构
 
 ```txt
-src/modules/
-├── projects/
-├── pipeline/
-├── parser/
-├── llm/
-├── slides/
-├── visuals/
-├── renderer/
-└── storage/
+src/
+├── main.ts
+├── app.module.ts
+├── common/
+├── config/
+└── modules/
+    ├── projects/
+    ├── pipeline/
+    ├── parser/
+    ├── llm/
+    ├── visuals/
+    ├── slides/
+    ├── renderer/
+    └── storage/
 ```
 
-## 推荐依赖
+## 产物目录
 
-- `marked`
-  Markdown 解析
-- `pptxgenjs`
-  PPTX 导出
-- `mammoth`
-  二阶段的 Docx 解析
-- `mermaid` / `@mermaid-js/mermaid-cli`
-  可选，用于图示生成
-- `better-sqlite3`
-  可选，仅当确实需要 SQLite 元数据存储时使用
-
-## 明确不做
-
-- BullMQ / Redis
-- TypeORM / PostgreSQL
-- Reviewer / Auto-fix
-- Export 独立模块
-- 单元测试、E2E、eslint、性能测试
-- 复杂 HTML 转图片渲染链
-- 多 Provider 深抽象
-- 复杂模板引擎
-
-## 运行产物
+运行时项目产物写到：
 
 ```txt
 data/projects/<projectId>/
-├── input.md
+├── input.*
+├── project.json
 ├── parsed-document.json
 ├── content-analysis.json
 ├── deck-plan.json
+├── visual-plan.json
 ├── slide-specs.json
+├── iterations/
+│   └── round-xx/
 ├── assets/
 └── output/
     └── presentation.pptx
 ```
 
-## AI 开发入口
+`data/` 已被加入 `.gitignore`，默认不再提交运行产物。
 
-如果你是 AI 编程工具，请先阅读：
-
-1. `AGENTS.md`
-2. `docs/MVP.md`
-3. `docs/IMPLEMENTATION_PLAN.md`
-4. `docs/FILE_CONTRACTS.md`
-5. `examples/sample.md`
-
-## 常用命令
+## 快速开始
 
 ```bash
 pnpm install
 pnpm build
 pnpm dev
+pnpm smoke
 ```
+
+## 示例输入
+
+示例文案见 [sample.md](/Users/gengyu/github/mid-mint/examples/sample.md)。
+
+## 推荐阅读顺序
+
+1. [AGENTS.md](/Users/gengyu/github/mid-mint/AGENTS.md)
+2. [PPT_V2_LAYOUTS.md](/Users/gengyu/github/mid-mint/docs/PPT_V2_LAYOUTS.md)
+3. [IMPLEMENTATION_PLAN.md](/Users/gengyu/github/mid-mint/docs/IMPLEMENTATION_PLAN.md)
+4. [FILE_CONTRACTS.md](/Users/gengyu/github/mid-mint/docs/FILE_CONTRACTS.md)
+5. [API.md](/Users/gengyu/github/mid-mint/docs/API.md)
+6. [sample.md](/Users/gengyu/github/mid-mint/examples/sample.md)

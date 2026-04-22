@@ -1,21 +1,31 @@
 import { Injectable } from '@nestjs/common';
 
+import { DocxParser } from './parsers/docx.parser';
+import { HtmlParser } from './parsers/html.parser';
 import { MarkdownParser } from './parsers/markdown.parser';
 import { TxtParser } from './parsers/txt.parser';
-import { ParsedDocument } from './types/parsed-document.type';
+import { DocumentSourceType, ParsedDocument } from './types/parsed-document.type';
 
 @Injectable()
 export class ParserService {
   constructor(
     private readonly markdownParser: MarkdownParser,
     private readonly txtParser: TxtParser,
+    private readonly htmlParser: HtmlParser,
+    private readonly docxParser: DocxParser,
   ) {}
 
-  parse(content: string, sourceType: 'markdown' | 'txt'): ParsedDocument {
-    if (sourceType === 'txt') {
-      return this.txtParser.parse(content);
+  async parse(content: string, sourceType: DocumentSourceType): Promise<ParsedDocument> {
+    switch (sourceType) {
+      case 'txt':
+        return this.txtParser.parse(content);
+      case 'html':
+        return this.htmlParser.parse(content);
+      case 'docx':
+        return this.docxParser.parse(content);
+      case 'markdown':
+      default:
+        return this.markdownParser.parse(content, 'markdown');
     }
-
-    return this.markdownParser.parse(content, sourceType);
   }
 }

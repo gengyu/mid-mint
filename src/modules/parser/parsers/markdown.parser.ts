@@ -6,7 +6,7 @@ import { ParsedDocument } from '../types/parsed-document.type';
 
 @Injectable()
 export class MarkdownParser {
-  parse(content: string, sourceType: 'markdown' | 'txt'): ParsedDocument {
+  parse(content: string, sourceType: 'markdown'): ParsedDocument {
     const sections: DocumentSection[] = [];
     const paragraphs: string[] = [];
     const introParagraphs: string[] = [];
@@ -96,7 +96,6 @@ export class MarkdownParser {
         }
 
         paragraphs.push(codeText);
-        continue;
       }
     }
 

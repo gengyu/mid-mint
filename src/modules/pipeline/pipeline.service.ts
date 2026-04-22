@@ -1,26 +1,24 @@
 import { Injectable } from '@nestjs/common';
 
-import { ProjectStorageService } from '../storage/project-storage.service';
-import { AnalyzeContentStep } from './steps/analyze-content.step';
-import { GenerateAssetsStep } from './steps/generate-assets.step';
-import { ParseDocumentStep } from './steps/parse-document.step';
-import { PlanDeckStep } from './steps/plan-deck.step';
-import { RenderPptxStep } from './steps/render-pptx.step';
-import { WriteSlidesStep } from './steps/write-slides.step';
-import { PipelineIteration, PipelineResult } from './pipeline.types';
 import { LlmJsonService } from '../llm/llm-json.service';
+import { ParserService } from '../parser/parser.service';
+import { PptxRendererService } from '../renderer/pptx-renderer.service';
+import { SlideSpecService } from '../slides/slide-spec.service';
+import { SlideSpec } from '../slides/slide.types';
+import { ProjectStorageService } from '../storage/project-storage.service';
+import { SvgGeneratorService } from '../visuals/svg-generator.service';
+import { VisualPlan } from '../visuals/visual.types';
+import { PipelineIteration, PipelineResult } from './pipeline.types';
 
 @Injectable()
 export class PipelineService {
   constructor(
-    private readonly parseDocumentStep: ParseDocumentStep,
-    private readonly analyzeContentStep: AnalyzeContentStep,
-    private readonly planDeckStep: PlanDeckStep,
-    private readonly writeSlidesStep: WriteSlidesStep,
-    private readonly generateAssetsStep: GenerateAssetsStep,
-    private readonly renderPptxStep: RenderPptxStep,
-    private readonly projectStorageService: ProjectStorageService,
+    private readonly parserService: ParserService,
     private readonly llmJsonService: LlmJsonService,
+    private readonly slideSpecService: SlideSpecService,
+    private readonly svgGeneratorService: SvgGeneratorService,
+    private readonly pptxRendererService: PptxRendererService,
+    private readonly projectStorageService: ProjectStorageService,
   ) {}
 
   async generateProjectPpt(
@@ -29,16 +27,28 @@ export class PipelineService {
   ): Promise<PipelineResult> {
     const refinementRounds = Math.max(1, Math.min(options.refinementRounds ?? 2, 3));
     const input = await this.projectStorageService.readInput(projectId);
-    const parsedDocument = this.parseDocumentStep.run(input.content, input.sourceType);
+    const parsedDocument = await this.parserService.parse(input.content, input.sourceType);
     await this.projectStorageService.writeArtifact(projectId, 'parsed-document.json', parsedDocument);
 
-    const analysis = await this.analyzeContentStep.run(parsedDocument);
+    const analysis = await this.llmJsonService.analyzeDocument(parsedDocument);
     await this.projectStorageService.writeArtifact(projectId, 'content-analysis.json', analysis);
 
-    const deckPlan = await this.planDeckStep.run(parsedDocument, analysis, options.requestedSlides);
+    const deckPlan = await this.llmJsonService.planDeck(
+      parsedDocument,
+      analysis,
+      options.requestedSlides,
+    );
     await this.projectStorageService.writeArtifact(projectId, 'deck-plan.json', deckPlan);
 
-    let slideSpecs = this.writeSlidesStep.run(parsedDocument, analysis, deckPlan);
+    const visualPlan = this.svgGeneratorService.createVisualPlan(deckPlan, analysis);
+    await this.projectStorageService.writeArtifact(projectId, 'visual-plan.json', visualPlan);
+
+    let slideSpecs = this.slideSpecService.createSlides(
+      parsedDocument,
+      analysis,
+      deckPlan,
+      visualPlan,
+    );
     const iterations: PipelineIteration[] = [];
 
     for (let round = 1; round <= refinementRounds; round += 1) {
@@ -56,27 +66,57 @@ export class PipelineService {
         slideSpecs,
       });
 
-      await this.projectStorageService.writeIterationArtifact(projectId, round, 'slide-specs.json', slideSpecs);
+      await this.projectStorageService.writeIterationArtifact(
+        projectId,
+        round,
+        'slide-specs.json',
+        slideSpecs,
+      );
       await this.projectStorageService.writeIterationArtifact(projectId, round, 'objective.json', {
         round,
         objective,
       });
     }
 
-    const slidesWithAssets = await this.generateAssetsStep.run(projectId, slideSpecs);
+    const slidesWithAssets = await this.attachAssets(projectId, slideSpecs, visualPlan);
     await this.projectStorageService.writeArtifact(projectId, 'slide-specs.json', slidesWithAssets);
 
-    const outputFile = await this.renderPptxStep.run(projectId, deckPlan.title, slidesWithAssets);
+    const outputFile = this.projectStorageService.getOutputPptxPath(projectId, deckPlan.title);
+    await this.pptxRendererService.render(outputFile, deckPlan.title, slidesWithAssets);
     await this.projectStorageService.updateGeneratedProject(projectId, outputFile);
 
     return {
       projectId,
       title: deckPlan.title,
       deckPlan,
+      visualPlan,
       slideSpecs: slidesWithAssets,
       outputFile,
       iterations,
     };
+  }
+
+  private async attachAssets(
+    projectId: string,
+    slides: SlideSpec[],
+    visualPlan: VisualPlan,
+  ): Promise<SlideSpec[]> {
+    const generatedAssets = this.svgGeneratorService.generate(slides, visualPlan);
+    const assetPathBySlide = new Map<number, string>();
+
+    for (const asset of generatedAssets) {
+      const filePath = await this.projectStorageService.writeAsset(
+        projectId,
+        asset.fileName,
+        asset.svg,
+      );
+      assetPathBySlide.set(asset.slideNumber, filePath);
+    }
+
+    return slides.map((slide) => ({
+      ...slide,
+      assetPath: assetPathBySlide.get(slide.slideNumber),
+    }));
   }
 
   private getIterationObjective(round: number, totalRounds: number): string {
