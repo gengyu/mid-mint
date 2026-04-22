@@ -10,8 +10,15 @@ interface PptSlideLikeWithImage extends PptSlideLike {
   addImage: (...args: any[]) => unknown;
 }
 
+function resolveAccentColor(accentTone?: string): string {
+  if (accentTone === 'blue') return '2563EB';
+  if (accentTone === 'amber') return 'D97706';
+  return THEME.teal;
+}
+
 export function renderSummaryClosingTemplate(slide: PptSlideLike, spec: SlideSpec): void {
   const isClosing = spec.role === 'closing';
+  const accent = resolveAccentColor(spec.accentTone);
 
   // 深色背景营造结束感 — closing uses darker accent, summary uses navy
   slide.addShape('rect', {
@@ -29,8 +36,8 @@ export function renderSummaryClosingTemplate(slide: PptSlideLike, spec: SlideSpe
     y: 0,
     w: isClosing ? 8.0 : 13.33,
     h: 0.15,
-    fill: { color: THEME.teal },
-    line: { color: THEME.teal },
+    fill: { color: accent },
+    line: { color: accent },
   });
   if (isClosing) {
     slide.addShape('rect', {
@@ -69,45 +76,55 @@ export function renderSummaryClosingTemplate(slide: PptSlideLike, spec: SlideSpe
   });
 
   // Visual asset support for summary-closing slides (PPT_V2_LAYOUTS.md Iteration C)
+  // Layout: stacked takeaway cards on left (avoid overlap with right asset panel)
   if (spec.assetPath && 'addImage' in slide) {
     const imgSlide = slide as PptSlideLikeWithImage;
-    // Left: takeaway cards; Right: visual asset
     const takeaways = spec.bullets.slice(0, 3);
-    const cardWidth = 3.0;
-    const gap = 0.3;
+    // Asset panel starts at x=7.8; cards must fit in [0.8, 7.4]
+    const cardWidth = 2.05;
+    const gap = 0.18;
+    const cardY = 2.2;
 
     takeaways.forEach((bullet, index) => {
       const x = 0.8 + index * (cardWidth + gap);
-      const y = 2.2;
 
       slide.addShape('roundRect', {
         x,
-        y,
+        y: cardY,
         w: cardWidth,
-        h: 2.0,
+        h: 3.0,
         rectRadius: 0.1,
         fill: { color: '1A2B3C' },
-        line: { color: THEME.teal, width: 1.0 },
+        line: { color: accent, width: 1.0 },
+      });
+      slide.addShape('ellipse', {
+        x: x + cardWidth / 2 - 0.22,
+        y: cardY + 0.35,
+        w: 0.44,
+        h: 0.44,
+        fill: { color: accent },
+        line: { color: accent },
       });
       slide.addText(String(index + 1), {
-        x: x + 0.2,
-        y: y + 0.25,
-        w: 0.3,
-        h: 0.25,
+        x: x + cardWidth / 2 - 0.12,
+        y: cardY + 0.43,
+        w: 0.24,
+        h: 0.24,
         fontSize: 12,
         bold: true,
-        color: THEME.teal,
+        color: THEME.white,
+        align: 'center',
         fontFace: 'Aptos',
       });
       slide.addText(bullet, {
-        x: x + 0.2,
-        y: y + 0.6,
-        w: cardWidth - 0.4,
-        h: 1.1,
-        fontSize: 13,
+        x: x + 0.15,
+        y: cardY + 1.0,
+        w: cardWidth - 0.3,
+        h: 1.7,
+        fontSize: 12,
         color: THEME.white,
         valign: 'mid',
-        align: 'left',
+        align: 'center',
         fit: 'shrink',
         fontFace: 'Aptos',
       });
@@ -115,9 +132,9 @@ export function renderSummaryClosingTemplate(slide: PptSlideLike, spec: SlideSpe
 
     // Right: visual asset
     slide.addShape('roundRect', {
-      x: 7.6,
+      x: 7.8,
       y: 2.0,
-      w: 5.0,
+      w: 4.85,
       h: 4.8,
       rectRadius: 0.12,
       fill: { color: THEME.white },
@@ -125,9 +142,9 @@ export function renderSummaryClosingTemplate(slide: PptSlideLike, spec: SlideSpe
     });
     imgSlide.addImage({
       path: spec.assetPath,
-      x: 7.85,
+      x: 8.05,
       y: 2.25,
-      w: 4.5,
+      w: 4.35,
       h: 3.5,
     });
   } else {
@@ -148,7 +165,7 @@ export function renderSummaryClosingTemplate(slide: PptSlideLike, spec: SlideSpe
         h: 3.2,
         rectRadius: 0.12,
         fill: { color: '1A2B3C' },
-        line: { color: THEME.teal, width: 1.5 },
+        line: { color: accent, width: 1.5 },
       });
 
       slide.addShape('ellipse', {
@@ -156,8 +173,8 @@ export function renderSummaryClosingTemplate(slide: PptSlideLike, spec: SlideSpe
         y: y + 0.35,
         w: 0.5,
         h: 0.5,
-        fill: { color: THEME.teal },
-        line: { color: THEME.teal },
+        fill: { color: accent },
+        line: { color: accent },
       });
       slide.addText(String(index + 1), {
         x: x + cardWidth / 2 - 0.15,
@@ -194,8 +211,8 @@ export function renderSummaryClosingTemplate(slide: PptSlideLike, spec: SlideSpe
       w: 6.33,
       h: 0.9,
       rectRadius: 0.1,
-      fill: { color: isClosing ? THEME.gold : THEME.teal },
-      line: { color: isClosing ? THEME.gold : THEME.teal },
+      fill: { color: isClosing ? THEME.gold : accent },
+      line: { color: isClosing ? THEME.gold : accent },
     });
     slide.addText(spec.highlight, {
       x: 3.5,

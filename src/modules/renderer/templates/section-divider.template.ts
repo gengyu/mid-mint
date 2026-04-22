@@ -6,7 +6,14 @@ interface PptSlideLike {
   addText: (...args: any[]) => unknown;
 }
 
+function resolveAccentColor(accentTone?: string): string {
+  if (accentTone === 'blue') return '2563EB';
+  if (accentTone === 'amber') return 'D97706';
+  return THEME.teal;
+}
+
 export function renderSectionDividerTemplate(slide: PptSlideLike, spec: SlideSpec): void {
+  const accent = resolveAccentColor(spec.accentTone);
   // Dark background for chapter-break feel (PPT_V2_LAYOUTS.md Iteration C)
   slide.addShape('rect', {
     x: 0,
@@ -23,8 +30,8 @@ export function renderSectionDividerTemplate(slide: PptSlideLike, spec: SlideSpe
     y: 0,
     w: 0.15,
     h: 7.5,
-    fill: { color: THEME.teal },
-    line: { color: THEME.teal },
+    fill: { color: accent },
+    line: { color: accent },
   });
 
   // Section label (e.g. "SECTION 03 / 08")
@@ -35,7 +42,7 @@ export function renderSectionDividerTemplate(slide: PptSlideLike, spec: SlideSpe
     h: 0.3,
     fontSize: 12,
     bold: true,
-    color: THEME.teal,
+    color: accent,
     fontFace: 'Aptos',
   });
 
@@ -69,7 +76,7 @@ export function renderSectionDividerTemplate(slide: PptSlideLike, spec: SlideSpe
     y: 5.6,
     w: 3.0,
     h: 0.06,
-    fill: { color: THEME.teal },
-    line: { color: THEME.teal },
+    fill: { color: accent },
+    line: { color: accent },
   });
 }

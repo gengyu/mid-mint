@@ -6,7 +6,14 @@ interface PptSlideLike {
   addText: (...args: any[]) => unknown;
 }
 
+function resolveAccentColor(accentTone?: string): string {
+  if (accentTone === 'blue') return '2563EB';
+  if (accentTone === 'amber') return 'D97706';
+  return THEME.teal;
+}
+
 export function renderAgendaTemplate(slide: PptSlideLike, spec: SlideSpec): void {
+  const accent = resolveAccentColor(spec.accentTone);
   slide.addShape('rect', { x: 0, y: 0, w: 13.33, h: 0.9, fill: { color: THEME.navy }, line: { color: THEME.navy } });
   slide.addText(spec.eyebrow ?? 'Agenda', {
     x: 0.7,
@@ -47,8 +54,8 @@ export function renderAgendaTemplate(slide: PptSlideLike, spec: SlideSpec): void
       w: 0.5,
       h: 0.38,
       rectRadius: 0.08,
-      fill: { color: THEME.cyan },
-      line: { color: THEME.cyan },
+      fill: { color: accent },
+      line: { color: accent },
     });
     slide.addText(String(index + 1), {
       x: 1.04,
@@ -91,7 +98,7 @@ export function renderAgendaTemplate(slide: PptSlideLike, spec: SlideSpec): void
       h: 0.3,
       fontSize: 12,
       bold: true,
-      color: THEME.teal,
+      color: accent,
       fontFace: 'Aptos',
     });
     slide.addText(spec.highlight, {

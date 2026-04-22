@@ -7,8 +7,15 @@ interface PptSlideLike {
   addText: (...args: any[]) => unknown;
 }
 
+function resolveAccentColor(accentTone?: string): string {
+  if (accentTone === 'blue') return '2563EB';
+  if (accentTone === 'amber') return 'D97706';
+  return THEME.teal;
+}
+
 export function renderQuoteTemplate(slide: PptSlideLike, spec: SlideSpec): void {
   const hasFormulaAsset = spec.visualTechnique === 'formula' && !!spec.assetPath;
+  const accent = resolveAccentColor(spec.accentTone);
   slide.addShape('roundRect', {
     x: 0.8,
     y: 1.0,
@@ -25,8 +32,8 @@ export function renderQuoteTemplate(slide: PptSlideLike, spec: SlideSpec): void 
     y: 1.0,
     w: 0.1,
     h: 4.7,
-    fill: { color: THEME.teal },
-    line: { color: THEME.teal },
+    fill: { color: accent },
+    line: { color: accent },
   });
 
   slide.addText(spec.eyebrow ?? 'Key message', {
@@ -36,7 +43,7 @@ export function renderQuoteTemplate(slide: PptSlideLike, spec: SlideSpec): void 
     h: 0.3,
     fontSize: 12,
     bold: true,
-    color: THEME.teal,
+    color: accent,
     fontFace: 'Aptos',
   });
   slide.addText(spec.title, {

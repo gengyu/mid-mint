@@ -8,7 +8,14 @@ interface PptSlideLike {
   addText: (...args: any[]) => unknown;
 }
 
+function resolveAccentColor(accentTone?: string): string {
+  if (accentTone === 'blue') return '2563EB';
+  if (accentTone === 'amber') return 'D97706';
+  return THEME.teal;
+}
+
 export function renderComparisonTemplate(slide: PptSlideLike, spec: SlideSpec): void {
+  const accent = resolveAccentColor(spec.accentTone);
   slide.addText(spec.eyebrow ?? 'Comparison', {
     x: 0.7,
     y: 0.45,
@@ -16,7 +23,7 @@ export function renderComparisonTemplate(slide: PptSlideLike, spec: SlideSpec): 
     h: 0.3,
     fontSize: 12,
     bold: true,
-    color: THEME.teal,
+    color: accent,
     fontFace: 'Aptos',
   });
   slide.addText(spec.title, {
@@ -32,11 +39,14 @@ export function renderComparisonTemplate(slide: PptSlideLike, spec: SlideSpec): 
 
   if (spec.visualTechnique === 'table' && spec.tableData?.rows?.length) {
     const hasHeaders = !!(spec.tableData.headers && spec.tableData.headers.length > 0);
+    // FILE_CONTRACTS.md: keep 3-5 rows, truncate excess
+    const maxRows = 5;
+    const truncatedRows = spec.tableData.rows.slice(0, maxRows);
     const headerRow = hasHeaders ? spec.tableData.headers!.map((cell) => ({
       text: cell,
-      options: { bold: true, color: THEME.white, fill: { color: THEME.teal }, fontFace: 'Aptos', fontSize: 13, align: 'left', valign: 'mid' },
+      options: { bold: true, color: THEME.white, fill: { color: accent }, fontFace: 'Aptos', fontSize: 13, align: 'left', valign: 'mid' },
     })) : [];
-    const dataRows = spec.tableData.rows.map((row, rowIndex) =>
+    const dataRows = truncatedRows.map((row, rowIndex) =>
       row.map((cell) => ({
         text: cell,
         options: {
@@ -50,6 +60,7 @@ export function renderComparisonTemplate(slide: PptSlideLike, spec: SlideSpec): 
         },
       })),
     );
+    const hasOverflow = spec.tableData.rows.length > maxRows;
     const rows = hasHeaders ? [headerRow, ...dataRows] : dataRows;
 
     slide.addShape('roundRect', {
@@ -68,7 +79,7 @@ export function renderComparisonTemplate(slide: PptSlideLike, spec: SlideSpec): 
       h: 0.2,
       fontSize: 9,
       bold: true,
-      color: THEME.teal,
+      color: accent,
       fontFace: 'Aptos',
     });
     slide.addTable(rows, {
@@ -92,6 +103,18 @@ export function renderComparisonTemplate(slide: PptSlideLike, spec: SlideSpec): 
         h: 0.3,
         fontSize: 13,
         color: THEME.muted,
+        fontFace: 'Aptos',
+      });
+    }
+    if (hasOverflow) {
+      slide.addText(`+ ${spec.tableData.rows.length - maxRows} more rows`, {
+        x: 9.5,
+        y: 6.15,
+        w: 2.4,
+        h: 0.3,
+        fontSize: 11,
+        color: THEME.muted,
+        align: 'right',
         fontFace: 'Aptos',
       });
     }
@@ -177,7 +200,7 @@ export function renderComparisonTemplate(slide: PptSlideLike, spec: SlideSpec): 
       h: 0.22,
       fontSize: 11,
       bold: true,
-      color: THEME.teal,
+      color: accent,
       fontFace: 'Aptos',
     });
     slide.addText(leftBullets.map((bullet) => ({ text: bullet, options: { bullet: { indent: 12 } } })), {
@@ -207,7 +230,7 @@ export function renderComparisonTemplate(slide: PptSlideLike, spec: SlideSpec): 
       h: 0.22,
       fontSize: 11,
       bold: true,
-      color: THEME.teal,
+      color: accent,
       fontFace: 'Aptos',
     });
     slide.addText(rightBullets.map((bullet) => ({ text: bullet, options: { bullet: { indent: 12 } } })), {
@@ -239,7 +262,7 @@ export function renderComparisonTemplate(slide: PptSlideLike, spec: SlideSpec): 
         h: 0.4,
         fontSize: 13,
         bold: true,
-        color: THEME.teal,
+        color: accent,
         fontFace: 'Aptos',
       });
     }

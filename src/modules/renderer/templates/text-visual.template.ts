@@ -4,6 +4,7 @@ import { THEME } from './rendering-theme';
 interface PptSlideLike {
   addImage: (...args: any[]) => unknown;
   addShape: (...args: any[]) => unknown;
+  addTable: (...args: any[]) => unknown;
   addText: (...args: any[]) => unknown;
 }
 
@@ -34,6 +35,120 @@ export function renderTextVisualTemplate(slide: PptSlideLike, spec: SlideSpec): 
     color: THEME.ink,
     fontFace: 'Aptos Display',
   });
+
+  // ── Table rendering (PPT_V2_LAYOUTS.md: table can pair with text-visual) ──
+  if (spec.visualTechnique === 'table' && spec.tableData?.rows?.length) {
+    const accent = resolveAccentColor(spec.accentTone);
+    const hasHeaders = !!(spec.tableData.headers && spec.tableData.headers.length > 0);
+    // FILE_CONTRACTS.md: keep 3-5 rows, truncate excess
+    const maxRows = 5;
+    const truncatedRows = spec.tableData.rows.slice(0, maxRows);
+    const hasOverflow = spec.tableData.rows.length > maxRows;
+    const headerRow = hasHeaders
+      ? spec.tableData.headers!.map((cell) => ({
+          text: cell,
+          options: { bold: true, color: THEME.white, fill: { color: accent }, fontFace: 'Aptos', fontSize: 13, align: 'left', valign: 'mid' },
+        }))
+      : [];
+    const dataRows = truncatedRows.map((row, rowIndex) =>
+      row.map((cell) => ({
+        text: cell,
+        options: {
+          bold: false,
+          color: THEME.text,
+          fill: { color: rowIndex % 2 === 0 ? THEME.white : THEME.pale },
+          fontFace: 'Aptos',
+          fontSize: 13,
+          align: 'left',
+          valign: 'mid',
+        },
+      })),
+    );
+    const rows = hasHeaders ? [headerRow, ...dataRows] : dataRows;
+
+    // Top: title + description
+    if (spec.paragraph) {
+      slide.addText(spec.paragraph, {
+        x: 0.7,
+        y: 1.55,
+        w: 11.3,
+        h: 0.4,
+        fontSize: 14,
+        color: THEME.muted,
+        fontFace: 'Aptos',
+      });
+    }
+
+    slide.addShape('roundRect', {
+      x: 0.7,
+      y: spec.paragraph ? 2.1 : 1.7,
+      w: 11.3,
+      h: hasHeaders ? 3.8 : 3.5,
+      rectRadius: 0.12,
+      fill: { color: THEME.white },
+      line: { color: THEME.sky, width: 1.1 },
+    });
+    slide.addText('DATA OVERVIEW', {
+      x: 1.0,
+      y: spec.paragraph ? 2.15 : 1.75,
+      w: 2.0,
+      h: 0.2,
+      fontSize: 9,
+      bold: true,
+      color: accent,
+      fontFace: 'Aptos',
+    });
+    slide.addTable(rows, {
+      x: 0.95,
+      y: (spec.paragraph ? 2.4 : 2.0),
+      w: 10.8,
+      h: hasHeaders ? 3.2 : 2.9,
+      border: { type: 'solid', color: THEME.sky, pt: 1 },
+      margin: [0.06, 0.1, 0.06, 0.1],
+      rowH: hasHeaders ? 0.5 : 0.45,
+      valign: 'mid',
+      align: 'left',
+      autoPage: false,
+    });
+
+    // Bottom highlight bar
+    if (spec.highlight) {
+      const tableBottom = (spec.paragraph ? 2.1 : 1.7) + (hasHeaders ? 3.8 : 3.5) + 0.15;
+      slide.addShape('roundRect', {
+        x: 0.7,
+        y: tableBottom,
+        w: 11.3,
+        h: 0.5,
+        rectRadius: 0.08,
+        fill: { color: THEME.pale },
+        line: { color: THEME.sky, width: 0.6 },
+      });
+      slide.addText(spec.highlight, {
+        x: 1.0,
+        y: tableBottom + 0.03,
+        w: 10.7,
+        h: 0.4,
+        fontSize: 13,
+        bold: true,
+        color: accent,
+        fontFace: 'Aptos',
+      });
+    }
+    if (hasOverflow) {
+      const tableBottom = (spec.paragraph ? 2.1 : 1.7) + (hasHeaders ? 3.8 : 3.5) + 0.15;
+      slide.addText(`+ ${spec.tableData.rows.length - maxRows} more rows`, {
+        x: 9.5,
+        y: tableBottom,
+        w: 2.4,
+        h: 0.4,
+        fontSize: 11,
+        color: THEME.muted,
+        align: 'right',
+        fontFace: 'Aptos',
+      });
+    }
+    return;
+  }
 
   // ── Code-block rendering ──────────────────────────────
   if (spec.visualTechnique === 'code-block' && spec.codeBlock?.content) {
@@ -237,39 +352,56 @@ export function renderTextVisualTemplate(slide: PptSlideLike, spec: SlideSpec): 
     return;
   }
 
-  slide.addShape('roundRect', {
-    x: 0.7,
-    y: 1.7,
-    w: 5.0,
-    h: 4.5,
-    rectRadius: 0.12,
-    fill: { color: THEME.white },
-    line: { color: THEME.sky, width: 1.1 },
-  });
-  slide.addText(spec.paragraph ?? spec.bullets.join('\n'), {
-    x: 1.0,
-    y: 2.0,
-    w: 4.35,
-    h: 2.2,
-    fontSize: 15,
-    color: THEME.text,
-    valign: 'top',
-    fontFace: 'Aptos',
-  });
-  if (spec.highlight) {
-    slide.addText(spec.highlight, {
+  if (spec.assetPath) {
+    // Left: text content panel + Right: visual asset panel
+    const accent = resolveAccentColor(spec.accentTone);
+    slide.addShape('roundRect', {
+      x: 0.7,
+      y: 1.7,
+      w: 5.0,
+      h: 4.5,
+      rectRadius: 0.12,
+      fill: { color: THEME.white },
+      line: { color: THEME.sky, width: 1.1 },
+    });
+    slide.addText(spec.paragraph ?? spec.bullets.join('\n'), {
       x: 1.0,
-      y: 4.95,
-      w: 4.1,
-      h: 0.8,
-      fontSize: 13,
-      bold: true,
-      color: THEME.teal,
+      y: 2.0,
+      w: 4.35,
+      h: spec.bullets.length > 0 ? 2.0 : 3.3,
+      fontSize: 15,
+      color: THEME.text,
+      valign: 'top',
       fontFace: 'Aptos',
     });
-  }
+    if (spec.bullets.length > 0) {
+      slide.addText(
+        spec.bullets.slice(0, 3).map((bullet) => ({ text: bullet, options: { bullet: { indent: 12 } } })),
+        {
+          x: 1.0,
+          y: 3.9,
+          w: 4.35,
+          h: 1.5,
+          fontSize: 13,
+          color: THEME.text,
+          breakLine: true,
+          fontFace: 'Aptos',
+        },
+      );
+    }
+    if (spec.highlight) {
+      slide.addText(spec.highlight, {
+        x: 1.0,
+        y: 5.4,
+        w: 4.1,
+        h: 0.5,
+        fontSize: 13,
+        bold: true,
+        color: accent,
+        fontFace: 'Aptos',
+      });
+    }
 
-  if (spec.assetPath) {
     slide.addShape('roundRect', {
       x: 6.1,
       y: 1.7,
@@ -289,6 +421,7 @@ export function renderTextVisualTemplate(slide: PptSlideLike, spec: SlideSpec): 
   } else {
     // Full-width content layout when no visual asset — avoids empty placeholder
     // Expand left card and add a right-side accent panel with key insight
+    const accent = resolveAccentColor(spec.accentTone);
     slide.addShape('roundRect', {
       x: 0.7,
       y: 1.7,
@@ -331,7 +464,7 @@ export function renderTextVisualTemplate(slide: PptSlideLike, spec: SlideSpec): 
         h: 0.4,
         fontSize: 13,
         bold: true,
-        color: THEME.teal,
+        color: accent,
         fontFace: 'Aptos',
       });
     }
@@ -353,7 +486,7 @@ export function renderTextVisualTemplate(slide: PptSlideLike, spec: SlideSpec): 
       h: 0.25,
       fontSize: 10,
       bold: true,
-      color: THEME.teal,
+      color: accent,
       fontFace: 'Aptos',
     });
     slide.addText(spec.highlight ?? spec.paragraph ?? spec.title, {

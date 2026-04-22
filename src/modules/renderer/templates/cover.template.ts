@@ -2,6 +2,7 @@ import { SlideSpec } from '../../slides/slide.types';
 import { THEME } from './rendering-theme';
 
 interface PptSlideLike {
+  addImage: (...args: any[]) => unknown;
   addShape: (...args: any[]) => unknown;
   addText: (...args: any[]) => unknown;
 }
@@ -55,6 +56,25 @@ export function renderCoverTemplate(slide: PptSlideLike, spec: SlideSpec): void 
     fit: 'shrink',
     fontFace: 'Aptos',
   });
+  // PPT_V2_LAYOUTS.md: cover is visual-priority; render visual asset when available
+  if (spec.assetPath) {
+    slide.addShape('roundRect', {
+      x: 8.6,
+      y: 1.8,
+      w: 3.9,
+      h: 3.5,
+      rectRadius: 0.12,
+      fill: { color: THEME.white, transparency: 88 },
+      line: { color: THEME.sky, width: 0.8, transparency: 50 },
+    });
+    slide.addImage({
+      path: spec.assetPath,
+      x: 8.8,
+      y: 2.0,
+      w: 3.5,
+      h: 3.1,
+    });
+  }
   if (spec.highlight) {
     slide.addText(spec.highlight, {
       x: 0.8,

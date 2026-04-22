@@ -132,6 +132,10 @@ export class SvgGeneratorService {
       }
     }
 
+    if (slide.visualType === 'cover-accent') {
+      return this.buildCoverAccentSvg(slide);
+    }
+
     if (slide.visualType === 'comparison-card') {
       return this.buildComparisonSvg(slide);
     }
@@ -294,6 +298,28 @@ export class SvgGeneratorService {
       `<text x="100" y="226" font-size="20" fill="#5B6B7D">${this.escape(this.compact(goal, 74))}</text>`,
       connectorMarkup,
       nodeMarkup,
+      '</svg>',
+    ].join('');
+  }
+
+  private buildCoverAccentSvg(slide: SlideSpec): string {
+    const accent = this.resolveAccent(slide.accentTone);
+    const safeTitle = this.escape(slide.title ?? 'Presentation');
+
+    return [
+      '<svg xmlns="http://www.w3.org/2000/svg" width="480" height="420" viewBox="0 0 480 420">',
+      '<rect width="480" height="420" rx="24" fill="#0B1F33" />',
+      `<circle cx="380" cy="90" r="180" fill="${accent.soft}" fill-opacity="0.18" />`,
+      `<circle cx="100" cy="340" r="120" fill="${accent.base}" fill-opacity="0.12" />`,
+      `<rect x="36" y="36" width="56" height="4" rx="2" fill="${accent.base}" />`,
+      `<text x="36" y="80" font-size="28" font-weight="700" fill="#FFFFFF">${safeTitle}</text>`,
+      '<line x1="36" y1="100" x2="444" y2="100" stroke="#1A3A52" stroke-width="1" />',
+      `<circle cx="240" cy="220" r="64" fill="${accent.base}" fill-opacity="0.2" />`,
+      `<circle cx="240" cy="220" r="40" fill="${accent.base}" fill-opacity="0.35" />`,
+      '<text x="240" y="228" text-anchor="middle" font-size="22" font-weight="700" fill="#FFFFFF">&#9658;</text>',
+      `<rect x="60" y="310" width="160" height="6" rx="3" fill="${accent.soft}" fill-opacity="0.4" />`,
+      `<rect x="60" y="330" width="120" height="6" rx="3" fill="${accent.soft}" fill-opacity="0.25" />`,
+      `<rect x="60" y="350" width="80" height="6" rx="3" fill="${accent.soft}" fill-opacity="0.15" />`,
       '</svg>',
     ].join('');
   }

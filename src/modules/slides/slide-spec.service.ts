@@ -129,7 +129,7 @@ export class SlideSpecService {
           sectionLabel: this.buildSectionLabel(plannedSlide.slideNumber, deckPlan.totalSlides),
           layout: 'summary-closing',
           role: plannedSlide.role,
-          bullets: analysis.keyMessages.map((item) => this.compact(item, 32)).slice(0, 4),
+          bullets: this.pickSummaryBullets(matchedSection, analysis, 4),
           paragraph: this.pickParagraph(analysis.summary, plannedSlide.keyPoint, 120),
           highlight: this.pickHighlight(analysis.keyMessages, analysis.summary, plannedSlide.keyPoint, 64),
           notes: plannedSlide.keyPoint,
@@ -270,6 +270,23 @@ export class SlideSpecService {
     }
 
     return `${normalized.slice(0, maxLength - 3).trim()}...`;
+  }
+
+  private pickSummaryBullets(
+    section: DocumentSection | undefined,
+    analysis: PresentationAnalysis,
+    limit: number,
+  ): string[] {
+    // Prefer bullets from the actual Summary section in the source document
+    const sectionBullets = (section?.bullets ?? []).map((item) => item.trim()).filter(Boolean);
+    if (sectionBullets.length > 0) {
+      return sectionBullets.map((b) => this.compact(b, 32)).slice(0, limit);
+    }
+    // Fallback to analysis keyMessages, but avoid bullets that clearly belong to non-summary sections
+    return analysis.keyMessages
+      .filter((msg) => !/^(ingest|clean|build|retrieve|generate|fetch|parse|load)\b/i.test(msg.trim()))
+      .map((item) => this.compact(item, 32))
+      .slice(0, limit);
   }
 
   private extractFormulaText(section: DocumentSection | undefined, fallback: string): string | undefined {

@@ -7,7 +7,14 @@ interface PptSlideLike {
   addText: (...args: any[]) => unknown;
 }
 
+function resolveAccentColor(accentTone?: string): string {
+  if (accentTone === 'blue') return '2563EB';
+  if (accentTone === 'amber') return 'D97706';
+  return THEME.teal;
+}
+
 export function renderProcessTemplate(slide: PptSlideLike, spec: SlideSpec): void {
+  const accent = resolveAccentColor(spec.accentTone);
   slide.addText(spec.eyebrow ?? 'Process', {
     x: 0.7,
     y: 0.45,
@@ -15,7 +22,7 @@ export function renderProcessTemplate(slide: PptSlideLike, spec: SlideSpec): voi
     h: 0.3,
     fontSize: 12,
     bold: true,
-    color: THEME.teal,
+    color: accent,
     fontFace: 'Aptos',
   });
   slide.addText(spec.title, {
@@ -58,7 +65,7 @@ export function renderProcessTemplate(slide: PptSlideLike, spec: SlideSpec): voi
       h: 0.2,
       fontSize: 9,
       bold: true,
-      color: THEME.teal,
+      color: accent,
       fontFace: 'Aptos',
     });
     slide.addImage({
@@ -92,7 +99,7 @@ export function renderProcessTemplate(slide: PptSlideLike, spec: SlideSpec): voi
         h: 0.2,
         fontSize: 11,
         bold: true,
-        color: THEME.cyan,
+        color: accent,
         fontFace: 'Aptos',
       });
       slide.addText(step, {
@@ -106,6 +113,18 @@ export function renderProcessTemplate(slide: PptSlideLike, spec: SlideSpec): voi
         valign: 'mid',
         fontFace: 'Aptos',
       });
+
+      // Arrow connector between step cards (PPT_V2_LAYOUTS.md: directional flow)
+      if (index < steps.length - 1) {
+        slide.addShape('rightArrow', {
+          x: x + cardWidth + 0.02,
+          y: 5.35,
+          w: gap - 0.04,
+          h: 0.22,
+          fill: { color: THEME.gold },
+          line: { color: THEME.gold },
+        });
+      }
     });
     return;
   }
@@ -136,7 +155,7 @@ export function renderProcessTemplate(slide: PptSlideLike, spec: SlideSpec): voi
         h: 0.25,
         fontSize: 12,
         bold: true,
-        color: THEME.cyan,
+        color: accent,
         fontFace: 'Aptos',
       });
       slide.addText(step, {

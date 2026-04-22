@@ -86,11 +86,10 @@ const SUMMARY_KEYWORDS = [
 
 const CODE_PATTERNS = [
   /```/,
-  /\b(const|let|var|function|class|return|import|export)\b/,
+  /\b(const|let|var|function|class|return|import|export)\s+[A-Za-z]/,
   /\b(SELECT|INSERT|UPDATE|DELETE|FROM|WHERE)\b/i,
-  /\b(curl|npm|pnpm|yarn|python|node)\b/,
-  /<\/?[a-z][^>]*>/i,
-  /[{}`;]/,
+  /\b(curl|npm|pnpm|yarn|python3?)\s+/,
+  /<\/?[a-z][a-z0-9]*(\s+[a-z-]+=|\s*\/?)>/i,
 ];
 
 const FORMULA_PATTERNS = [
@@ -305,7 +304,7 @@ export function resolveVisualDecision(
     contentBalance: pickContentBalance(layout, role),
     textBudget: pickTextBudget(layout),
     mustGenerateVisual,
-    requiresAsset: visualTechnique === 'svg' || visualTechnique === 'mermaid' || visualTechnique === 'formula',
+    requiresAsset: visualTechnique === 'svg' || visualTechnique === 'mermaid' || visualTechnique === 'formula' || (layout === 'cover' && mustGenerateVisual),
     accentTone,
     goal: buildVisualGoal(layout, normalized, role),
   };
@@ -379,6 +378,11 @@ function pickVisualTechnique(
 
   if (signal.formulaText.length > 0 || looksFormulaLike(signal)) {
     return 'formula';
+  }
+
+  // PPT_V2_LAYOUTS.md: table can be an internal expression technique for text-visual
+  if (signal.tableRows.length > 0 || looksTableLike(signal)) {
+    return 'table';
   }
 
   if (signal.codeBlockContent.length > 0 || looksCodeLike(signal)) {
