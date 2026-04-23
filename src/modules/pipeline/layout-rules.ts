@@ -3,6 +3,9 @@ import { SlideLayout, SlideRole } from '../slides/slide.types';
 import { StoryArcPhase } from './pipeline.types';
 import {
   AccentTone,
+  AssetPriority,
+  AssetVariant,
+  EnhancementRound,
   TextTechnique,
   VisualComposition,
   VisualDensity,
@@ -30,6 +33,9 @@ export interface VisualDecision {
   visualTechnique: VisualTechnique;
   textTechnique: TextTechnique;
   visualPriority: VisualPriority;
+  assetPriority: AssetPriority;
+  recommendedEnhancementRound: EnhancementRound;
+  assetVariant: AssetVariant;
   composition: VisualComposition;
   density: VisualDensity;
   contentBalance: ContentBalance;
@@ -299,6 +305,18 @@ export function resolveVisualDecision(
     visualTechnique,
     textTechnique: pickTextTechnique(layout),
     visualPriority: pickVisualPriority(layout, visualTechnique),
+    assetPriority: pickAssetPriority(layout, visualTechnique),
+    recommendedEnhancementRound: pickRecommendedEnhancementRound(
+      layout,
+      pickVisualType(layout),
+      visualTechnique,
+    ),
+    assetVariant: pickAssetVariant(
+      layout,
+      pickVisualType(layout),
+      visualTechnique,
+      pickAssetPriority(layout, visualTechnique),
+    ),
     composition: pickComposition(layout, slideNumber, visualTechnique),
     density: pickDensity(layout, visualTechnique),
     contentBalance: pickContentBalance(layout, role),
@@ -310,8 +328,66 @@ export function resolveVisualDecision(
   };
 }
 
+function pickAssetVariant(
+  layout: SlideLayout,
+  visualType: VisualDecision['visualType'],
+  visualTechnique: VisualTechnique,
+  assetPriority: AssetPriority,
+): AssetVariant {
+  if (visualTechnique === 'mermaid' || visualTechnique === 'formula' || visualTechnique === 'table') {
+    return 'specialized';
+  }
+
+  if (layout === 'cover' || visualType === 'cover-accent' || assetPriority === 'high') {
+    return 'hero';
+  }
+
+  return 'foundation';
+}
+
+function pickAssetPriority(layout: SlideLayout, visualTechnique: VisualTechnique): AssetPriority {
+  if (visualTechnique === 'mermaid' || visualTechnique === 'formula') {
+    return 'high';
+  }
+
+  if (visualTechnique === 'svg' || layout === 'cover' || layout === 'process' || layout === 'comparison') {
+    return 'medium';
+  }
+
+  return 'low';
+}
+
+function pickRecommendedEnhancementRound(
+  layout: SlideLayout,
+  visualType: VisualDecision['visualType'],
+  visualTechnique: VisualTechnique,
+): EnhancementRound {
+  if (visualTechnique === 'none' && (layout === 'agenda' || layout === 'section-divider')) {
+    return 1;
+  }
+
+  if (layout === 'cover') {
+    return 3;
+  }
+
+  if (
+    visualTechnique === 'mermaid' ||
+    visualTechnique === 'table' ||
+    visualTechnique === 'code-block' ||
+    visualTechnique === 'formula'
+  ) {
+    return 4;
+  }
+
+  if (visualTechnique === 'svg') {
+    return 2;
+  }
+
+  return 1;
+}
+
 function inferPreferredLayout(signal: ReturnType<typeof normalizeSignal>): SlideLayout {
-  // PPT_V2_LAYOUTS.md: "3 到 5 条存在明确顺序 → process" — require BOTH
+  // "3 到 5 条存在明确顺序 -> process" — require BOTH
   // sequential bullet patterns AND process keywords.
   // Exception: mermaid definitions always imply process layout.
   if (signal.mermaidDefinition.length > 0) {
@@ -353,7 +429,7 @@ function pickVisualTechnique(
   signal: ReturnType<typeof normalizeSignal>,
 ): VisualTechnique {
   if (layout === 'cover') {
-    return 'image';
+    return 'svg';
   }
 
   if (layout === 'agenda' || layout === 'section-divider') {
@@ -380,7 +456,7 @@ function pickVisualTechnique(
     return 'formula';
   }
 
-  // PPT_V2_LAYOUTS.md: table can be an internal expression technique for text-visual
+  // Table can be an internal expression technique for text-visual
   if (signal.tableRows.length > 0 || looksTableLike(signal)) {
     return 'table';
   }
@@ -393,8 +469,8 @@ function pickVisualTechnique(
     return 'mermaid';
   }
 
-  if (shouldUseImage(signal)) {
-    return 'image';
+  if (shouldUseHeroSvg(signal)) {
+    return 'svg';
   }
 
   return 'svg';
@@ -441,7 +517,7 @@ function pickTextTechnique(layout: SlideLayout): TextTechnique {
 }
 
 function pickVisualPriority(layout: SlideLayout, technique: VisualTechnique): VisualPriority {
-  if (layout === 'cover' || layout === 'process' || technique === 'mermaid' || technique === 'image') {
+  if (layout === 'cover' || layout === 'process' || technique === 'mermaid') {
     return 'high';
   }
 
@@ -523,7 +599,7 @@ function pickMustGenerateVisual(
     return true;
   }
 
-  // PPT_V2_LAYOUTS.md Iteration C: closing slides benefit from a visual
+  // Closing slides benefit from a visual
   // asset to create a strong ending moment
   if (layout === 'summary-closing' && role === 'closing') {
     return true;
@@ -605,12 +681,12 @@ function shouldGenerateVisual(signal: ReturnType<typeof normalizeSignal>): boole
   );
 }
 
-function shouldUseImage(signal: ReturnType<typeof normalizeSignal>): boolean {
+function shouldUseHeroSvg(signal: ReturnType<typeof normalizeSignal>): boolean {
   return signal.bullets.length <= 2 && signal.body.length <= 100 && !looksCodeLike(signal) && !looksFormulaLike(signal);
 }
 
 function looksProcessLike(signal: ReturnType<typeof normalizeSignal>): boolean {
-  // PPT_V2_LAYOUTS.md: process requires sequential order signals,
+  // Process requires sequential order signals,
   // not just keyword presence + bullet count.
   return (
     (PROCESS_KEYWORDS.some((keyword) => signal.combined.includes(keyword)) &&

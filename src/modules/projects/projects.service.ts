@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { PipelineService } from '../pipeline/pipeline.service';
-import { PipelineResult } from '../pipeline/pipeline.types';
+import { GeneratePipelineOptions, PipelineResult } from '../pipeline/pipeline.types';
 import { ProjectRecord, ProjectStorageService } from '../storage/project-storage.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { GeneratePptDto } from './dto/generate-ppt.dto';
@@ -30,9 +30,11 @@ export class ProjectsService {
   }
 
   async generate(projectId: string, dto: GeneratePptDto): Promise<PipelineResult> {
-    return this.pipelineService.generateProjectPpt(projectId, {
+    const options: GeneratePipelineOptions = {
       requestedSlides: dto.requestedSlides,
       refinementRounds: dto.refinementRounds,
-    });
+    };
+
+    return this.pipelineService.generateProjectPpt(projectId, options);
   }
 }

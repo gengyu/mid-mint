@@ -114,7 +114,7 @@ export function renderProcessTemplate(slide: PptSlideLike, spec: SlideSpec): voi
         fontFace: 'Aptos',
       });
 
-      // Arrow connector between step cards (PPT_V2_LAYOUTS.md: directional flow)
+      // Arrow connector between step cards for directional flow
       if (index < steps.length - 1) {
         slide.addShape('rightArrow', {
           x: x + cardWidth + 0.02,
@@ -131,7 +131,7 @@ export function renderProcessTemplate(slide: PptSlideLike, spec: SlideSpec): voi
 
   const steps = spec.bullets.slice(0, 5);
 
-  // PPT_V2_LAYOUTS.md density budget: 3-5 steps with compact rendering for 4+ steps
+  // Density budget: 3-5 steps with compact rendering for 4+ steps
   if (steps.length <= 3) {
     const cardWidth = 3.4;
     const gap = 0.22;
@@ -170,7 +170,7 @@ export function renderProcessTemplate(slide: PptSlideLike, spec: SlideSpec): voi
         fontFace: 'Aptos',
       });
 
-      // Arrow connector between step cards (PPT_V2_LAYOUTS.md: process needs directional flow)
+      // Arrow connector between step cards because process slides need directional flow
       if (index < steps.length - 1) {
         const arrowX = x + cardWidth;
         const arrowY = 3.5;

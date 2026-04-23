@@ -181,7 +181,7 @@ export function renderComparisonTemplate(slide: PptSlideLike, spec: SlideSpec): 
       h: 3.15,
     });
   } else {
-    // No asset: use full width for balanced two-column comparison (PPT_V2_LAYOUTS.md Iteration C)
+    // No asset: use full width for balanced two-column comparison
     const colWidth = 5.1;
     const gap = 0.4;
     slide.addShape('roundRect', {

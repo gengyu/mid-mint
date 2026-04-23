@@ -36,7 +36,7 @@ export function renderTextVisualTemplate(slide: PptSlideLike, spec: SlideSpec): 
     fontFace: 'Aptos Display',
   });
 
-  // ── Table rendering (PPT_V2_LAYOUTS.md: table can pair with text-visual) ──
+  // ── Table rendering: table can pair with text-visual ──
   if (spec.visualTechnique === 'table' && spec.tableData?.rows?.length) {
     const accent = resolveAccentColor(spec.accentTone);
     const hasHeaders = !!(spec.tableData.headers && spec.tableData.headers.length > 0);
@@ -286,7 +286,7 @@ export function renderTextVisualTemplate(slide: PptSlideLike, spec: SlideSpec): 
   if (spec.visualTechnique === 'formula' && spec.assetPath) {
     const accent = resolveAccentColor(spec.accentTone);
 
-    // Top: formula image
+    // Top: formula graphic
     slide.addShape('roundRect', {
       x: 0.7,
       y: 1.7,

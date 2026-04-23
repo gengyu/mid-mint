@@ -38,10 +38,24 @@ export interface DeckPlan {
   slides: PlannedSlide[];
 }
 
+export type PipelineEnhancementStage =
+  | 'structure'
+  | 'foundation-visuals'
+  | 'key-assets'
+  | 'specialized-polish';
+
+export interface GeneratePipelineOptions {
+  requestedSlides?: number;
+  refinementRounds?: number;
+}
+
 export interface PipelineIteration {
   round: number;
+  stage: PipelineEnhancementStage;
   objective: string;
+  visualPlan: VisualPlan;
   slideSpecs: SlideSpec[];
+  outputFile: string;
 }
 
 export interface PipelineResult {
@@ -51,5 +65,6 @@ export interface PipelineResult {
   visualPlan: VisualPlan;
   slideSpecs: SlideSpec[];
   outputFile: string;
+  outputFiles: string[];
   iterations: PipelineIteration[];
 }

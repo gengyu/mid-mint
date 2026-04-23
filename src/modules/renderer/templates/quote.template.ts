@@ -66,7 +66,7 @@ export function renderQuoteTemplate(slide: PptSlideLike, spec: SlideSpec): void 
       h: 2.2,
     });
   } else {
-    // Large decorative opening quote mark (PPT_V2_LAYOUTS.md Iteration C)
+    // Large decorative opening quote mark for emphasis
     slide.addText('\u201C', {
       x: 1.1,
       y: 2.0,

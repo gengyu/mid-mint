@@ -10,6 +10,6 @@ export class GeneratePptDto {
   @IsOptional()
   @IsInt()
   @Min(1)
-  @Max(3)
+  @Max(4)
   refinementRounds?: number;
 }

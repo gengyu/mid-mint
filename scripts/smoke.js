@@ -4,6 +4,14 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { NestFactory } = require('@nestjs/core');
 
+function ensureLlmConfigured() {
+  if (!process.env.LLM_BASE_URL || !process.env.LLM_MODEL) {
+    throw new Error(
+      'LLM is not configured. Set LLM_BASE_URL and LLM_MODEL before running smoke generation.',
+    );
+  }
+}
+
 function inferSourceType(filePath) {
   const ext = path.extname(filePath).toLowerCase();
 
@@ -181,6 +189,7 @@ function createDefaultRuns() {
 async function main() {
   require('ts-node/register/transpile-only');
   require('tsconfig-paths/register');
+  ensureLlmConfigured();
 
   const { AppModule } = require('../src/app.module');
   const { ProjectsService } = require('../src/modules/projects/projects.service');
@@ -197,7 +206,7 @@ async function main() {
       const project = await projectsService.createProject(run);
       const result = await projectsService.generate(project.id, {
         requestedSlides: run.requestedSlides ?? 6,
-        refinementRounds: 2,
+        refinementRounds: 4,
       });
       results.push({
         title: run.title,
@@ -207,7 +216,13 @@ async function main() {
         outputFile: result.outputFile,
         totalSlides: result.slideSpecs.length,
         layouts: result.slideSpecs.map((slide) => slide.layout),
-        iterations: result.iterations.map((iteration) => iteration.objective),
+        outputFiles: result.outputFiles,
+        iterations: result.iterations.map((iteration) => ({
+          round: iteration.round,
+          stage: iteration.stage,
+          objective: iteration.objective,
+          outputFile: iteration.outputFile,
+        })),
       });
     }
 

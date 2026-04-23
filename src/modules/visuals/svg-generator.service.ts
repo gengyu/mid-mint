@@ -4,10 +4,10 @@ import { JSDOM } from 'jsdom';
 import mermaid from 'mermaid';
 
 import { ParsedDocument } from '../parser/types/parsed-document.type';
-import { resolveVisualDecision } from '../pipeline/ppt-v2-layouts';
+import { resolveVisualDecision } from '../pipeline/layout-rules';
 import { DeckPlan, PresentationAnalysis } from '../pipeline/pipeline.types';
 import { SlideSpec } from '../slides/slide.types';
-import { GeneratedAsset, VisualPlan } from './visual.types';
+import { GeneratedAsset, VisualPlan, VisualPlanSlide } from './visual.types';
 
 @Injectable()
 export class SvgGeneratorService {
@@ -65,6 +65,9 @@ export class SvgGeneratorService {
           visualTechnique: decision.visualTechnique,
           textTechnique: decision.textTechnique,
           visualPriority: decision.visualPriority,
+          assetPriority: decision.assetPriority,
+          recommendedEnhancementRound: decision.recommendedEnhancementRound,
+          assetVariant: decision.assetVariant,
           goal: decision.goal,
           composition: decision.composition,
           density: decision.density,
@@ -91,7 +94,7 @@ export class SvgGeneratorService {
             return null;
           }
 
-          const svg = await this.buildSvg(slide, plan.goal);
+          const svg = await this.buildSvg(slide, plan);
           if (!svg) {
             return null;
           }
@@ -107,13 +110,13 @@ export class SvgGeneratorService {
     return assets.filter((asset): asset is GeneratedAsset => asset !== null);
   }
 
-  private async buildSvg(slide: SlideSpec, goal: string): Promise<string | null> {
+  private async buildSvg(slide: SlideSpec, plan: VisualPlanSlide): Promise<string | null> {
     if (slide.visualTechnique === 'mermaid' && slide.mermaidDefinition) {
       try {
         return await this.renderMermaidSvg(slide.mermaidDefinition, slide.slideNumber);
       } catch {
         if (slide.visualType !== 'none') {
-          return this.buildDiagramSvg(slide, goal);
+          return this.buildSvgGraphic(slide, plan);
         }
 
         return null;
@@ -125,15 +128,23 @@ export class SvgGeneratorService {
         return this.renderFormulaSvg(slide.formulaText, slide.title);
       } catch {
         if (slide.visualType !== 'none') {
-          return this.buildDiagramSvg(slide, goal);
+          return this.buildSvgGraphic(slide, plan);
         }
 
         return null;
       }
     }
 
-    if (slide.visualType === 'cover-accent') {
-      return this.buildCoverAccentSvg(slide);
+    return this.buildSvgGraphic(slide, plan);
+  }
+
+  private buildSvgGraphic(slide: SlideSpec, plan: VisualPlanSlide): string {
+    if (plan.assetVariant === 'hero') {
+      if (slide.visualType === 'cover-accent') {
+        return this.buildCoverAccentSvg(slide);
+      }
+
+      return this.buildHeroSceneSvg(slide, plan.goal);
     }
 
     if (slide.visualType === 'comparison-card') {
@@ -144,7 +155,7 @@ export class SvgGeneratorService {
       return this.buildSummarySvg(slide);
     }
 
-    return this.buildDiagramSvg(slide, goal);
+    return this.buildDiagramSvg(slide, plan.goal);
   }
 
   private async renderMermaidSvg(definition: string, slideNumber: number): Promise<string> {
@@ -320,6 +331,54 @@ export class SvgGeneratorService {
       `<rect x="60" y="310" width="160" height="6" rx="3" fill="${accent.soft}" fill-opacity="0.4" />`,
       `<rect x="60" y="330" width="120" height="6" rx="3" fill="${accent.soft}" fill-opacity="0.25" />`,
       `<rect x="60" y="350" width="80" height="6" rx="3" fill="${accent.soft}" fill-opacity="0.15" />`,
+      '</svg>',
+    ].join('');
+  }
+
+  private buildHeroSceneSvg(slide: SlideSpec, goal: string): string {
+    const accent = this.resolveAccent(slide.accentTone);
+    const bullets = slide.bullets.slice(0, 3);
+    const statCards = bullets
+      .map((bullet, index) => {
+        const x = 720 + index * 152;
+        const y = 180 + (index % 2) * 150;
+        return [
+          `<rect x="${x}" y="${y}" width="132" height="120" rx="24" fill="#FFFFFF" stroke="${accent.soft}" />`,
+          `<rect x="${x + 18}" y="${y + 18}" width="42" height="8" rx="4" fill="${accent.base}" fill-opacity="0.22" />`,
+          `<text x="${x + 18}" y="${y + 64}" font-size="24" font-weight="700" fill="#102033">${String(index + 1).padStart(2, '0')}</text>`,
+          `<text x="${x + 18}" y="${y + 92}" font-size="15" fill="#425466">${this.escape(this.compact(bullet, 18))}</text>`,
+        ].join('');
+      })
+      .join('');
+
+    return [
+      '<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">',
+      '<defs>',
+      '<linearGradient id="hero-bg" x1="0" y1="0" x2="1" y2="1">',
+      '<stop offset="0%" stop-color="#F7FAFF" />',
+      '<stop offset="100%" stop-color="#EAF6F2" />',
+      '</linearGradient>',
+      '</defs>',
+      '<rect width="1280" height="720" fill="url(#hero-bg)" />',
+      `<circle cx="1050" cy="120" r="170" fill="${accent.soft}" />`,
+      `<circle cx="1118" cy="208" r="96" fill="${accent.base}" fill-opacity="0.14" />`,
+      '<rect x="72" y="68" width="1136" height="584" rx="40" fill="#FFFFFF" stroke="#D9E3F0" />',
+      `<rect x="96" y="96" width="180" height="36" rx="18" fill="${accent.soft}" />`,
+      `<text x="186" y="120" text-anchor="middle" font-size="15" font-weight="700" fill="${accent.base}">${this.escape(
+        slide.sectionLabel ?? 'HERO',
+      )}</text>`,
+      `<text x="96" y="190" font-size="46" font-weight="700" fill="#102033">${this.escape(this.compact(slide.title, 28))}</text>`,
+      `<text x="96" y="236" font-size="21" fill="#5B6B7D">${this.escape(this.compact(goal, 76))}</text>`,
+      `<rect x="96" y="284" width="500" height="250" rx="32" fill="${accent.soft}" fill-opacity="0.6" />`,
+      `<circle cx="252" cy="408" r="84" fill="${accent.base}" fill-opacity="0.16" />`,
+      `<circle cx="252" cy="408" r="46" fill="${accent.base}" fill-opacity="0.28" />`,
+      `<path d="M 360 340 C 430 300, 500 300, 560 352" stroke="${accent.base}" stroke-width="7" fill="none" stroke-linecap="round" stroke-opacity="0.5" />`,
+      `<path d="M 360 410 C 430 370, 500 370, 560 422" stroke="${accent.base}" stroke-width="7" fill="none" stroke-linecap="round" stroke-opacity="0.35" />`,
+      `<rect x="388" y="458" width="150" height="54" rx="20" fill="#FFFFFF" stroke="${accent.base}" stroke-opacity="0.2" />`,
+      `<text x="463" y="492" text-anchor="middle" font-size="18" font-weight="700" fill="#102033">${this.escape(
+        this.compact(slide.highlight ?? 'Key idea', 18),
+      )}</text>`,
+      statCards,
       '</svg>',
     ].join('');
   }

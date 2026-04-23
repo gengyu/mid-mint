@@ -9,8 +9,12 @@ import {
   pickLayoutHintForSection,
   pickVisualFocusForSection,
   scoreSection,
-} from '../pipeline/ppt-v2-layouts';
-import { DeckPlan, PresentationAnalysis } from '../pipeline/pipeline.types';
+} from '../pipeline/layout-rules';
+import {
+  DeckPlan,
+  PipelineEnhancementStage,
+  PresentationAnalysis,
+} from '../pipeline/pipeline.types';
 import { isSlideLayout, SlideSpec } from '../slides/slide.types';
 import { LlmService } from './llm.service';
 
@@ -50,7 +54,10 @@ export class LlmJsonService {
       'Create a PPT deck plan and return JSON only.',
       'Keep the response compact and practical for a presentation generator.',
       'Use only these layoutHint values: cover, agenda, section-divider, text-visual, comparison, process, quote, summary-closing.',
-      'Follow the PPT v2 rule: decide page role/layout first, then leave internal visual technique decisions to the visual plan stage.',
+      'Follow the current PPT rule: decide page role/layout first, then leave internal visual technique decisions to the visual plan stage.',
+      'Pagination must be designed from content, not by evenly slicing sections.',
+      'Merge thin sections when needed, split dense sections when needed, and use the requested slide count as a target range rather than a mechanical fixed split.',
+      'Favor a talkable deck: each slide should have one clear job, and long sections can legitimately become multiple slides if the content density requires it.',
       JSON.stringify({
         title: document.title,
         requestedSlides,
@@ -73,8 +80,9 @@ export class LlmJsonService {
     analysis: PresentationAnalysis,
     round: number,
     totalRounds: number,
+    stage: PipelineEnhancementStage,
   ): Promise<SlideSpec[]> {
-    const fallback = this.buildFallbackPolishedSlides(slides, analysis, round, totalRounds);
+    const fallback = this.buildFallbackPolishedSlides(slides, analysis, round, totalRounds, stage);
     if (!this.llmService.isConfigured()) {
       return fallback;
     }
@@ -82,7 +90,10 @@ export class LlmJsonService {
     const prompt = [
       'Refine these slide specs for a presentation. Return JSON only.',
       `This is refinement round ${round} of ${totalRounds}.`,
-      'Focus on improving speaking flow, visual differentiation, and reducing repetition.',
+      `Current stage: ${stage}.`,
+      this.getStagePrompt(stage),
+      'Keep layout values unchanged unless the current layout clearly breaks the page objective.',
+      'Do not invent external assets or file paths. Improve the content and speaking quality of the slides you receive.',
       JSON.stringify({
         analysis,
         slides,
@@ -90,7 +101,8 @@ export class LlmJsonService {
     ].join('\n\n');
 
     const result = await this.llmService.generateJson<SlideSpec[]>(prompt);
-    return this.isValidSlideSpecs(result) ? result : fallback;
+    const refinedSlides = this.isValidSlideSpecs(result) ? result : fallback;
+    return this.applyStageAdjustments(refinedSlides, analysis, stage, round, totalRounds);
   }
 
   private buildFallbackAnalysis(document: ParsedDocument): PresentationAnalysis {
@@ -216,7 +228,7 @@ export class LlmJsonService {
         ? 'summary-closing'
         : pickLayoutHintForSection(section, recentLayouts);
 
-      // PPT_V2_LAYOUTS.md: after process or comparison, prefer switching
+      // After process or comparison, prefer switching
       // to text-visual / quote / section-divider to avoid visual monotony
       const lastLayout = recentLayouts[recentLayouts.length - 1];
       if (lastLayout === 'process' || lastLayout === 'comparison') {
@@ -275,8 +287,9 @@ export class LlmJsonService {
     analysis: PresentationAnalysis,
     round: number,
     totalRounds: number,
+    stage: PipelineEnhancementStage,
   ): SlideSpec[] {
-    return slides.map((slide) => {
+    const baseSlides = slides.map((slide) => {
       const trimmedBullets = slide.bullets
         .map((bullet) => this.shortenText(bullet.trim(), this.maxBulletLength(slide.layout)))
         .filter((bullet) => bullet.length > 0)
@@ -290,18 +303,8 @@ export class LlmJsonService {
       const baseNotes = this.stripSpeakerCue(
         slide.notes || slide.paragraph || highlight || slide.title,
       );
-      // PPT_V2_LAYOUTS.md multi-round refinement:
-      // Round 1: structure and storyline
-      // Round 2: speaking flow and differentiation
-      // Round 3: compress and strengthen closing
-      const speakingPrompt =
-        totalRounds === 1
-          ? 'Create a clean first-pass deck with a coherent storyline.'
-          : round === 1
-            ? 'Tighten the story structure and reduce repetition.'
-            : round === totalRounds
-              ? 'Polish for delivery — compress text, strengthen the closing moment.'
-              : 'Increase contrast between insight, evidence, and action.';
+
+      const speakingPrompt = this.getStageSpeakerCue(stage, round, totalRounds);
 
       return {
         ...slide,
@@ -316,6 +319,292 @@ export class LlmJsonService {
             : this.shortenText(slide.paragraph || '', this.maxParagraphLength(slide.layout)),
       };
     });
+
+    return this.applyStageAdjustments(baseSlides, analysis, stage, round, totalRounds);
+  }
+
+  private getStagePrompt(stage: PipelineEnhancementStage): string {
+    switch (stage) {
+      case 'structure':
+        return [
+          'Focus on storyline coherence, page role clarity, and removing repeated messages.',
+          'Keep this version visibly draft-like: sparse copy, structural labels, no polished rhetoric, and minimal visual ambition.',
+        ].join(' ');
+      case 'foundation-visuals':
+        return [
+          'Focus on low-cost visual clarity.',
+          'Strengthen hierarchy, sharpen bullets, and make text-visual/comparison/process slides feel more distinct while keeping the copy practical.',
+        ].join(' ');
+      case 'key-assets':
+        return [
+          'Focus on preparing high-value slides for stronger assets.',
+          'Clarify hero lines, visual goals, and short supporting text so key visuals can land cleanly. Make cover and key message slides feel more editorial and punchy.',
+        ].join(' ');
+      case 'specialized-polish':
+      default:
+        return [
+          'Focus on specialized pages and final delivery quality.',
+          'Compress any remaining verbose text and make closing or technical slides feel deliberate, resolved, and presentation-ready.',
+        ].join(' ');
+    }
+  }
+
+  private getStageSpeakerCue(
+    stage: PipelineEnhancementStage,
+    round: number,
+    totalRounds: number,
+  ): string {
+    if (totalRounds === 1) {
+      return 'Create a clean first-pass deck with a coherent storyline.';
+    }
+
+    switch (stage) {
+      case 'structure':
+        return 'Tighten the story structure, clarify slide roles, and reduce repetition.';
+      case 'foundation-visuals':
+        return 'Strengthen hierarchy and make each slide easier to scan and present.';
+      case 'key-assets':
+        return 'Prepare key slides for stronger assets by clarifying the hero message and visual goal.';
+      case 'specialized-polish':
+      default:
+        return 'Polish the deck for delivery, tighten technical slides, and strengthen the closing moment.';
+    }
+  }
+
+  private applyStageAdjustments(
+    slides: SlideSpec[],
+    analysis: PresentationAnalysis,
+    stage: PipelineEnhancementStage,
+    round: number,
+    totalRounds: number,
+  ): SlideSpec[] {
+    return slides.map((slide) => {
+      switch (stage) {
+        case 'structure':
+          return this.applyStructureDraftAdjustments(slide, analysis, round, totalRounds);
+        case 'foundation-visuals':
+          return this.applyFoundationAdjustments(slide, analysis);
+        case 'key-assets':
+          return this.applyKeyAssetAdjustments(slide, analysis);
+        case 'specialized-polish':
+        default:
+          return this.applySpecializedPolishAdjustments(slide, analysis);
+      }
+    });
+  }
+
+  private applyStructureDraftAdjustments(
+    slide: SlideSpec,
+    analysis: PresentationAnalysis,
+    round: number,
+    totalRounds: number,
+  ): SlideSpec {
+    const workingMessage = this.shortenText(
+      slide.highlight || slide.paragraph || slide.title,
+      slide.layout === 'cover' ? 56 : 48,
+    );
+
+    return {
+      ...slide,
+      eyebrow: this.getDraftEyebrow(slide),
+      sectionLabel: `ROUND ${String(round).padStart(2, '0')} / STRUCTURE`,
+      subtitle:
+        slide.layout === 'cover'
+          ? this.shortenText(slide.subtitle || analysis.summary || slide.title, 84)
+          : slide.subtitle,
+      bullets: this.limitBulletsForStage(slide, 'structure'),
+      paragraph: this.limitParagraphForStage(slide, 'structure'),
+      highlight: slide.layout === 'cover' ? 'Draft opening' : `Working message: ${workingMessage}`,
+      notes: `${this.stripSpeakerCue(slide.notes || '')}\n\nSpeaker cue: ${this.getStageSpeakerCue(
+        'structure',
+        round,
+        totalRounds,
+      )}`,
+    };
+  }
+
+  private applyFoundationAdjustments(slide: SlideSpec, analysis: PresentationAnalysis): SlideSpec {
+    const hierarchyHighlight =
+      slide.layout === 'cover'
+        ? this.shortenText(slide.highlight || analysis.mainTopic, 36)
+        : this.shortenText(slide.highlight || slide.paragraph || slide.title, 64);
+
+    return {
+      ...slide,
+      eyebrow: slide.role === 'content' ? 'Core insight' : slide.eyebrow,
+      sectionLabel:
+        slide.layout === 'cover'
+          ? slide.sectionLabel
+          : `FOUNDATION / ${String(slide.slideNumber).padStart(2, '0')}`,
+      bullets: this.limitBulletsForStage(slide, 'foundation-visuals'),
+      paragraph: this.limitParagraphForStage(slide, 'foundation-visuals'),
+      highlight: hierarchyHighlight,
+    };
+  }
+
+  private applyKeyAssetAdjustments(slide: SlideSpec, analysis: PresentationAnalysis): SlideSpec {
+    const heroLine =
+      slide.layout === 'cover'
+        ? this.toDeclarativeLine(slide.title, analysis.summary)
+        : this.toDeclarativeLine(slide.title, slide.highlight || slide.paragraph || analysis.summary);
+
+    const isKeyVisualSlide =
+      slide.layout === 'cover' ||
+      slide.visualPriority === 'high' ||
+      slide.visualComposition === 'hero' ||
+      slide.layout === 'summary-closing';
+
+    return {
+      ...slide,
+      eyebrow: isKeyVisualSlide ? 'Key moment' : slide.eyebrow,
+      sectionLabel:
+        slide.layout === 'cover'
+          ? slide.sectionLabel
+          : `KEY ASSET / ${String(slide.slideNumber).padStart(2, '0')}`,
+      subtitle:
+        slide.layout === 'cover'
+          ? this.shortenText(heroLine, 70)
+          : slide.subtitle,
+      bullets: this.limitBulletsForStage(slide, 'key-assets'),
+      paragraph: this.limitParagraphForStage(slide, 'key-assets'),
+      highlight: this.shortenText(heroLine, slide.layout === 'cover' ? 40 : 58),
+    };
+  }
+
+  private applySpecializedPolishAdjustments(
+    slide: SlideSpec,
+    analysis: PresentationAnalysis,
+  ): SlideSpec {
+    const polishedClosing =
+      slide.layout === 'summary-closing'
+        ? this.shortenText(
+            slide.highlight || slide.paragraph || analysis.keyMessages[0] || analysis.summary,
+            52,
+          )
+        : slide.highlight;
+
+    return {
+      ...slide,
+      eyebrow:
+        slide.layout === 'process'
+          ? 'Execution flow'
+          : slide.layout === 'comparison'
+            ? 'Decision frame'
+            : slide.layout === 'summary-closing'
+              ? 'Final takeaway'
+              : slide.eyebrow,
+      sectionLabel:
+        slide.layout === 'cover'
+          ? slide.sectionLabel
+          : `FINAL / ${String(slide.slideNumber).padStart(2, '0')}`,
+      bullets: this.limitBulletsForStage(slide, 'specialized-polish'),
+      paragraph: this.limitParagraphForStage(slide, 'specialized-polish'),
+      highlight: polishedClosing,
+    };
+  }
+
+  private limitBulletsForStage(
+    slide: SlideSpec,
+    stage: PipelineEnhancementStage,
+  ): string[] {
+    if (slide.layout === 'quote' || slide.layout === 'section-divider') {
+      return [];
+    }
+
+    const source = slide.bullets.map((bullet) => bullet.trim()).filter(Boolean);
+    const limit =
+      stage === 'structure'
+        ? slide.layout === 'agenda'
+          ? 3
+          : slide.layout === 'process'
+            ? 4
+            : 2
+        : stage === 'foundation-visuals'
+          ? slide.layout === 'process'
+            ? 4
+            : slide.layout === 'comparison' || slide.layout === 'summary-closing'
+              ? 3
+              : 3
+          : stage === 'key-assets'
+            ? slide.layout === 'process'
+              ? 4
+              : slide.layout === 'comparison' || slide.layout === 'summary-closing'
+                ? 3
+                : 2
+            : slide.layout === 'process'
+              ? 5
+              : slide.layout === 'comparison' || slide.layout === 'summary-closing'
+                ? 4
+                : 3;
+
+    const maxLength =
+      stage === 'structure'
+        ? 22
+        : stage === 'foundation-visuals'
+          ? 26
+          : stage === 'key-assets'
+            ? 24
+            : 28;
+
+    return source.map((bullet) => this.shortenText(bullet, maxLength)).slice(0, limit);
+  }
+
+  private limitParagraphForStage(
+    slide: SlideSpec,
+    stage: PipelineEnhancementStage,
+  ): string | undefined {
+    const base = (slide.paragraph || '').trim();
+    if (!base) {
+      return base;
+    }
+
+    const maxLength =
+      stage === 'structure'
+        ? slide.layout === 'cover'
+          ? 72
+          : 88
+        : stage === 'foundation-visuals'
+          ? 120
+          : stage === 'key-assets'
+            ? slide.layout === 'cover'
+              ? 70
+              : 96
+            : slide.layout === 'process' || slide.layout === 'comparison'
+              ? 80
+              : 110;
+
+    return this.shortenText(base, maxLength);
+  }
+
+  private getDraftEyebrow(slide: SlideSpec): string {
+    switch (slide.role) {
+      case 'cover':
+        return 'Draft opening';
+      case 'agenda':
+        return 'Draft flow';
+      case 'closing':
+      case 'summary':
+        return 'Draft close';
+      case 'section-divider':
+        return 'Draft section';
+      default:
+        return 'Draft point';
+    }
+  }
+
+  private toDeclarativeLine(title: string, fallback: string): string {
+    const normalized = (fallback || title).replace(/\s+/g, ' ').trim();
+    if (!normalized) {
+      return title;
+    }
+
+    if (normalized.length <= 72) {
+      return normalized;
+    }
+
+    const shortTitle = this.shortenText(title, 28);
+    const shortFallback = this.shortenText(normalized, 42);
+    return `${shortTitle}: ${shortFallback}`;
   }
 
   private isValidAnalysis(value: unknown): value is PresentationAnalysis {

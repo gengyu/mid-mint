@@ -56,7 +56,7 @@ export function renderCoverTemplate(slide: PptSlideLike, spec: SlideSpec): void 
     fit: 'shrink',
     fontFace: 'Aptos',
   });
-  // PPT_V2_LAYOUTS.md: cover is visual-priority; render visual asset when available
+  // Cover slides are visual-priority; render visual asset when available
   if (spec.assetPath) {
     slide.addShape('roundRect', {
       x: 8.6,

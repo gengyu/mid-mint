@@ -6,9 +6,10 @@ export interface GeneratedAsset {
   svg: string;
 }
 
-export type VisualTechnique = 'none' | 'svg' | 'mermaid' | 'table' | 'code-block' | 'formula' | 'image';
+export type VisualTechnique = 'none' | 'svg' | 'mermaid' | 'table' | 'code-block' | 'formula';
 export type TextTechnique = 'none' | 'statement' | 'short-bullets' | 'two-column-summary' | 'agenda-list';
 export type VisualPriority = 'low' | 'medium' | 'high';
+export type AssetPriority = 'low' | 'medium' | 'high';
 export type VisualComposition =
   | 'none'
   | 'hero'
@@ -20,6 +21,8 @@ export type VisualComposition =
 export type VisualDensity = 'low' | 'medium' | 'high';
 export type AccentTone = 'teal' | 'blue' | 'amber';
 export type ContentBalance = 'text-first' | 'visual-first' | 'balanced';
+export type EnhancementRound = 1 | 2 | 3 | 4;
+export type AssetVariant = 'foundation' | 'hero' | 'specialized';
 
 export interface VisualPlanSlide {
   slideNumber: number;
@@ -29,6 +32,9 @@ export interface VisualPlanSlide {
   visualTechnique: VisualTechnique;
   textTechnique: TextTechnique;
   visualPriority: VisualPriority;
+  assetPriority: AssetPriority;
+  recommendedEnhancementRound: EnhancementRound;
+  assetVariant: AssetVariant;
   goal: string;
   composition: VisualComposition;
   density: VisualDensity;

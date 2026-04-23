@@ -2,7 +2,7 @@
 
 一个本地优先的 AI PPT 生成服务。
 
-当前项目按 PPT 第二版推进，目标不是“把文案切成几页”，而是把一份 `Markdown / Txt / HTML` 文档变成一套真正可用于演讲的 `.pptx`。
+当前项目按 PPT 第三版推进，目标不是“把文案切成几页”，而是把一份 `Markdown / Txt / HTML` 文档变成一套真正可用于演讲的 `.pptx`。
 
 ## 当前目标
 
@@ -38,15 +38,16 @@
 - `table`
 - `code-block`
 - `formula`
-- `image`
+- `svg-hero`
 
 当前代码主路径已经稳定落地的表达技术主要是：
 
 - `none`
-- `image`
 - `svg`
 
-`mermaid / table / code-block / formula` 目前仍属于第二版后续接入能力。
+当前第三版不走真实图片链路，封面和主视觉统一使用 SVG 生成。
+
+`mermaid / table / code-block / formula` 目前仍属于第三版后续接入能力。
 
 ## 当前主流程
 
@@ -64,12 +65,90 @@ Document
 
 ## 当前接口
 
+以下内容是当前仓库唯一维护的 API 说明入口。
+
 - `POST /projects`
 - `GET /projects`
 - `GET /projects/:projectId`
 - `POST /projects/:projectId/generate`
 
-接口细节见 [API.md](/Users/gengyu/github/mid-mint/docs/API.md)。
+### POST /projects
+
+创建项目并保存输入文档。
+
+请求示例：
+
+```json
+{
+  "title": "RAG Demo",
+  "content": "# RAG Engineering\n\nSome markdown...",
+  "sourceType": "markdown"
+}
+```
+
+字段：
+
+- `title` 可选，项目标题
+- `content` 必填，原始文档内容
+- `sourceType` 可选，当前支持 `markdown`、`txt`、`html`
+
+### GET /projects
+
+返回当前项目列表。
+
+### GET /projects/:projectId
+
+返回单个项目记录。
+
+### POST /projects/:projectId/generate
+
+执行当前第三版主流程，生成解析结果、分析结果、大纲、视觉规划、逐页内容、多轮 refinement 结果和最终输出文件。
+
+请求示例：
+
+```json
+{
+  "requestedSlides": 6,
+  "refinementRounds": 4
+}
+```
+
+字段：
+
+- `requestedSlides` 可选，期望页数
+- `refinementRounds` 可选，1 到 4 轮 refinement
+
+前置条件：
+
+- 必须先配置 `LLM_BASE_URL`
+- 必须先配置 `LLM_MODEL`
+- 没有配置 LLM 时，接口不会再走 fallback 生成
+
+生成结果会写入：
+
+```txt
+data/projects/<projectId>/
+```
+
+当前关键产物包括：
+
+- `input.*`
+- `project.json`
+- `parsed-document.json`
+- `content-analysis.json`
+- `deck-plan.json`
+- `visual-plan.json`
+- `slide-specs.json`
+- `iterations/round-xx/*`
+- `assets/*`
+- `output/presentation.pptx`
+
+错误响应：
+
+- `404` 项目不存在
+- `400` 请求体格式错误
+- `503` 未配置 LLM，拒绝生成
+- `500` 服务端执行失败
 
 ## 项目结构
 
@@ -128,8 +207,6 @@ pnpm smoke
 ## 推荐阅读顺序
 
 1. [AGENTS.md](/Users/gengyu/github/mid-mint/AGENTS.md)
-2. [PPT_V2_LAYOUTS.md](/Users/gengyu/github/mid-mint/docs/PPT_V2_LAYOUTS.md)
-3. [IMPLEMENTATION_PLAN.md](/Users/gengyu/github/mid-mint/docs/IMPLEMENTATION_PLAN.md)
-4. [FILE_CONTRACTS.md](/Users/gengyu/github/mid-mint/docs/FILE_CONTRACTS.md)
-5. [API.md](/Users/gengyu/github/mid-mint/docs/API.md)
-6. [sample.md](/Users/gengyu/github/mid-mint/examples/sample.md)
+2. [IMPLEMENTATION_PLAN.md](/Users/gengyu/github/mid-mint/docs/IMPLEMENTATION_PLAN.md)
+3. [FILE_CONTRACTS.md](/Users/gengyu/github/mid-mint/docs/FILE_CONTRACTS.md)
+4. [sample.md](/Users/gengyu/github/mid-mint/examples/sample.md)

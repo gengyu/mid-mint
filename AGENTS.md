@@ -4,9 +4,9 @@
 
 这是一个基于 NestJS 的本地优先 AI PPT 生成服务。
 
-当前进入 PPT 第二版开发阶段，目标是建立一条稳定的“文档 -> 可讲 PPT”主链路，而不是只生成能打开的 PPT 文件。
+当前进入 PPT 第三版开发阶段，目标是建立一条稳定的“文档 -> 可讲 PPT”主链路，而不是只生成能打开的 PPT 文件。
 
-第二版目标：
+第三版目标：
 
 - 接收 `Markdown / Txt / HTML`
 - 解析文档结构
@@ -17,7 +17,7 @@
 - 渲染并导出 `.pptx`
 - 将输入、中间产物和输出文件保存到项目目录
 
-## 2. 第二版范围
+## 2. 第三版范围
 
 ### 必须完成
 
@@ -61,9 +61,9 @@ Document
   -> Render
 ```
 
-## 4. 第二版页面规则
+## 4. 第三版页面规则
 
-第二版统一采用两层结构：
+第三版统一采用两层结构：
 
 1. 页面角色 / 布局类型
 2. 页面内部表达技术
@@ -89,7 +89,7 @@ Document
 - `table`
 - `code-block`
 - `formula`
-- `image`
+- `svg-hero`
 
 ## 5. 最重要的架构边界
 
@@ -128,7 +128,7 @@ Document
 - 不要引入复杂插件系统
 - 不要为了抽象而抽象
 - 不要先写大量空壳文件再慢慢补
-- 不要偏离主链路去做与第二版无关的能力
+- 不要偏离主链路去做与第三版无关的能力
 - 不要让 `pipeline`、`projects`、`renderer` 互相吞并职责
 
 ## 8. 文件产物约定
@@ -170,14 +170,13 @@ AI 编程工具默认按这个顺序建立上下文并推进：
 
 1. `AGENTS.md`
 2. `README.md`
-3. `docs/PPT_V2_LAYOUTS.md`
-4. `docs/IMPLEMENTATION_PLAN.md`
-5. `docs/FILE_CONTRACTS.md`
-6. `docs/API.md`
-7. `examples/sample.md`
-8. `src/modules/projects/projects.controller.ts`
-9. `src/modules/pipeline/pipeline.service.ts`
-10. `src/modules/renderer/pptx-renderer.service.ts`
+   `README.md` 同时承载当前 API 说明，不再单独维护 `docs/API.md`
+3. `docs/IMPLEMENTATION_PLAN.md`
+4. `docs/FILE_CONTRACTS.md`
+5. `examples/sample.md`
+6. `src/modules/projects/projects.controller.ts`
+7. `src/modules/pipeline/pipeline.service.ts`
+8. `src/modules/renderer/pptx-renderer.service.ts`
 
 ## 10. 完成后的汇报格式
 

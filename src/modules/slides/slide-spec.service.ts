@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { DocumentSection } from '../parser/types/document-section.type';
-import { resolveVisualDecision } from '../pipeline/ppt-v2-layouts';
+import { resolveVisualDecision } from '../pipeline/layout-rules';
 import { DeckPlan, PresentationAnalysis } from '../pipeline/pipeline.types';
 import { ParsedDocument } from '../parser/types/parsed-document.type';
 import { VisualPlan } from '../visuals/visual.types';
@@ -212,7 +212,7 @@ export class SlideSpecService {
     keyMessages: string[],
     keyPoint: string,
   ): string[] {
-    // PPT_V2_LAYOUTS.md: bullets should come from the source section,
+    // Bullets should come from the source section,
     // not cross-contaminated with analysis-level keyMessages.
     // Only fall back to keyMessages when the section has no bullets.
     const sectionOnly = (sectionBullets ?? []).map((item) => item.trim()).filter(Boolean);

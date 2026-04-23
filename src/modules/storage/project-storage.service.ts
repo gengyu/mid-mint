@@ -123,6 +123,17 @@ export class ProjectStorageService {
     return path.join(this.getOutputDir(projectId), 'presentation.pptx');
   }
 
+  getIterationOutputPptxPath(
+    projectId: string,
+    round: number,
+    stage: string,
+  ): string {
+    return path.join(
+      this.getOutputDir(projectId),
+      `round-${String(round).padStart(2, '0')}-${stage}.pptx`,
+    );
+  }
+
   private async writeProjectRecord(record: ProjectRecord): Promise<void> {
     await writeJsonFile(this.getManifestPath(record.id), record);
   }

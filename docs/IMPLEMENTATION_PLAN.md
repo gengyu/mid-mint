@@ -2,11 +2,37 @@
 
 ## 实施原则
 
-本计划描述当前 PPT 第二版主链路的实现顺序。
+本计划描述当前 PPT 第三版主链路的实现顺序。
 
-目标是让开发者和 AI 工具围绕“页面角色 / 布局类型 + 页面内部表达技术 + 多轮 refinement”这条主线推进，减少返工和无效抽象。
+目标是让开发者和 AI 工具围绕“页面角色 / 布局类型 + 页面内部表达技术 + 多阶段生成 + 多轮 refinement”这条主线推进，减少返工和无效抽象。
 
-## 第二版实现顺序
+## 第三版生成原则
+
+第三版不建议把 PPT 当成“一遍流程直接生成最终版”。
+
+更稳定的主链路应该是：
+
+1. 先生成结构成立的文字版和模板规划
+2. 再按成本和稳定性逐层增强视觉
+3. 高成本素材后置，避免前面结构变动导致返工
+4. 每一轮都有明确目标，不按素材类型机械切轮
+
+推荐把生成理解成两层：
+
+1. 主阶段
+   `Parse -> Analyze -> Deck Plan -> Visual Plan -> Slide Specs -> Refine`
+2. 增强阶段
+   `Low-cost Assets -> High-cost Assets -> Special Enhancements -> Render`
+
+其中：
+
+- `icon / simple svg / emphasis blocks` 属于低成本增强
+- 封面和主视觉统一由 `svg` 生成，不单独走真实图片链路
+- `table / code-block / formula / mermaid / 特殊技术页补强` 属于专项增强
+
+这比固定定义成“第二遍只补 icon、第三遍只补图片”更稳，因为是否需要主视觉增强，应该先由 `visual-plan` 决定，而不是由轮次硬编码。
+
+## 第三版实现顺序
 
 ### Step 1: 启动与模块装配
 
@@ -105,14 +131,26 @@
 
 ### Step 9: Refine
 
-- 支持 1 到 3 轮 refinement
+- 支持多轮 refinement
 - 每轮落 `iterations/round-xx/slide-specs.json`
 
 要求：
 
-- 第一轮强调结构
-- 第二轮强调演讲感
-- 第三轮强调精简和收尾
+- 第一轮先锁结构，不追求素材齐全
+- 第二轮补基础视觉和演讲感
+- 第三轮只补高价值关键主视觉
+- 第四轮处理特殊页和收尾
+
+推荐轮次定义：
+
+- `round-01`
+  目标是让结构成立。确认页数、每页目标、页面角色 / 布局类型、文字骨架、讲述顺序。
+- `round-02`
+  目标是低成本视觉增强。补 `icon / simple svg / emphasis / visual hierarchy`，把“纯文字页”升级为“可讲页”。
+- `round-03`
+  目标是关键主视觉增强。只给真正需要的页补更强的 SVG 主视觉资源。
+- `round-04`
+  目标是专项补强和收尾。处理 `table / code-block / formula / mermaid / complex comparison` 等特殊页面，统一收尾风格。
 
 ### Step 10: Visual Assets
 
@@ -123,6 +161,8 @@
 - 优先 SVG
 - 可逐步接入 `mermaid / table / code-block / formula`
 - 一页最多一个主视觉文件
+- 先补低成本稳定素材，再补高成本素材
+- 不是所有页都必须补图片，素材生成要服从 `visual-plan`
 
 ### Step 11: Render
 
@@ -134,17 +174,105 @@
 - 支持 8 类页面角色 / 布局类型
 - 渲染层只负责 PPT 生成
 
-## 第二版近期迭代计划
+## 第三版推荐轮次设计
+
+推荐把第三版的一次生成拆成 4 轮，但它们不是 4 条独立流程，而是同一项目下逐轮增强的链路。
+
+### Round 1: 结构版
+
+目标：
+
+- 先得到能讲的结构版 PPT
+- 输出页型选择、讲述顺序和文字骨架
+- 明确哪些页将来需要素材，但此时可以先占位
+
+这一轮重点产物：
+
+- `content-analysis.json`
+- `deck-plan.json`
+- 第一版 `visual-plan.json`
+- `slide-specs.json`
+- `iterations/round-01/objective.json`
+- `iterations/round-01/slide-specs.json`
+
+要求：
+
+- 页面角色 / 布局类型已经基本稳定
+- 不要求所有素材到位
+- renderer 可以先按无图或占位图渲染一个可打开版本
+
+### Round 2: 基础视觉增强版
+
+目标：
+
+- 在不改变主结构的前提下提升演讲感
+- 优先补低成本且稳定的视觉元素
+
+重点内容：
+
+- icon
+- simple svg
+- 强调块
+- 层级强化
+- 留白和密度调整
+
+要求：
+
+- 优先处理 `visualPriority = high` 且 `requiresAsset = true` 的页面
+- 尽量不要推翻第一页已经确定的页型和结构
+
+### Round 3: 高成本素材增强版
+
+目标：
+
+- 给关键页补更强的 SVG 主视觉资源
+- 控制成本，避免所有页都进入重素材模式
+
+重点内容：
+
+- SVG hero visual
+- 封面 hero graphic
+- 关键说明页主图
+
+要求：
+
+- 只处理真正值得补图的页
+- 主视觉必须服从页面目标，不能只为“看起来丰富”
+
+### Round 4: 专项补强和收尾版
+
+目标：
+
+- 处理前几轮没有覆盖好的特殊页面
+- 统一整套 deck 的收尾感和风格一致性
+
+重点内容：
+
+- `table`
+- `code-block`
+- `formula`
+- `mermaid`
+- 特殊 comparison / process / summary 页优化
+
+要求：
+
+- 这一轮以补短板为主
+- 不轻易改动整套 deck 的基础结构
+
+## 第三版近期迭代计划
 
 ### Iteration A: 巩固视觉规划
 
 - 让 `visual-plan.json` 成为真正的设计决策层
 - 增加 `visualTechnique / textTechnique / density / composition / visualPriority`
+- 增加“建议在哪一轮补强”的决策字段
+- 增加 `assetVariant`，区分 `foundation / hero / specialized`
 - 明确“哪些页必须图示、哪些页优先文字”
 
 验收：
 
 - `visual-plan.json` 能独立解释每页为什么这么排
+- `visual-plan.json` 能解释某页为什么在第 2 轮补 icon，而不是第 3 轮补图片
 - renderer 不再自己猜大部分版式
 
 ### Iteration B: 接入高频技术内容

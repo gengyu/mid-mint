@@ -75,7 +75,7 @@ export function renderSummaryClosingTemplate(slide: PptSlideLike, spec: SlideSpe
     fontFace: 'Aptos Display',
   });
 
-  // Visual asset support for summary-closing slides (PPT_V2_LAYOUTS.md Iteration C)
+  // Visual asset support for summary-closing slides
   // Layout: stacked takeaway cards on left (avoid overlap with right asset panel)
   if (spec.assetPath && 'addImage' in slide) {
     const imgSlide = slide as PptSlideLikeWithImage;

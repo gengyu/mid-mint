@@ -46,7 +46,7 @@ export interface SlideSpec {
   highlight?: string;
   notes?: string;
   visualGoal?: string;
-  visualTechnique?: 'none' | 'svg' | 'mermaid' | 'table' | 'code-block' | 'formula' | 'image';
+  visualTechnique?: 'none' | 'svg' | 'mermaid' | 'table' | 'code-block' | 'formula';
   textTechnique?: 'none' | 'statement' | 'short-bullets' | 'two-column-summary' | 'agenda-list';
   visualPriority?: 'low' | 'medium' | 'high';
   visualType?: 'none' | 'cover-accent' | 'diagram' | 'comparison-card' | 'summary-graphic';

@@ -14,7 +14,7 @@ function resolveAccentColor(accentTone?: string): string {
 
 export function renderSectionDividerTemplate(slide: PptSlideLike, spec: SlideSpec): void {
   const accent = resolveAccentColor(spec.accentTone);
-  // Dark background for chapter-break feel (PPT_V2_LAYOUTS.md Iteration C)
+  // Dark background for chapter-break feel from the layout guidance
   slide.addShape('rect', {
     x: 0,
     y: 0,
