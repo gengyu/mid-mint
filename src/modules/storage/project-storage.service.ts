@@ -137,6 +137,10 @@ export class ProjectStorageService {
     return path.join(this.getOutputDir(projectId), 'presentation.pptx');
   }
 
+  getProjectDirPath(projectId: string): string {
+    return this.getProjectDir(projectId);
+  }
+
   getIterationOutputPptxPath(
     projectId: string,
     round: number,

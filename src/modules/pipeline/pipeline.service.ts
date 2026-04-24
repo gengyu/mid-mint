@@ -1,17 +1,12 @@
 import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 
-import { LayoutPlan } from '../design/design.types';
-import { DesignService } from '../design/design.service';
+import { AssetService } from '../assets/asset.service';
 import { LlmJsonService } from '../llm/llm-json.service';
 import { LlmService } from '../llm/llm.service';
 import { ParserService } from '../parser/parser.service';
 import { PptDslBuilderService } from '../ppt-dsl/ppt-dsl-builder.service';
 import { PptxRendererService } from '../renderer/pptx-renderer.service';
-import { SlideSpecService } from '../slides/slide-spec.service';
-import { SlideSpec } from '../slides/slide.types';
 import { ProjectStorageService } from '../storage/project-storage.service';
-import { SvgGeneratorService } from '../visuals/svg-generator.service';
-import { VisualPlan } from '../visuals/visual.types';
 import {
   GeneratePipelineOptions,
   PipelineEnhancementStage,
@@ -26,9 +21,7 @@ export class PipelineService {
     private readonly llmService: LlmService,
     private readonly llmJsonService: LlmJsonService,
     private readonly pptDslBuilderService: PptDslBuilderService,
-    private readonly designService: DesignService,
-    private readonly slideSpecService: SlideSpecService,
-    private readonly svgGeneratorService: SvgGeneratorService,
+    private readonly assetService: AssetService,
     private readonly pptxRendererService: PptxRendererService,
     private readonly projectStorageService: ProjectStorageService,
   ) {}
@@ -44,6 +37,7 @@ export class PipelineService {
     }
 
     const refinementRounds = Math.max(1, Math.min(options.refinementRounds ?? 2, 4)) as 1 | 2 | 3 | 4;
+
     const input = await this.projectStorageService.readInput(projectId);
     const parsedDocument = await this.parserService.parse(input.content, input.sourceType);
     await this.projectStorageService.writeArtifact(projectId, 'parsed-document.json', parsedDocument);
@@ -51,84 +45,61 @@ export class PipelineService {
     const analysis = await this.llmJsonService.analyzeDocument(parsedDocument);
     await this.projectStorageService.writeArtifact(projectId, 'content-analysis.json', analysis);
 
-    const deckPlan = await this.llmJsonService.planDeck(
-      parsedDocument,
-      analysis,
-    );
+    const deckPlan = await this.llmJsonService.planDeck(parsedDocument, analysis);
     await this.projectStorageService.writeDebugArtifact(projectId, 'deck-plan.json', deckPlan);
 
-    const designPlan = await this.designService.createDesignPlan(analysis, deckPlan);
-    await this.projectStorageService.writeDebugArtifact(projectId, 'design-plan.json', designPlan);
-
-    const layoutPlan = await this.designService.createLayoutPlan(designPlan, deckPlan);
-    await this.projectStorageService.writeDebugArtifact(projectId, 'layout-plan.json', layoutPlan);
-
-    const visualPlan = this.svgGeneratorService.createVisualPlan(
-      deckPlan,
-      analysis,
-      parsedDocument,
-      designPlan,
-    );
-    await this.projectStorageService.writeDebugArtifact(projectId, 'visual-plan.json', visualPlan);
-
-    let slideSpecs = this.slideSpecService.createSlides(
-      parsedDocument,
+    let pptDsl = this.pptDslBuilderService.build({
+      document: parsedDocument,
       analysis,
       deckPlan,
-      visualPlan,
-    );
+      round: 0,
+      stage: 'structure-dsl',
+      objective: 'Initial DSL draft from deck plan.',
+    });
+
     const iterations: PipelineIteration[] = [];
     const outputFiles: string[] = [];
 
     for (let round = 1; round <= refinementRounds; round += 1) {
       const stage = this.getIterationStage(round);
-      const roundVisualPlan = this.limitVisualPlanToCompletedRounds(visualPlan, round);
-
-      slideSpecs = await this.llmJsonService.polishSlides(
-        slideSpecs,
-        analysis,
-        round,
-        refinementRounds,
-        stage,
-      );
-
-      const roundSlidesWithAssets = await this.attachAssets(
-        projectId,
-        slideSpecs,
-        roundVisualPlan,
-        round,
-      );
-      const roundSlidesWithLayout = this.attachLayoutMeta(roundSlidesWithAssets, layoutPlan);
       const objective = this.getIterationObjective(stage);
-      const roundPptDsl = this.pptDslBuilderService.build({
-        parsedDocument,
-        analysis,
-        deckPlan,
-        designPlan,
-        layoutPlan,
-        visualPlan: roundVisualPlan,
-        slides: roundSlidesWithLayout,
+
+      const refinement = await this.llmJsonService.refineDsl(
+        pptDsl,
         round,
         stage,
         objective,
-      });
+      );
+
+      if (refinement.dsl.slides.length > 0) {
+        pptDsl = this.pptDslBuilderService.normalize(refinement.dsl, pptDsl);
+      }
+
+      pptDsl = this.pptDslBuilderService.markRefinement(pptDsl, round, stage, objective);
+
+      const assetResults = await this.assetService.generateAssets(pptDsl);
+      for (const assetResult of assetResults) {
+        await this.projectStorageService.writeAsset(
+          projectId,
+          assetResult.fileName,
+          assetResult.svg,
+        );
+      }
+      pptDsl = this.assetService.applyAssetsToDsl(pptDsl, assetResults);
+
       const roundOutputFile = this.projectStorageService.getIterationOutputPptxPath(
         projectId,
         round,
         stage,
       );
-      await this.pptxRendererService.render(
-        roundOutputFile,
-        deckPlan.title,
-        roundSlidesWithLayout,
-        designPlan,
-      );
+      await this.pptxRendererService.renderFromDsl(roundOutputFile, pptDsl);
 
       iterations.push({
         round,
         stage,
         objective,
-        pptDsl: roundPptDsl,
+        pptDsl,
+        changes: refinement.changes,
         outputFile: roundOutputFile,
       });
       outputFiles.push(roundOutputFile);
@@ -137,45 +108,25 @@ export class PipelineService {
         projectId,
         round,
         'ppt-dsl.json',
-        roundPptDsl,
+        pptDsl,
       );
       await this.projectStorageService.writeIterationArtifact(projectId, round, 'objective.json', {
         round,
         stage,
         objective,
+        changes: refinement.changes,
       });
     }
 
-    const slidesWithAssets = await this.attachAssets(
-      projectId,
-      slideSpecs,
-      visualPlan,
-      refinementRounds,
-    );
-    const slidesWithLayout = this.attachLayoutMeta(slidesWithAssets, layoutPlan);
-    await this.projectStorageService.writeDebugArtifact(projectId, 'slide-specs.json', slidesWithLayout);
-
-    const pptDsl = this.pptDslBuilderService.build({
-      parsedDocument,
-      analysis,
-      deckPlan,
-      designPlan,
-      layoutPlan,
-      visualPlan,
-      slides: slidesWithLayout,
-      round: refinementRounds,
-      stage: this.getIterationStage(refinementRounds),
-      objective: 'Final renderable PPT DSL.',
-    });
     await this.projectStorageService.writeArtifact(projectId, 'ppt-dsl.json', pptDsl);
 
-    const outputFile = this.projectStorageService.getOutputPptxPath(projectId, deckPlan.title);
-    await this.pptxRendererService.render(outputFile, deckPlan.title, slidesWithLayout, designPlan);
+    const outputFile = this.projectStorageService.getOutputPptxPath(projectId, pptDsl.deck.title);
+    await this.pptxRendererService.renderFromDsl(outputFile, pptDsl);
     await this.projectStorageService.updateGeneratedProject(projectId, outputFile);
 
     return {
       projectId,
-      title: deckPlan.title,
+      title: pptDsl.deck.title,
       pptDsl,
       outputFile,
       outputFiles,
@@ -183,100 +134,31 @@ export class PipelineService {
     };
   }
 
-  private async attachAssets(
-    projectId: string,
-    slides: SlideSpec[],
-    visualPlan: VisualPlan,
-    completedRounds: number,
-  ): Promise<SlideSpec[]> {
-    const generatedAssets = await this.svgGeneratorService.generate(
-      slides,
-      this.limitVisualPlanToCompletedRounds(visualPlan, completedRounds),
-    );
-    const assetPathBySlide = new Map<number, string>();
-
-    for (const asset of generatedAssets) {
-      const filePath = await this.projectStorageService.writeAsset(
-        projectId,
-        asset.fileName,
-        asset.svg,
-      );
-      assetPathBySlide.set(asset.slideNumber, filePath);
-    }
-
-    return slides.map((slide) => ({
-      ...slide,
-      assetPath: assetPathBySlide.get(slide.slideNumber),
-    }));
-  }
-
-  private attachLayoutMeta(slides: SlideSpec[], layoutPlan: LayoutPlan): SlideSpec[] {
-    const layoutBySlide = new Map(
-      layoutPlan.slides.map((slide) => [slide.slideNumber, slide]),
-    );
-
-    return slides.map((slide) => {
-      const layout = layoutBySlide.get(slide.slideNumber);
-      if (!layout) {
-        return slide;
-      }
-
-      return {
-        ...slide,
-        layoutMeta: {
-          composition: layout.composition,
-          frame: layout.frame,
-          slots: layout.slots,
-          constraints: layout.constraints,
-          densityRules: layout.densityRules,
-        },
-      };
-    });
-  }
-
-  private limitVisualPlanToCompletedRounds(
-    visualPlan: VisualPlan,
-    completedRounds: number,
-  ): VisualPlan {
-    return {
-      ...visualPlan,
-      slides: visualPlan.slides.map((slide) => ({
-        ...slide,
-        requiresAsset:
-          slide.requiresAsset && slide.recommendedEnhancementRound <= completedRounds,
-        assetFile:
-          slide.requiresAsset && slide.recommendedEnhancementRound <= completedRounds
-            ? slide.assetFile
-            : undefined,
-      })),
-    };
-  }
-
   private getIterationStage(round: number): PipelineEnhancementStage {
     switch (round) {
       case 1:
-        return 'structure';
+        return 'structure-dsl';
       case 2:
-        return 'foundation-visuals';
+        return 'design-system-dsl';
       case 3:
-        return 'key-assets';
+        return 'asset-dsl';
       case 4:
       default:
-        return 'specialized-polish';
+        return 'polish-dsl';
     }
   }
 
   private getIterationObjective(stage: PipelineEnhancementStage): string {
     switch (stage) {
-      case 'structure':
+      case 'structure-dsl':
         return 'Lock the storyline, slide roles, and speaking structure.';
-      case 'foundation-visuals':
-        return 'Strengthen hierarchy and low-cost visuals without reshaping the deck.';
-      case 'key-assets':
-        return 'Upgrade high-value slides with stronger hero visuals and assets.';
-      case 'specialized-polish':
+      case 'design-system-dsl':
+        return 'Strengthen design tokens, typography, and visual hierarchy.';
+      case 'asset-dsl':
+        return 'Add SVG, Mermaid, and Formula assets for high-value slides.';
+      case 'polish-dsl':
       default:
-        return 'Polish specialized slides and unify the final delivery quality.';
+        return 'Polish density, consistency, and final delivery quality.';
     }
   }
 }

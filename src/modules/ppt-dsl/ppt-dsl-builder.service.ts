@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import { DocumentSection } from '../parser/types/document-section.type';
 import { ParsedDocument } from '../parser/types/parsed-document.type';
-import { PipelineEnhancementStage, PresentationAnalysis } from '../pipeline/pipeline.types';
+import { DeckPlan, PresentationAnalysis } from '../pipeline/pipeline.types';
 import {
   PptDslConstraint,
   PptDslDocument,
@@ -17,8 +17,56 @@ interface BuildFallbackInput {
   analysis: PresentationAnalysis;
 }
 
+interface BuildInput {
+  document: ParsedDocument;
+  analysis: PresentationAnalysis;
+  deckPlan: DeckPlan;
+  round: number;
+  stage: string;
+  objective: string;
+}
+
 @Injectable()
 export class PptDslBuilderService {
+  build(input: BuildInput): PptDslDocument {
+    const { document, analysis, deckPlan, round, stage, objective } = input;
+    const slides: PptDslSlide[] = deckPlan.slides.map((plannedSlide, index) => {
+      const matchedSection = document.sections.find(
+        (section) => section.title === plannedSlide.sourceSectionTitle,
+      );
+      return this.buildSlideFromPlan(plannedSlide, matchedSection, index, analysis);
+    });
+
+    return this.normalize({
+      system: 'ppt-dsl-v1',
+      canvas: {
+        width: 13.333,
+        height: 7.5,
+        unit: 'in',
+        safeArea: { top: 0.48, right: 0.62, bottom: 0.48, left: 0.62 },
+      },
+      deck: {
+        title: deckPlan.title,
+        audience: analysis.audience ?? 'General audience',
+        narrativeArc: analysis.storyArc?.length
+          ? analysis.storyArc
+          : ['Context', 'Key ideas', 'Action'],
+        talkTrack: analysis.summary,
+        density: this.pickDensity(document),
+      },
+      design: this.buildDefaultDesign(analysis),
+      slides,
+      assets: [],
+      constraints: [
+        'keep-within-safe-area',
+        'avoid-overlap',
+        'preserve-reading-order',
+        'prefer-single-primary-idea',
+        'no-real-image',
+      ],
+    });
+  }
+
   buildFallback(input: BuildFallbackInput): PptDslDocument {
     const contentSections = input.document.sections.filter(
       (section) => section.title.trim() || section.body.trim() || section.bullets.length > 0,
@@ -175,7 +223,7 @@ export class PptDslBuilderService {
           closing: this.stringOr(candidate.design?.rhythm?.closing, base.design.rhythm.closing),
         },
       },
-      slides: slides.length > 0 ? slides : base.slides,
+      slides: slides.length > 0 ? slides.filter((s): s is PptDslSlide => s !== null) : base.slides,
       assets: Array.isArray(candidate.assets) ? candidate.assets : base.assets,
       constraints: this.constraintsOr(candidate.constraints, base.constraints),
     };
@@ -184,7 +232,7 @@ export class PptDslBuilderService {
   markRefinement(
     dsl: PptDslDocument,
     round: number,
-    stage: PipelineEnhancementStage,
+    stage: string,
     objective: string,
   ): PptDslDocument {
     return {
@@ -204,6 +252,191 @@ export class PptDslBuilderService {
     };
   }
 
+  private buildSlideFromPlan(
+    plannedSlide: DeckPlan['slides'][number],
+    matchedSection: DocumentSection | undefined,
+    index: number,
+    analysis: PresentationAnalysis,
+  ): PptDslSlide {
+    const role = this.mapLayoutHintToRole(plannedSlide.layoutHint, plannedSlide.role);
+    const slideIndex = plannedSlide.slideNumber;
+    const id = this.slideId(slideIndex);
+    const elements: PptDslElement[] = [
+      this.textElement(id, 'eyebrow', 'text', 'eyebrow', this.roleLabel(role), 'eyebrow', 10),
+      this.textElement(id, 'title', 'text', 'title', plannedSlide.title, 'title', 20),
+    ];
+
+    if (role === 'cover') {
+      elements.push(
+        this.textElement(id, 'subtitle', 'text', 'subtitle', this.compact(plannedSlide.keyPoint, 120), 'subtitle', 30),
+      );
+      elements.push({
+        id: `${id}-visual`,
+        kind: 'svg',
+        slot: 'heroVisual',
+        layer: 90,
+        generationPrompt: `Abstract SVG system visual for ${plannedSlide.title}.`,
+        constraints: ['no-real-image', 'preserve-aspect-ratio', 'keep-within-safe-area'],
+      });
+    } else if (role === 'agenda') {
+      const agendaBullets = analysis.storyArc?.length
+        ? analysis.storyArc
+        : ['Context', 'Key ideas', 'Action'];
+      elements.push({
+        id: `${id}-list`,
+        kind: 'list',
+        slot: 'content',
+        layer: 50,
+        ordered: true,
+        items: agendaBullets,
+        style: { typographyToken: 'body', colorToken: 'textSecondary' },
+        constraints: ['fit-text', 'allow-wrap', 'preserve-reading-order'],
+      });
+    } else if (role === 'section-divider') {
+      if (plannedSlide.keyPoint) {
+        elements.push(
+          this.textElement(id, 'body', 'rich-text', 'body', this.compact(plannedSlide.keyPoint, 180), 'content', 40),
+        );
+      }
+    } else if (role === 'quote') {
+      elements.push(
+        this.textElement(id, 'body', 'quote', 'body', this.compact(matchedSection?.body || plannedSlide.keyPoint, 220), 'quote', 40),
+      );
+    } else {
+      if (matchedSection?.body || plannedSlide.keyPoint) {
+        elements.push(
+          this.textElement(id, 'body', 'rich-text', 'body', this.compact(matchedSection?.body || plannedSlide.keyPoint, 220), 'content', 40),
+        );
+      }
+
+      if (matchedSection?.bullets?.length) {
+        elements.push({
+          id: `${id}-list`,
+          kind: 'list',
+          slot: role === 'process' ? 'steps' : 'content',
+          layer: 50,
+          ordered: role === 'process' || role === ('agenda' as PptDslSlideRole),
+          items: matchedSection.bullets.slice(0, role === 'process' ? 5 : 4),
+          style: { typographyToken: 'body', colorToken: 'textSecondary' },
+          constraints: ['fit-text', 'allow-wrap', 'preserve-reading-order'],
+        });
+      }
+
+      if (matchedSection?.tableData) {
+        elements.push({
+          id: `${id}-table`,
+          kind: 'table',
+          slot: 'content',
+          layer: 70,
+          headers: matchedSection.tableData.headers,
+          rows: matchedSection.tableData.rows,
+          constraints: ['fit-text', 'keep-within-safe-area'],
+        });
+      }
+
+      if (matchedSection?.codeBlocks?.[0]) {
+        elements.push({
+          id: `${id}-code`,
+          kind: 'code',
+          slot: 'content',
+          layer: 72,
+          language: matchedSection.codeBlocks[0].language,
+          code: matchedSection.codeBlocks[0].content,
+          style: { typographyToken: 'mono', backgroundToken: 'surfaceAlt' },
+          constraints: ['fit-text', 'allow-wrap', 'keep-within-safe-area'],
+        });
+      }
+
+      if (matchedSection?.formulas?.[0]) {
+        elements.push({
+          id: `${id}-formula`,
+          kind: 'formula',
+          slot: 'visual',
+          layer: 80,
+          formula: matchedSection.formulas[0],
+          constraints: ['preserve-aspect-ratio', 'keep-within-safe-area'],
+        });
+      }
+
+      if (matchedSection?.mermaidDefinitions?.[0]) {
+        elements.push({
+          id: `${id}-mermaid`,
+          kind: 'mermaid',
+          slot: 'visual',
+          layer: 82,
+          definition: matchedSection.mermaidDefinitions[0],
+          constraints: ['preserve-aspect-ratio', 'keep-within-safe-area'],
+        });
+      }
+
+      if (this.shouldAddSvgForRole(role)) {
+        elements.push({
+          id: `${id}-visual`,
+          kind: 'svg',
+          slot: 'visual',
+          layer: 90,
+          generationPrompt: `Create a concise SVG explanation for: ${plannedSlide.title}.`,
+          constraints: ['no-real-image', 'preserve-aspect-ratio', 'keep-within-safe-area'],
+        });
+      }
+    }
+
+    elements.push(
+      this.textElement(id, 'takeaway', 'statement', 'takeaway', this.compact(plannedSlide.objective || plannedSlide.keyPoint, 90), 'takeaway', 60),
+    );
+
+    return {
+      id,
+      index: slideIndex,
+      role,
+      intent: plannedSlide.objective || plannedSlide.keyPoint,
+      sourceRefs: plannedSlide.sourceCoverage,
+      layout: {
+        composition: this.pickComposition(role, index),
+        frame: {
+          direction: this.pickFrameDirection(role),
+          padding: { top: 0.48, right: 0.62, bottom: 0.48, left: 0.62 },
+          gap: 0.32,
+          align: role === 'cover' || role === 'closing' ? 'center' : 'start',
+          columns: role === 'comparison' ? 2 : undefined,
+        },
+        slots: this.defaultSlots(role),
+      },
+      elements,
+      speakerNotes: plannedSlide.keyPoint,
+    };
+  }
+
+  private mapLayoutHintToRole(layoutHint: string, fallbackRole: string): PptDslSlideRole {
+    switch (layoutHint) {
+      case 'cover': return 'cover';
+      case 'agenda': return 'agenda';
+      case 'section-divider': return 'section-divider';
+      case 'comparison': return 'comparison';
+      case 'process': return 'process';
+      case 'quote': return 'quote';
+      case 'summary-closing': return 'closing';
+      default:
+        if (fallbackRole === 'closing' || fallbackRole === 'summary') return 'closing';
+        return 'content';
+    }
+  }
+
+  private shouldAddSvgForRole(role: PptDslSlideRole): boolean {
+    return role === 'cover' || role === 'closing' || role === 'process' || role === 'comparison';
+  }
+
+  private pickFrameDirection(role: PptDslSlideRole): 'vertical' | 'horizontal' | 'grid' | 'hero' {
+    switch (role) {
+      case 'cover': return 'hero';
+      case 'comparison': return 'grid';
+      case 'process': return 'horizontal';
+      case 'quote':
+      case 'section-divider': return 'vertical';
+      default: return 'vertical';
+    }
+  }
+
   private buildSlide(input: {
     index: number;
     role: PptDslSlideRole;
@@ -215,7 +448,7 @@ export class PptDslBuilderService {
     sourceRefs: string[];
     composition: PptDslSlide['layout']['composition'];
     table?: DocumentSection['tableData'];
-    code?: DocumentSection['codeBlocks'] extends Array<infer Code> ? Code : never;
+    code?: { language?: string; content: string };
     formula?: string;
     mermaid?: string;
     visualPrompt?: string;
@@ -353,7 +586,7 @@ export class PptDslBuilderService {
       id: this.stringOr(candidate.id, this.slideId(candidate.index ?? fallbackIndex)),
       index: this.numberOr(candidate.index, fallbackIndex),
       role,
-      intent: this.stringOr(candidate.intent, this.stringOr(candidate.title as string | undefined, role)),
+      intent: this.stringOr(candidate.intent, role),
       sourceRefs: this.stringArrayOr(candidate.sourceRefs, []),
       layout: {
         composition: candidate.layout?.composition ?? this.pickComposition(role, fallbackIndex),
@@ -574,7 +807,7 @@ export class PptDslBuilderService {
 
   private applyStageRhythm(
     rhythm: PptDslDocument['design']['rhythm'],
-    stage: PipelineEnhancementStage,
+    stage: string,
   ): PptDslDocument['design']['rhythm'] {
     if (stage === 'design-system-dsl') {
       return { ...rhythm, middle: `${rhythm.middle} Keep visual hierarchy explicit.` };
