@@ -5,6 +5,7 @@ import { DesignService } from '../design/design.service';
 import { LlmJsonService } from '../llm/llm-json.service';
 import { LlmService } from '../llm/llm.service';
 import { ParserService } from '../parser/parser.service';
+import { PptDslBuilderService } from '../ppt-dsl/ppt-dsl-builder.service';
 import { PptxRendererService } from '../renderer/pptx-renderer.service';
 import { SlideSpecService } from '../slides/slide-spec.service';
 import { SlideSpec } from '../slides/slide.types';
@@ -24,6 +25,7 @@ export class PipelineService {
     private readonly parserService: ParserService,
     private readonly llmService: LlmService,
     private readonly llmJsonService: LlmJsonService,
+    private readonly pptDslBuilderService: PptDslBuilderService,
     private readonly designService: DesignService,
     private readonly slideSpecService: SlideSpecService,
     private readonly svgGeneratorService: SvgGeneratorService,
@@ -53,13 +55,13 @@ export class PipelineService {
       parsedDocument,
       analysis,
     );
-    await this.projectStorageService.writeArtifact(projectId, 'deck-plan.json', deckPlan);
+    await this.projectStorageService.writeDebugArtifact(projectId, 'deck-plan.json', deckPlan);
 
     const designPlan = await this.designService.createDesignPlan(analysis, deckPlan);
-    await this.projectStorageService.writeArtifact(projectId, 'design-plan.json', designPlan);
+    await this.projectStorageService.writeDebugArtifact(projectId, 'design-plan.json', designPlan);
 
     const layoutPlan = await this.designService.createLayoutPlan(designPlan, deckPlan);
-    await this.projectStorageService.writeArtifact(projectId, 'layout-plan.json', layoutPlan);
+    await this.projectStorageService.writeDebugArtifact(projectId, 'layout-plan.json', layoutPlan);
 
     const visualPlan = this.svgGeneratorService.createVisualPlan(
       deckPlan,
@@ -67,7 +69,7 @@ export class PipelineService {
       parsedDocument,
       designPlan,
     );
-    await this.projectStorageService.writeArtifact(projectId, 'visual-plan.json', visualPlan);
+    await this.projectStorageService.writeDebugArtifact(projectId, 'visual-plan.json', visualPlan);
 
     let slideSpecs = this.slideSpecService.createSlides(
       parsedDocument,
@@ -98,6 +100,18 @@ export class PipelineService {
       );
       const roundSlidesWithLayout = this.attachLayoutMeta(roundSlidesWithAssets, layoutPlan);
       const objective = this.getIterationObjective(stage);
+      const roundPptDsl = this.pptDslBuilderService.build({
+        parsedDocument,
+        analysis,
+        deckPlan,
+        designPlan,
+        layoutPlan,
+        visualPlan: roundVisualPlan,
+        slides: roundSlidesWithLayout,
+        round,
+        stage,
+        objective,
+      });
       const roundOutputFile = this.projectStorageService.getIterationOutputPptxPath(
         projectId,
         round,
@@ -114,10 +128,7 @@ export class PipelineService {
         round,
         stage,
         objective,
-        designPlan,
-        layoutPlan,
-        visualPlan: roundVisualPlan,
-        slideSpecs: roundSlidesWithLayout,
+        pptDsl: roundPptDsl,
         outputFile: roundOutputFile,
       });
       outputFiles.push(roundOutputFile);
@@ -125,32 +136,14 @@ export class PipelineService {
       await this.projectStorageService.writeIterationArtifact(
         projectId,
         round,
-        'slide-specs.json',
-        roundSlidesWithLayout,
+        'ppt-dsl.json',
+        roundPptDsl,
       );
       await this.projectStorageService.writeIterationArtifact(projectId, round, 'objective.json', {
         round,
         stage,
         objective,
       });
-      await this.projectStorageService.writeIterationArtifact(
-        projectId,
-        round,
-        'visual-plan.json',
-        roundVisualPlan,
-      );
-      await this.projectStorageService.writeIterationArtifact(
-        projectId,
-        round,
-        'design-plan.json',
-        designPlan,
-      );
-      await this.projectStorageService.writeIterationArtifact(
-        projectId,
-        round,
-        'layout-plan.json',
-        layoutPlan,
-      );
     }
 
     const slidesWithAssets = await this.attachAssets(
@@ -160,7 +153,21 @@ export class PipelineService {
       refinementRounds,
     );
     const slidesWithLayout = this.attachLayoutMeta(slidesWithAssets, layoutPlan);
-    await this.projectStorageService.writeArtifact(projectId, 'slide-specs.json', slidesWithLayout);
+    await this.projectStorageService.writeDebugArtifact(projectId, 'slide-specs.json', slidesWithLayout);
+
+    const pptDsl = this.pptDslBuilderService.build({
+      parsedDocument,
+      analysis,
+      deckPlan,
+      designPlan,
+      layoutPlan,
+      visualPlan,
+      slides: slidesWithLayout,
+      round: refinementRounds,
+      stage: this.getIterationStage(refinementRounds),
+      objective: 'Final renderable PPT DSL.',
+    });
+    await this.projectStorageService.writeArtifact(projectId, 'ppt-dsl.json', pptDsl);
 
     const outputFile = this.projectStorageService.getOutputPptxPath(projectId, deckPlan.title);
     await this.pptxRendererService.render(outputFile, deckPlan.title, slidesWithLayout, designPlan);
@@ -169,11 +176,7 @@ export class PipelineService {
     return {
       projectId,
       title: deckPlan.title,
-      deckPlan,
-      designPlan,
-      layoutPlan,
-      visualPlan,
-      slideSpecs: slidesWithLayout,
+      pptDsl,
       outputFile,
       outputFiles,
       iterations,

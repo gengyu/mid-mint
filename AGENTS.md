@@ -4,22 +4,34 @@
 
 这是一个基于 NestJS 的本地优先 AI PPT 生成服务。
 
-当前进入 PPT 第三版开发阶段，目标是建立一条稳定的“文档 -> 可讲 PPT”主链路，而不是只生成能打开的 PPT 文件。
+当前进入 PPT 第四版开发阶段，目标是建立一条稳定的 `DSL-first` 主链路：
 
-第三版目标：
+```txt
+Document -> PPT DSL -> 可讲 PPT
+```
+
+第四版不继续沿固定模板方向扩展，而是设计并落地一套类似前端设计语言的 PPT 描述语言。
+
+核心产物：
+
+```txt
+ppt-dsl.json
+```
+
+## 2. 第四版目标
 
 - 接收 `Markdown / Txt / HTML`
 - 解析文档结构
-- 分析内容并生成演示规划
-- 生成统一的 `ppt-dsl.json`，用 PPT 描述语言表达整套演示
-- 生成全局设计计划和页型布局计划作为过渡期调试视图
-- 先判断页面角色 / 布局类型
-- 再决定页面内部表达技术
-- 支持多轮 refinement
-- 渲染并导出 `.pptx`
+- 分析内容、受众、叙事结构和页数
+- 生成统一的 `ppt-dsl.json`
+- 用 `design` 描述整套 PPT 的风格体系、主题样式和 design tokens
+- 用 `slides[*].layout / slots / elements / constraints` 描述页面结构
+- 支持多轮 refinement，并逐轮修改 DSL
+- 根据 DSL 生成 SVG / Mermaid / Formula 等稳定资产
+- renderer 优先解释 DSL 并导出 `.pptx`
 - 将输入、中间产物和输出文件保存到项目目录
 
-## 2. 第三版范围
+## 3. 第四版范围
 
 ### 必须完成
 
@@ -28,16 +40,11 @@
 3. 解析 `Markdown / Txt / HTML`
 4. 生成 `parsed-document.json`
 5. 生成 `content-analysis.json`
-6. 生成 `deck-plan.json`
-7. 生成 `design-plan.json`
-8. 生成 `layout-plan.json`
-9. 生成 `visual-plan.json`
-10. 生成 `slide-specs.json`
-11. 生成 `ppt-dsl.json`
-12. 生成 `iterations/round-xx/ppt-dsl.json`
-13. 生成 `iterations/round-xx/slide-specs.json`
-14. 生成视觉素材文件
-15. 生成 `.pptx`
+6. 生成 `ppt-dsl.json`
+7. 生成 `iterations/round-xx/ppt-dsl.json`
+8. 生成视觉素材文件
+9. 从 DSL 渲染 `.pptx`
+10. 将旧 `deck-plan / design-plan / layout-plan / visual-plan / slide-specs` 降级为 `debug/` 兼容视图
 
 ### 当前不做
 
@@ -51,109 +58,97 @@
 - PDF / Notion / Confluence 导入
 - 在线预览编辑
 - 复杂 HTML 截图链路
-- 为未来扩展预埋大量抽象
+- 真实图片生成链路
+- 复杂插件系统
 
-## 3. 主流程
+## 4. 主流程
+
+目标流程：
 
 ```txt
 Document
   -> Parse
   -> Analyze
-  -> Deck Plan
-  -> Design Plan
-  -> Layout Plan
-  -> Visual Plan
-  -> Slides
-  -> PPT DSL
-  -> Refine
-  -> Assets
-  -> Render
+  -> PPT DSL Draft
+  -> Refine PPT DSL
+  -> Asset Plan
+  -> Generate Assets
+  -> Render From DSL
 ```
 
-## 4. 第三版页面规则
+过渡期允许存在兼容流程：
 
-第三版后续主方向是建立一套 `PPT 描述语言`，类似前端设计语言里的 design tokens、组件树、Auto Layout、CSS Grid / Flex。
+```txt
+Document
+  -> Parse
+  -> Analyze
+  -> Legacy Plans
+  -> Build PPT DSL
+  -> Render From DSL
+```
 
-原则：
+其中 `Legacy Plans` 只作为调试视图，不再作为长期主协议。
 
-- `ppt-dsl.json` 是未来 renderer 的主要输入
-- 模型不直接生成 PPT 坐标
+## 5. PPT DSL 原则
+
+- `ppt-dsl.json` 是 renderer 的主要输入
 - 页面不是模板实例，而是元素树、slots、constraints 和 design tokens 的组合
-- `deck-plan / design-plan / layout-plan / visual-plan / slide-specs` 在过渡期保留为调试视图和兼容产物
+- 模型不直接生成复杂 PPT 坐标
+- renderer 只解释 DSL，不做叙事规划和设计决策
+- 用户不传页数，页数由模型根据内容判断
+- 不走真实图片链路，优先 SVG / Mermaid / Formula 等稳定资产
 
-第三版统一采用两层结构：
+`ppt-dsl.json` 分层：
 
-1. 页面角色 / 布局类型
-2. 页面内部表达技术
+```txt
+ppt-dsl
+├── deck        叙事与演讲目标
+├── design      全局风格体系
+├── slides      页面结构和元素树
+├── assets      生成或渲染后的素材引用
+└── constraints 全局渲染约束
+```
 
-当前固定 8 类页面角色 / 布局类型：
-
-1. `cover`
-2. `agenda`
-3. `section-divider`
-4. `text-visual`
-5. `comparison`
-6. `process`
-7. `quote`
-8. `summary / closing`
-
-这些不是固定页数，而是固定页型集合。
-
-页面内部表达技术当前重点考虑：
-
-- `bullets`
-- `mermaid`
-- `svg`
-- `table`
-- `code-block`
-- `formula`
-- `svg-hero`
-
-## 5. 最重要的架构边界
+## 6. 最重要的架构边界
 
 - `projects`
   只负责创建项目、查看项目、触发生成
 - `pipeline`
-  只负责串联主流程，不承载存储细节
+  只负责串联第四版主流程
 - `parser`
   只负责把输入文档转成结构化文档
 - `llm`
-  只负责内容分析、规划、结构化输出
+  只负责模型调用和结构化 JSON 输出
 - `ppt-dsl`
-  只负责定义 PPT 描述语言、将规划产物合成为可渲染 DSL
-- `design`
-  只负责全局设计计划、设计 tokens 和逐页生成式 slot 布局计划
-- `visuals`
-  只负责页内表达技术规划与视觉素材生成
-- `slides`
-  只负责生成逐页内容定义
+  负责 DSL 类型、DSL Builder、DSL refinement、DSL validation
+- `assets`
+  负责根据 DSL 生成 SVG / Mermaid / Formula 资产
 - `renderer`
-  只负责根据 slide specs 渲染 `.pptx`
+  只负责解释 DSL 并渲染 `.pptx`
 - `storage`
   只负责项目目录与产物读写
 
-## 6. 依赖使用规则
+## 7. 依赖使用规则
 
 - 能用成熟开源框架和库解决的问题，就不要自己重复造轮子
-- 优先使用社区成熟、维护稳定、文档完整的库，特别是：
-  - LLM 调用使用官方 SDK 或成熟封装
-  - 文档解析使用成熟解析库
-  - PPT 生成使用成熟 PPT 库
-  - Mermaid / HTML / 公式等内容表达优先使用成熟库
+- LLM 调用使用官方 SDK 或成熟封装
+- 文档解析使用成熟解析库
+- PPT 生成使用成熟 PPT 库
+- Mermaid / HTML / 公式等表达优先使用成熟库
 - 只有在没有合适库、或引入库会显著增加复杂度时，才允许自己写最小实现
-- 如果保留自写实现，必须先说明为什么不能直接用现成库
 
-## 7. 禁止事项
+## 8. 禁止事项
 
 - 不要在 Controller 写业务逻辑
 - 不要在多个模块里重复调用 LLM
 - 不要引入复杂插件系统
 - 不要为了抽象而抽象
 - 不要先写大量空壳文件再慢慢补
-- 不要偏离主链路去做与第三版无关的能力
+- 不要继续围绕固定模板扩展 renderer
+- 不要让 `slide-specs.json` 成为第四版最终核心协议
 - 不要让 `pipeline`、`projects`、`renderer` 互相吞并职责
 
-## 8. 文件产物约定
+## 9. 文件产物约定
 
 所有生成结果写入：
 
@@ -161,7 +156,7 @@ Document
 data/projects/<projectId>/
 ```
 
-参考结构：
+第四版目标结构：
 
 ```txt
 data/projects/<projectId>/
@@ -169,44 +164,44 @@ data/projects/<projectId>/
 ├── project.json
 ├── parsed-document.json
 ├── content-analysis.json
-├── deck-plan.json
-├── design-plan.json
-├── layout-plan.json
-├── visual-plan.json
-├── slide-specs.json
 ├── ppt-dsl.json
 ├── iterations/
 │   ├── round-01/
 │   │   ├── objective.json
-│   │   ├── ppt-dsl.json
-│   │   └── slide-specs.json
-│   └── round-02/
-│       ├── objective.json
-│       └── slide-specs.json
+│   │   └── ppt-dsl.json
+│   ├── round-02/
+│   │   ├── objective.json
+│   │   └── ppt-dsl.json
+│   └── round-xx/
 ├── assets/
 │   ├── slide-002.svg
 │   └── ...
+├── debug/
+│   ├── deck-plan.json
+│   ├── design-plan.json
+│   ├── layout-plan.json
+│   ├── visual-plan.json
+│   └── slide-specs.json
 └── output/
     └── presentation.pptx
 ```
 
-## 9. 开发顺序
+## 10. 开发顺序
 
 AI 编程工具默认按这个顺序建立上下文并推进：
 
 1. `AGENTS.md`
 2. `README.md`
-   `README.md` 同时承载当前 API 说明，不再单独维护 `docs/API.md`
-3. `docs/IMPLEMENTATION_PLAN.md`
+3. `docs/V4_DSL_FIRST_PLAN.md`
 4. `docs/PPT_DSL.md`
 5. `docs/FILE_CONTRACTS.md`
-6. `examples/sample.md`
-7. `src/modules/projects/projects.controller.ts`
-8. `src/modules/pipeline/pipeline.service.ts`
-9. `src/modules/design/design.service.ts`
+6. `docs/archive/V3_REQUIREMENTS_ARCHIVE.md`
+7. `examples/sample.md`
+8. `src/modules/ppt-dsl/ppt-dsl.types.ts`
+9. `src/modules/pipeline/pipeline.service.ts`
 10. `src/modules/renderer/pptx-renderer.service.ts`
 
-## 10. 完成后的汇报格式
+## 11. 完成后的汇报格式
 
 完成任务后，请优先汇报：
 

@@ -20,6 +20,7 @@ export type PptDslComposition =
   | 'hero-right'
   | 'split'
   | 'asymmetric-split'
+  | 'balanced-split'
   | 'grid'
   | 'timeline'
   | 'comparison-grid'
@@ -139,7 +140,7 @@ export interface PptDslSlide {
 export interface PptDslLayout {
   composition: PptDslComposition;
   frame: {
-    direction: 'vertical' | 'horizontal' | 'grid' | 'absolute';
+    direction: 'vertical' | 'horizontal' | 'grid' | 'hero' | 'absolute';
     padding: PptDslInsets;
     gap: number;
     align: 'start' | 'center' | 'end' | 'stretch';

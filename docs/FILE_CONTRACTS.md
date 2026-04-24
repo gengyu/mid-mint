@@ -2,7 +2,7 @@
 
 ## 说明
 
-本文件定义当前第三版中间产物和输出文件的基础结构。
+本文件定义当前第四版中间产物和输出文件的基础结构。
 
 目标：
 
@@ -10,20 +10,20 @@
 2. 让模块之间职责边界稳定
 3. 让 AI 和人工都能快速排查问题
 
-第三版默认采用“多阶段生成 + 多轮增强”的方式。
+第四版默认采用 `DSL-first` 的方式。
 
-方向调整：
+核心主产物：
 
-- 后续主产物是 `ppt-dsl.json`
+```txt
+ppt-dsl.json
+```
+
+说明：
+
 - `ppt-dsl.json` 是类似前端设计语言的统一 PPT 描述语言
-- `deck-plan / design-plan / layout-plan / visual-plan / slide-specs` 过渡期保留为调试视图和兼容产物
-
-也就是说：
-
-- 不是一遍流程直接生成最终 PPT
-- 第一轮先输出结构版
-- 后续轮次再逐步补基础视觉、高成本素材和特殊技术页
-- 每轮都需要有可检查、可落盘的中间产物
+- `deck-plan / design-plan / layout-plan / visual-plan / slide-specs` 过渡期保留在 `debug/`
+- 第三版需求已经归档到 `docs/archive/V3_REQUIREMENTS_ARCHIVE.md`
+- 第四版详细计划见 `docs/V4_DSL_FIRST_PLAN.md`
 
 ## 项目目录
 
@@ -33,7 +33,7 @@
 data/projects/<projectId>/
 ```
 
-参考结构：
+第四版目标结构：
 
 ```txt
 data/projects/<projectId>/
@@ -41,31 +41,39 @@ data/projects/<projectId>/
 ├── project.json
 ├── parsed-document.json
 ├── content-analysis.json
-├── deck-plan.json
-├── design-plan.json
-├── layout-plan.json
-├── visual-plan.json
-├── slide-specs.json
 ├── ppt-dsl.json
 ├── iterations/
 │   ├── round-01/
 │   │   ├── objective.json
-│   │   ├── ppt-dsl.json
-│   │   ├── visual-plan.json
-│   │   └── slide-specs.json
+│   │   └── ppt-dsl.json
 │   ├── round-02/
 │   │   ├── objective.json
-│   │   ├── ppt-dsl.json
-│   │   ├── visual-plan.json
-│   │   └── slide-specs.json
+│   │   └── ppt-dsl.json
 │   └── round-xx/
 ├── assets/
 │   ├── slide-002.svg
-│   ├── slide-002.icon.svg
 │   └── ...
+├── debug/
+│   ├── deck-plan.json
+│   ├── design-plan.json
+│   ├── layout-plan.json
+│   ├── visual-plan.json
+│   └── slide-specs.json
 └── output/
     └── presentation.pptx
 ```
+
+## Legacy Debug 产物
+
+以下第三版产物在第四版中降级为 `debug/` 调试视图：
+
+- `debug/deck-plan.json`
+- `debug/design-plan.json`
+- `debug/layout-plan.json`
+- `debug/visual-plan.json`
+- `debug/slide-specs.json`
+
+它们可以辅助排查模型输出，但不再作为 renderer 的长期主输入。
 
 ## project.json
 
@@ -124,6 +132,8 @@ data/projects/<projectId>/
 
 ## deck-plan.json
 
+第四版中该文件属于 legacy debug 产物，目标路径为 `debug/deck-plan.json`。
+
 ```json
 {
   "title": "RAG Engineering",
@@ -147,6 +157,8 @@ data/projects/<projectId>/
 ```
 
 ## design-plan.json
+
+第四版中该文件属于 legacy debug 产物，目标路径为 `debug/design-plan.json`。
 
 `design-plan.json` 定义整套 PPT 的全局设计系统，作用类似前端设计系统里的 design tokens。
 
@@ -209,6 +221,8 @@ data/projects/<projectId>/
 ```
 
 ## layout-plan.json
+
+第四版中该文件属于 legacy debug 产物，目标路径为 `debug/layout-plan.json`。
 
 `layout-plan.json` 定义逐页结构草图，采用 slot-based layout DSL。
 
@@ -287,6 +301,8 @@ data/projects/<projectId>/
 
 ## visual-plan.json
 
+第四版中该文件属于 legacy debug 产物，目标路径为 `debug/visual-plan.json`。
+
 ```json
 {
   "theme": "editorial-soft",
@@ -349,6 +365,8 @@ data/projects/<projectId>/
 - `assetVariant` 用来表达当前这页更适合基础图示、hero 主视觉，还是专项技术图示
 
 ## slide-specs.json
+
+第四版中该文件属于 legacy debug 产物，目标路径为 `debug/slide-specs.json`。
 
 ```json
 [
@@ -420,11 +438,11 @@ data/projects/<projectId>/
 ]
 ```
 
-当前实现说明：
+第四版迁移说明：
 
-- 顶层 `slide-specs.json` 和每轮 `iterations/round-xx/slide-specs.json` 会附带 `layoutMeta`
-- `layoutMeta` 来自 `layout-plan.json`
-- renderer 会优先用 `layoutMeta.slots` 解析封面、通用内容页和 `text-visual` 页的主要区域
+- `slide-specs.json` 可继续作为调试视图
+- renderer 后续应优先消费 `ppt-dsl.json`
+- `slide-specs.layoutMeta` 不再作为长期主协议
 
 ## ppt-dsl.json
 
