@@ -11,6 +11,8 @@
 - 接收 `Markdown / Txt / HTML`
 - 解析文档结构
 - 分析内容并生成演示规划
+- 生成统一的 `ppt-dsl.json`，用 PPT 描述语言表达整套演示
+- 生成全局设计计划和页型布局计划作为过渡期调试视图
 - 先判断页面角色 / 布局类型
 - 再决定页面内部表达技术
 - 支持多轮 refinement
@@ -27,11 +29,15 @@
 4. 生成 `parsed-document.json`
 5. 生成 `content-analysis.json`
 6. 生成 `deck-plan.json`
-7. 生成 `visual-plan.json`
-8. 生成 `slide-specs.json`
-9. 生成 `iterations/round-xx/slide-specs.json`
-10. 生成视觉素材文件
-11. 生成 `.pptx`
+7. 生成 `design-plan.json`
+8. 生成 `layout-plan.json`
+9. 生成 `visual-plan.json`
+10. 生成 `slide-specs.json`
+11. 生成 `ppt-dsl.json`
+12. 生成 `iterations/round-xx/ppt-dsl.json`
+13. 生成 `iterations/round-xx/slide-specs.json`
+14. 生成视觉素材文件
+15. 生成 `.pptx`
 
 ### 当前不做
 
@@ -54,14 +60,26 @@ Document
   -> Parse
   -> Analyze
   -> Deck Plan
+  -> Design Plan
+  -> Layout Plan
   -> Visual Plan
   -> Slides
+  -> PPT DSL
   -> Refine
   -> Assets
   -> Render
 ```
 
 ## 4. 第三版页面规则
+
+第三版后续主方向是建立一套 `PPT 描述语言`，类似前端设计语言里的 design tokens、组件树、Auto Layout、CSS Grid / Flex。
+
+原则：
+
+- `ppt-dsl.json` 是未来 renderer 的主要输入
+- 模型不直接生成 PPT 坐标
+- 页面不是模板实例，而是元素树、slots、constraints 和 design tokens 的组合
+- `deck-plan / design-plan / layout-plan / visual-plan / slide-specs` 在过渡期保留为调试视图和兼容产物
 
 第三版统一采用两层结构：
 
@@ -101,8 +119,12 @@ Document
   只负责把输入文档转成结构化文档
 - `llm`
   只负责内容分析、规划、结构化输出
+- `ppt-dsl`
+  只负责定义 PPT 描述语言、将规划产物合成为可渲染 DSL
+- `design`
+  只负责全局设计计划、设计 tokens 和逐页生成式 slot 布局计划
 - `visuals`
-  只负责视觉规划与视觉素材生成
+  只负责页内表达技术规划与视觉素材生成
 - `slides`
   只负责生成逐页内容定义
 - `renderer`
@@ -148,11 +170,15 @@ data/projects/<projectId>/
 ├── parsed-document.json
 ├── content-analysis.json
 ├── deck-plan.json
+├── design-plan.json
+├── layout-plan.json
 ├── visual-plan.json
 ├── slide-specs.json
+├── ppt-dsl.json
 ├── iterations/
 │   ├── round-01/
 │   │   ├── objective.json
+│   │   ├── ppt-dsl.json
 │   │   └── slide-specs.json
 │   └── round-02/
 │       ├── objective.json
@@ -172,11 +198,13 @@ AI 编程工具默认按这个顺序建立上下文并推进：
 2. `README.md`
    `README.md` 同时承载当前 API 说明，不再单独维护 `docs/API.md`
 3. `docs/IMPLEMENTATION_PLAN.md`
-4. `docs/FILE_CONTRACTS.md`
-5. `examples/sample.md`
-6. `src/modules/projects/projects.controller.ts`
-7. `src/modules/pipeline/pipeline.service.ts`
-8. `src/modules/renderer/pptx-renderer.service.ts`
+4. `docs/PPT_DSL.md`
+5. `docs/FILE_CONTRACTS.md`
+6. `examples/sample.md`
+7. `src/modules/projects/projects.controller.ts`
+8. `src/modules/pipeline/pipeline.service.ts`
+9. `src/modules/design/design.service.ts`
+10. `src/modules/renderer/pptx-renderer.service.ts`
 
 ## 10. 完成后的汇报格式
 

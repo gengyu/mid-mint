@@ -1,4 +1,4 @@
-import { mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 export async function ensureDir(dirPath: string): Promise<void> {
@@ -30,4 +30,20 @@ export async function listChildDirectories(dirPath: string): Promise<string[]> {
 
   const entries = await readdir(dirPath, { withFileTypes: true });
   return entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name);
+}
+
+export async function removeDirContents(dirPath: string): Promise<void> {
+  if (!(await pathExists(dirPath))) {
+    return;
+  }
+
+  const entries = await readdir(dirPath);
+  await Promise.all(
+    entries.map((entry) =>
+      rm(path.join(dirPath, entry), {
+        recursive: true,
+        force: true,
+      }),
+    ),
+  );
 }

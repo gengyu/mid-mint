@@ -43,9 +43,8 @@ export class LlmJsonService {
   async planDeck(
     document: ParsedDocument,
     analysis: PresentationAnalysis,
-    requestedSlides?: number,
   ): Promise<DeckPlan> {
-    const fallback = this.buildFallbackDeckPlan(document, analysis, requestedSlides);
+    const fallback = this.buildFallbackDeckPlan(document, analysis);
     if (!this.llmService.isConfigured()) {
       return fallback;
     }
@@ -56,11 +55,13 @@ export class LlmJsonService {
       'Use only these layoutHint values: cover, agenda, section-divider, text-visual, comparison, process, quote, summary-closing.',
       'Follow the current PPT rule: decide page role/layout first, then leave internal visual technique decisions to the visual plan stage.',
       'Pagination must be designed from content, not by evenly slicing sections.',
-      'Merge thin sections when needed, split dense sections when needed, and use the requested slide count as a target range rather than a mechanical fixed split.',
+      'Decide the slide count yourself from the source content. Do not rely on a user-provided target slide count.',
+      'Use enough slides to preserve the argument. Long documents should become longer decks, usually 10-20 slides when the content density requires it.',
+      'Merge thin sections when needed, split dense sections when needed, and avoid compressing unrelated ideas into one slide.',
       'Favor a talkable deck: each slide should have one clear job, and long sections can legitimately become multiple slides if the content density requires it.',
+      'For each slide, include sourceCoverage, structureReason, and contentWeight when possible.',
       JSON.stringify({
         title: document.title,
-        requestedSlides,
         sections: document.sections.map((section) => ({
           title: section.title,
           level: section.level,
@@ -136,10 +137,9 @@ export class LlmJsonService {
   private buildFallbackDeckPlan(
     document: ParsedDocument,
     analysis: PresentationAnalysis,
-    requestedSlides?: number,
   ): DeckPlan {
     const keyMessages = Array.isArray(analysis.keyMessages) ? analysis.keyMessages : [];
-    const requestedTotal = Math.max(3, Math.min(requestedSlides ?? 6, 10));
+    const requestedTotal = this.estimateSlideCount(document);
     const contentSections = this.getContentSections(document).slice(
       0,
       Math.max(1, requestedTotal - 2),
@@ -179,6 +179,9 @@ export class LlmJsonService {
         role: 'cover',
         visualFocus: 'visual',
         objective: 'Open with a clear promise and establish the talk narrative.',
+        sourceCoverage: [document.title],
+        structureReason: 'Use the document title and summary as the opening promise.',
+        contentWeight: 'low',
       },
     ];
 
@@ -192,6 +195,9 @@ export class LlmJsonService {
         role: 'agenda',
         visualFocus: 'text',
         objective: 'Show the audience the talk structure and set expectations.',
+        sourceCoverage: selectedSections.map((section) => section.title).slice(0, 5),
+        structureReason: 'Summarize the selected sections before moving into content slides.',
+        contentWeight: 'low',
       });
     }
 
@@ -218,6 +224,9 @@ export class LlmJsonService {
           objective: `Transition into ${section.title} with a clear chapter break.`,
           storyArcPhase,
           sectionWeight,
+          sourceCoverage: [section.title],
+          structureReason: `Insert a divider before ${section.title} to improve narrative pacing.`,
+          contentWeight: this.toContentWeight(sectionWeight),
           transitionReason: dividerPlacement.reason,
         });
         // section-divider resets layout repetition tracking
@@ -255,6 +264,9 @@ export class LlmJsonService {
         objective: buildSlideObjective(section.title, layoutHint),
         storyArcPhase,
         sectionWeight,
+        sourceCoverage: [section.title],
+        structureReason: this.buildStructureReason(section.title, layoutHint, sectionWeight),
+        contentWeight: this.toContentWeight(sectionWeight),
       });
     });
 
@@ -268,6 +280,9 @@ export class LlmJsonService {
       visualFocus: 'text',
       objective: 'Land the presentation with memorable takeaways and a clear next step.',
       storyArcPhase: 'action',
+      sourceCoverage: ['Summary'],
+      structureReason: 'Add a closing slide so the deck ends with a clear takeaway.',
+      contentWeight: 'medium',
     });
 
     const normalizedSlides = slides.slice(0, requestedTotal).map((slide, index) => ({
@@ -280,6 +295,23 @@ export class LlmJsonService {
       totalSlides: normalizedSlides.length,
       slides: normalizedSlides,
     };
+  }
+
+  private estimateSlideCount(document: ParsedDocument): number {
+    const contentSections = this.getContentSections(document);
+    const textLength = document.rawText.replace(/\s+/g, '').length;
+    const sectionScore = contentSections.length + 2;
+    const lengthScore = Math.ceil(textLength / 850) + 2;
+    const structuralBonus = contentSections.filter(
+      (section) =>
+        section.bullets.length >= 4 ||
+        section.tableData ||
+        (section.codeBlocks?.length ?? 0) > 0 ||
+        (section.mermaidDefinitions?.length ?? 0) > 0 ||
+        (section.formulas?.length ?? 0) > 0,
+    ).length;
+
+    return Math.max(4, Math.min(20, Math.max(sectionScore, lengthScore) + structuralBonus));
   }
 
   private buildFallbackPolishedSlides(
@@ -321,6 +353,39 @@ export class LlmJsonService {
     });
 
     return this.applyStageAdjustments(baseSlides, analysis, stage, round, totalRounds);
+  }
+
+  private toContentWeight(score: number): 'low' | 'medium' | 'high' {
+    if (score >= 8) {
+      return 'high';
+    }
+
+    if (score >= 4) {
+      return 'medium';
+    }
+
+    return 'low';
+  }
+
+  private buildStructureReason(title: string, layout: string, sectionWeight: number): string {
+    const weight = this.toContentWeight(sectionWeight);
+    if (layout === 'process') {
+      return `Map ${title} to a process slide because the source content is sequence-oriented and ${weight} weight.`;
+    }
+
+    if (layout === 'comparison') {
+      return `Map ${title} to a comparison slide because the source content contains contrast or tabular structure.`;
+    }
+
+    if (layout === 'quote') {
+      return `Map ${title} to a quote-style slide to isolate one memorable message.`;
+    }
+
+    if (layout === 'summary-closing') {
+      return `Map ${title} to a closing slide because the section reads as synthesis or next steps.`;
+    }
+
+    return `Map ${title} to a text-visual slide to keep one clear idea with supporting visual space.`;
   }
 
   private getStagePrompt(stage: PipelineEnhancementStage): string {

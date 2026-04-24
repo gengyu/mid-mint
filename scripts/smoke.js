@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+require('dotenv/config');
+
 const fs = require('node:fs');
 const path = require('node:path');
 const { NestFactory } = require('@nestjs/core');
@@ -46,7 +48,6 @@ function createSingleRunFromFile(fileArg) {
       title: fileName,
       content: fs.readFileSync(absolutePath, 'utf-8'),
       sourceType,
-      requestedSlides: 6,
       inputFile: absolutePath,
     },
   ];
@@ -58,7 +59,6 @@ function createDefaultRuns() {
       title: 'Smoke Sample Deck Markdown',
       content: fs.readFileSync(path.join(process.cwd(), 'examples/sample.md'), 'utf-8'),
       sourceType: 'markdown',
-      requestedSlides: 6,
     },
     {
       title: 'Smoke Sample Deck Txt',
@@ -78,7 +78,6 @@ function createDefaultRuns() {
         'Keep the workflow observable and simple.',
       ].join('\n'),
       sourceType: 'txt',
-      requestedSlides: 6,
     },
     {
       title: 'Smoke Mermaid Deck',
@@ -101,7 +100,6 @@ function createDefaultRuns() {
         '- Prefer short feedback loops',
       ].join('\n'),
       sourceType: 'markdown',
-      requestedSlides: 5,
     },
     {
       title: 'Smoke Table Deck',
@@ -118,7 +116,6 @@ function createDefaultRuns() {
         'Choose the path that keeps switching costs visible.',
       ].join('\n'),
       sourceType: 'markdown',
-      requestedSlides: 5,
     },
     {
       title: 'Smoke Code Deck',
@@ -137,7 +134,6 @@ function createDefaultRuns() {
         '- Move logic into services',
       ].join('\n'),
       sourceType: 'markdown',
-      requestedSlides: 5,
     },
     {
       title: 'Smoke Formula Deck',
@@ -151,7 +147,6 @@ function createDefaultRuns() {
         'A clear objective lets the audience remember the tradeoff.',
       ].join('\n'),
       sourceType: 'markdown',
-      requestedSlides: 5,
     },
     {
       title: 'Smoke Divider Deck',
@@ -181,7 +176,6 @@ function createDefaultRuns() {
         'Act with fewer bets and clearer feedback loops.',
       ].join('\n'),
       sourceType: 'markdown',
-      requestedSlides: 7,
     },
   ];
 }
@@ -205,7 +199,6 @@ async function main() {
     for (const run of runs) {
       const project = await projectsService.createProject(run);
       const result = await projectsService.generate(project.id, {
-        requestedSlides: run.requestedSlides ?? 6,
         refinementRounds: 4,
       });
       results.push({
@@ -215,6 +208,8 @@ async function main() {
         projectId: project.id,
         outputFile: result.outputFile,
         totalSlides: result.slideSpecs.length,
+        themeName: result.designPlan.themeName,
+        layoutCompositions: result.layoutPlan.slides.map((slide) => slide.composition),
         layouts: result.slideSpecs.map((slide) => slide.layout),
         outputFiles: result.outputFiles,
         iterations: result.iterations.map((iteration) => ({

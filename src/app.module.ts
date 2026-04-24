@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { DesignModule } from './modules/design/design.module';
 import { LlmModule } from './modules/llm/llm.module';
 import { ParserModule } from './modules/parser/parser.module';
 import { PipelineModule } from './modules/pipeline/pipeline.module';
@@ -14,6 +15,7 @@ import { VisualsModule } from './modules/visuals/visuals.module';
     StorageModule,
     ParserModule,
     LlmModule,
+    DesignModule,
     SlidesModule,
     VisualsModule,
     RendererModule,

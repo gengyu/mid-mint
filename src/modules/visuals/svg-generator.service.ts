@@ -3,11 +3,14 @@ import katex from 'katex';
 import { JSDOM } from 'jsdom';
 import mermaid from 'mermaid';
 
+import { DesignPlan } from '../design/design.types';
 import { ParsedDocument } from '../parser/types/parsed-document.type';
 import { resolveVisualDecision } from '../pipeline/layout-rules';
 import { DeckPlan, PresentationAnalysis } from '../pipeline/pipeline.types';
 import { SlideSpec } from '../slides/slide.types';
 import { GeneratedAsset, VisualPlan, VisualPlanSlide } from './visual.types';
+
+type SvgPalette = VisualPlan['palette'];
 
 @Injectable()
 export class SvgGeneratorService {
@@ -15,20 +18,21 @@ export class SvgGeneratorService {
     deckPlan: DeckPlan,
     analysis: PresentationAnalysis,
     document: ParsedDocument,
+    designPlan?: DesignPlan,
   ): VisualPlan {
     const palette = {
-      background: '#F3F6FB',
-      surface: '#FFFFFF',
-      surfaceAlt: '#EEF4FF',
-      text: '#102033',
-      mutedText: '#5B6B7D',
-      border: '#D9E3F0',
-      accent: '#0F766E',
-      accentSoft: '#D7F3EE',
+      background: designPlan?.colorTokens.background ?? '#F3F6FB',
+      surface: designPlan?.colorTokens.surface ?? '#FFFFFF',
+      surfaceAlt: designPlan?.colorTokens.surfaceAlt ?? '#EEF4FF',
+      text: designPlan?.colorTokens.textPrimary ?? '#102033',
+      mutedText: designPlan?.colorTokens.textSecondary ?? '#5B6B7D',
+      border: designPlan?.colorTokens.border ?? '#D9E3F0',
+      accent: designPlan?.colorTokens.accent ?? '#0F766E',
+      accentSoft: designPlan?.colorTokens.accentSoft ?? '#D7F3EE',
     };
 
     return {
-      theme: 'editorial-soft',
+      theme: designPlan?.themeName ?? 'editorial-soft',
       palette,
       slides: deckPlan.slides.map((slide) => {
         const matchedSection = document.sections.find(
@@ -94,7 +98,7 @@ export class SvgGeneratorService {
             return null;
           }
 
-          const svg = await this.buildSvg(slide, plan);
+          const svg = await this.buildSvg(slide, plan, visualPlan.palette);
           if (!svg) {
             return null;
           }
@@ -110,13 +114,17 @@ export class SvgGeneratorService {
     return assets.filter((asset): asset is GeneratedAsset => asset !== null);
   }
 
-  private async buildSvg(slide: SlideSpec, plan: VisualPlanSlide): Promise<string | null> {
+  private async buildSvg(
+    slide: SlideSpec,
+    plan: VisualPlanSlide,
+    palette: SvgPalette,
+  ): Promise<string | null> {
     if (slide.visualTechnique === 'mermaid' && slide.mermaidDefinition) {
       try {
         return await this.renderMermaidSvg(slide.mermaidDefinition, slide.slideNumber);
       } catch {
         if (slide.visualType !== 'none') {
-          return this.buildSvgGraphic(slide, plan);
+          return this.buildSvgGraphic(slide, plan, palette);
         }
 
         return null;
@@ -128,34 +136,38 @@ export class SvgGeneratorService {
         return this.renderFormulaSvg(slide.formulaText, slide.title);
       } catch {
         if (slide.visualType !== 'none') {
-          return this.buildSvgGraphic(slide, plan);
+          return this.buildSvgGraphic(slide, plan, palette);
         }
 
         return null;
       }
     }
 
-    return this.buildSvgGraphic(slide, plan);
+    return this.buildSvgGraphic(slide, plan, palette);
   }
 
-  private buildSvgGraphic(slide: SlideSpec, plan: VisualPlanSlide): string {
+  private buildSvgGraphic(
+    slide: SlideSpec,
+    plan: VisualPlanSlide,
+    palette: SvgPalette,
+  ): string {
     if (plan.assetVariant === 'hero') {
       if (slide.visualType === 'cover-accent') {
-        return this.buildCoverAccentSvg(slide);
+        return this.buildCoverAccentSvg(slide, palette);
       }
 
-      return this.buildHeroSceneSvg(slide, plan.goal);
+      return this.buildHeroSceneSvg(slide, plan.goal, palette);
     }
 
     if (slide.visualType === 'comparison-card') {
-      return this.buildComparisonSvg(slide);
+      return this.buildComparisonSvg(slide, palette);
     }
 
     if (slide.visualType === 'summary-graphic') {
-      return this.buildSummarySvg(slide);
+      return this.buildSummarySvg(slide, palette);
     }
 
-    return this.buildDiagramSvg(slide, plan.goal);
+    return this.buildDiagramSvg(slide, plan.goal, palette);
   }
 
   private async renderMermaidSvg(definition: string, slideNumber: number): Promise<string> {
@@ -262,8 +274,8 @@ export class SvgGeneratorService {
     globalScope[key] = value;
   }
 
-  private buildDiagramSvg(slide: SlideSpec, goal: string): string {
-    const accent = this.resolveAccent(slide.accentTone);
+  private buildDiagramSvg(slide: SlideSpec, goal: string, palette: SvgPalette): string {
+    const accent = this.resolveAccent(slide.accentTone, palette);
     const nodes = slide.bullets.slice(0, 3);
     const nodeMarkup = nodes
       .map((bullet, index) => {
@@ -271,8 +283,8 @@ export class SvgGeneratorService {
         return [
           `<circle cx="${x}" cy="388" r="66" fill="${accent.soft}" />`,
           `<circle cx="${x}" cy="388" r="47" fill="${accent.base}" fill-opacity="0.17" />`,
-          `<rect x="${x - 96}" y="482" width="192" height="74" rx="22" fill="#FFFFFF" stroke="#D7E2EF" />`,
-          `<text x="${x}" y="528" text-anchor="middle" font-size="18" font-weight="600" fill="#18324A">${this.escape(
+          `<rect x="${x - 96}" y="482" width="192" height="74" rx="22" fill="${palette.surface}" stroke="${palette.border}" />`,
+          `<text x="${x}" y="528" text-anchor="middle" font-size="18" font-weight="600" fill="${palette.text}">${this.escape(
             this.compact(bullet, 24),
           )}</text>`,
         ].join('');
@@ -291,30 +303,30 @@ export class SvgGeneratorService {
       '<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">',
       '<defs>',
       '<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">',
-      '<stop offset="0%" stop-color="#F7FAFF" />',
-      '<stop offset="100%" stop-color="#EEF6F8" />',
+      `<stop offset="0%" stop-color="${palette.background}" />`,
+      `<stop offset="100%" stop-color="${palette.surfaceAlt}" />`,
       '</linearGradient>',
       '</defs>',
       '<rect width="1280" height="720" fill="url(#bg)" />',
-      '<circle cx="1088" cy="120" r="150" fill="#D9F1EC" />',
+      `<circle cx="1088" cy="120" r="150" fill="${palette.accentSoft}" />`,
       `<circle cx="1018" cy="186" r="88" fill="${accent.soft}" />`,
-      '<rect x="72" y="68" width="1136" height="584" rx="36" fill="#FFFFFF" stroke="#D9E3F0" />',
+      `<rect x="72" y="68" width="1136" height="584" rx="36" fill="${palette.surface}" stroke="${palette.border}" />`,
       `<rect x="98" y="98" width="184" height="36" rx="18" fill="${accent.soft}" />`,
       `<text x="190" y="121" text-anchor="middle" font-size="16" font-weight="700" fill="${accent.base}">${this.escape(
         slide.sectionLabel ?? 'INSIGHT',
       )}</text>`,
-      `<text x="100" y="184" font-size="42" font-weight="700" fill="#102033">${this.escape(
+      `<text x="100" y="184" font-size="42" font-weight="700" fill="${palette.text}">${this.escape(
         slide.title,
       )}</text>`,
-      `<text x="100" y="226" font-size="20" fill="#5B6B7D">${this.escape(this.compact(goal, 74))}</text>`,
+      `<text x="100" y="226" font-size="20" fill="${palette.mutedText}">${this.escape(this.compact(goal, 74))}</text>`,
       connectorMarkup,
       nodeMarkup,
       '</svg>',
     ].join('');
   }
 
-  private buildCoverAccentSvg(slide: SlideSpec): string {
-    const accent = this.resolveAccent(slide.accentTone);
+  private buildCoverAccentSvg(slide: SlideSpec, palette: SvgPalette): string {
+    const accent = this.resolveAccent(slide.accentTone, palette);
     const safeTitle = this.escape(slide.title ?? 'Presentation');
 
     return [
@@ -335,18 +347,18 @@ export class SvgGeneratorService {
     ].join('');
   }
 
-  private buildHeroSceneSvg(slide: SlideSpec, goal: string): string {
-    const accent = this.resolveAccent(slide.accentTone);
+  private buildHeroSceneSvg(slide: SlideSpec, goal: string, palette: SvgPalette): string {
+    const accent = this.resolveAccent(slide.accentTone, palette);
     const bullets = slide.bullets.slice(0, 3);
     const statCards = bullets
       .map((bullet, index) => {
         const x = 720 + index * 152;
         const y = 180 + (index % 2) * 150;
         return [
-          `<rect x="${x}" y="${y}" width="132" height="120" rx="24" fill="#FFFFFF" stroke="${accent.soft}" />`,
+          `<rect x="${x}" y="${y}" width="132" height="120" rx="24" fill="${palette.surface}" stroke="${accent.soft}" />`,
           `<rect x="${x + 18}" y="${y + 18}" width="42" height="8" rx="4" fill="${accent.base}" fill-opacity="0.22" />`,
-          `<text x="${x + 18}" y="${y + 64}" font-size="24" font-weight="700" fill="#102033">${String(index + 1).padStart(2, '0')}</text>`,
-          `<text x="${x + 18}" y="${y + 92}" font-size="15" fill="#425466">${this.escape(this.compact(bullet, 18))}</text>`,
+          `<text x="${x + 18}" y="${y + 64}" font-size="24" font-weight="700" fill="${palette.text}">${String(index + 1).padStart(2, '0')}</text>`,
+          `<text x="${x + 18}" y="${y + 92}" font-size="15" fill="${palette.mutedText}">${this.escape(this.compact(bullet, 18))}</text>`,
         ].join('');
       })
       .join('');
@@ -355,27 +367,27 @@ export class SvgGeneratorService {
       '<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">',
       '<defs>',
       '<linearGradient id="hero-bg" x1="0" y1="0" x2="1" y2="1">',
-      '<stop offset="0%" stop-color="#F7FAFF" />',
-      '<stop offset="100%" stop-color="#EAF6F2" />',
+      `<stop offset="0%" stop-color="${palette.background}" />`,
+      `<stop offset="100%" stop-color="${palette.surfaceAlt}" />`,
       '</linearGradient>',
       '</defs>',
       '<rect width="1280" height="720" fill="url(#hero-bg)" />',
       `<circle cx="1050" cy="120" r="170" fill="${accent.soft}" />`,
       `<circle cx="1118" cy="208" r="96" fill="${accent.base}" fill-opacity="0.14" />`,
-      '<rect x="72" y="68" width="1136" height="584" rx="40" fill="#FFFFFF" stroke="#D9E3F0" />',
+      `<rect x="72" y="68" width="1136" height="584" rx="40" fill="${palette.surface}" stroke="${palette.border}" />`,
       `<rect x="96" y="96" width="180" height="36" rx="18" fill="${accent.soft}" />`,
       `<text x="186" y="120" text-anchor="middle" font-size="15" font-weight="700" fill="${accent.base}">${this.escape(
         slide.sectionLabel ?? 'HERO',
       )}</text>`,
-      `<text x="96" y="190" font-size="46" font-weight="700" fill="#102033">${this.escape(this.compact(slide.title, 28))}</text>`,
-      `<text x="96" y="236" font-size="21" fill="#5B6B7D">${this.escape(this.compact(goal, 76))}</text>`,
+      `<text x="96" y="190" font-size="46" font-weight="700" fill="${palette.text}">${this.escape(this.compact(slide.title, 28))}</text>`,
+      `<text x="96" y="236" font-size="21" fill="${palette.mutedText}">${this.escape(this.compact(goal, 76))}</text>`,
       `<rect x="96" y="284" width="500" height="250" rx="32" fill="${accent.soft}" fill-opacity="0.6" />`,
       `<circle cx="252" cy="408" r="84" fill="${accent.base}" fill-opacity="0.16" />`,
       `<circle cx="252" cy="408" r="46" fill="${accent.base}" fill-opacity="0.28" />`,
       `<path d="M 360 340 C 430 300, 500 300, 560 352" stroke="${accent.base}" stroke-width="7" fill="none" stroke-linecap="round" stroke-opacity="0.5" />`,
       `<path d="M 360 410 C 430 370, 500 370, 560 422" stroke="${accent.base}" stroke-width="7" fill="none" stroke-linecap="round" stroke-opacity="0.35" />`,
-      `<rect x="388" y="458" width="150" height="54" rx="20" fill="#FFFFFF" stroke="${accent.base}" stroke-opacity="0.2" />`,
-      `<text x="463" y="492" text-anchor="middle" font-size="18" font-weight="700" fill="#102033">${this.escape(
+      `<rect x="388" y="458" width="150" height="54" rx="20" fill="${palette.surface}" stroke="${accent.base}" stroke-opacity="0.2" />`,
+      `<text x="463" y="492" text-anchor="middle" font-size="18" font-weight="700" fill="${palette.text}">${this.escape(
         this.compact(slide.highlight ?? 'Key idea', 18),
       )}</text>`,
       statCards,
@@ -383,20 +395,20 @@ export class SvgGeneratorService {
     ].join('');
   }
 
-  private buildComparisonSvg(slide: SlideSpec): string {
-    const accent = this.resolveAccent(slide.accentTone);
+  private buildComparisonSvg(slide: SlideSpec, palette: SvgPalette): string {
+    const accent = this.resolveAccent(slide.accentTone, palette);
     const columns = slide.bullets.slice(0, 4);
     const cards = columns
       .map((bullet, index) => {
         const x = 122 + (index % 2) * 286;
         const y = 218 + Math.floor(index / 2) * 164;
         return [
-          `<rect x="${x}" y="${y}" width="242" height="126" rx="26" fill="#FFFFFF" stroke="#D9E3F0" />`,
+          `<rect x="${x}" y="${y}" width="242" height="126" rx="26" fill="${palette.surface}" stroke="${palette.border}" />`,
           `<rect x="${x + 22}" y="${y + 22}" width="46" height="10" rx="5" fill="${accent.base}" fill-opacity="0.22" />`,
-          `<text x="${x + 22}" y="${y + 76}" font-size="22" font-weight="700" fill="#18324A">${String(
+          `<text x="${x + 22}" y="${y + 76}" font-size="22" font-weight="700" fill="${palette.text}">${String(
             index + 1,
           ).padStart(2, '0')}</text>`,
-          `<text x="${x + 22}" y="${y + 104}" font-size="18" fill="#425466">${this.escape(
+          `<text x="${x + 22}" y="${y + 104}" font-size="18" fill="${palette.mutedText}">${this.escape(
             this.compact(bullet, 26),
           )}</text>`,
         ].join('');
@@ -405,10 +417,10 @@ export class SvgGeneratorService {
 
     return [
       '<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">',
-      '<rect width="1280" height="720" fill="#F4F8FC" />',
+      `<rect width="1280" height="720" fill="${palette.background}" />`,
       `<circle cx="1016" cy="182" r="126" fill="${accent.soft}" />`,
-      '<rect x="72" y="68" width="1136" height="584" rx="36" fill="#FFFFFF" stroke="#D9E3F0" />',
-      `<text x="108" y="164" font-size="40" font-weight="700" fill="#102033">${this.escape(
+      `<rect x="72" y="68" width="1136" height="584" rx="36" fill="${palette.surface}" stroke="${palette.border}" />`,
+      `<text x="108" y="164" font-size="40" font-weight="700" fill="${palette.text}">${this.escape(
         slide.title,
       )}</text>`,
       `<path d="M 786 214 C 860 166, 958 166, 1032 214 S 1178 262, 1190 232" stroke="${accent.base}" stroke-width="6" fill="none" stroke-linecap="round" stroke-opacity="0.5" />`,
@@ -417,8 +429,8 @@ export class SvgGeneratorService {
     ].join('');
   }
 
-  private buildSummarySvg(slide: SlideSpec): string {
-    const accent = this.resolveAccent(slide.accentTone);
+  private buildSummarySvg(slide: SlideSpec, palette: SvgPalette): string {
+    const accent = this.resolveAccent(slide.accentTone, palette);
     const bullets = slide.bullets.slice(0, 4);
     const ringMarkup = bullets
       .map((bullet, index) => {
@@ -426,9 +438,9 @@ export class SvgGeneratorService {
         const cx = 640 + Math.cos(angle) * 190;
         const cy = 360 + Math.sin(angle) * 150;
         return [
-          `<circle cx="${cx}" cy="${cy}" r="64" fill="#FFFFFF" stroke="#D9E3F0" />`,
+          `<circle cx="${cx}" cy="${cy}" r="64" fill="${palette.surface}" stroke="${palette.border}" />`,
           `<circle cx="${cx}" cy="${cy}" r="38" fill="${accent.soft}" />`,
-          `<text x="${cx}" y="${cy + 92}" text-anchor="middle" font-size="18" fill="#425466">${this.escape(
+          `<text x="${cx}" y="${cy + 92}" text-anchor="middle" font-size="18" fill="${palette.mutedText}">${this.escape(
             this.compact(bullet, 18),
           )}</text>`,
         ].join('');
@@ -437,12 +449,12 @@ export class SvgGeneratorService {
 
     return [
       '<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">',
-      '<rect width="1280" height="720" fill="#F4F8FC" />',
-      '<rect x="72" y="68" width="1136" height="584" rx="36" fill="#FFFFFF" stroke="#D9E3F0" />',
+      `<rect width="1280" height="720" fill="${palette.background}" />`,
+      `<rect x="72" y="68" width="1136" height="584" rx="36" fill="${palette.surface}" stroke="${palette.border}" />`,
       `<circle cx="640" cy="360" r="172" fill="${accent.soft}" />`,
       `<circle cx="640" cy="360" r="110" fill="${accent.base}" fill-opacity="0.14" />`,
       `<text x="640" y="348" text-anchor="middle" font-size="18" font-weight="700" fill="${accent.base}">SUMMARY</text>`,
-      `<text x="640" y="382" text-anchor="middle" font-size="30" font-weight="700" fill="#102033">${this.escape(
+      `<text x="640" y="382" text-anchor="middle" font-size="30" font-weight="700" fill="${palette.text}">${this.escape(
         this.compact(slide.title, 18),
       )}</text>`,
       ringMarkup,
@@ -450,7 +462,14 @@ export class SvgGeneratorService {
     ].join('');
   }
 
-  private resolveAccent(accentTone: SlideSpec['accentTone']): { base: string; soft: string } {
+  private resolveAccent(
+    accentTone: SlideSpec['accentTone'],
+    palette?: SvgPalette,
+  ): { base: string; soft: string } {
+    if ((!accentTone || accentTone === 'teal') && palette) {
+      return { base: palette.accent, soft: palette.accentSoft };
+    }
+
     if (accentTone === 'blue') {
       return { base: '#2563EB', soft: '#DBEAFE' };
     }

@@ -33,6 +33,47 @@ export interface SlideCodeBlock {
   content: string;
 }
 
+export interface SlideLayoutFrame {
+  direction: 'vertical' | 'horizontal' | 'grid' | 'hero';
+  padding: {
+    x: number;
+    y: number;
+  };
+  gap: number;
+  align: 'start' | 'center' | 'end' | 'stretch';
+  columns?: number;
+}
+
+export interface SlideLayoutSlot {
+  region:
+    | 'top'
+    | 'top-left'
+    | 'top-right'
+    | 'center'
+    | 'center-left'
+    | 'center-right'
+    | 'left-main'
+    | 'right-main'
+    | 'bottom'
+    | 'bottom-left'
+    | 'bottom-right'
+    | 'full-bleed';
+  weight: 'primary' | 'secondary' | 'accent' | 'supporting';
+  fit?: 'contain' | 'fill' | 'text-flow';
+}
+
+export interface SlideLayoutMeta {
+  composition: string;
+  frame: SlideLayoutFrame;
+  slots: Record<string, SlideLayoutSlot | undefined>;
+  constraints: string[];
+  densityRules: {
+    maxBullets: number;
+    maxParagraphChars: number;
+    visualWeight: 'none' | 'light' | 'medium' | 'strong';
+  };
+}
+
 export interface SlideSpec {
   slideNumber: number;
   title: string;
@@ -61,4 +102,5 @@ export interface SlideSpec {
   formulaText?: string;
   mermaidDefinition?: string;
   assetPath?: string;
+  layoutMeta?: SlideLayoutMeta;
 }

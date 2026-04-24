@@ -31,7 +31,6 @@ export class ProjectsService {
 
   async generate(projectId: string, dto: GeneratePptDto): Promise<PipelineResult> {
     const options: GeneratePipelineOptions = {
-      requestedSlides: dto.requestedSlides,
       refinementRounds: dto.refinementRounds,
     };
 

@@ -7,6 +7,7 @@ import {
   listChildDirectories,
   pathExists,
   readTextFile,
+  removeDirContents,
   writeTextFile,
 } from '../../common/utils/file.util';
 import { createProjectId } from '../../common/utils/id.util';
@@ -117,6 +118,11 @@ export class ProjectStorageService {
     };
     await this.writeProjectRecord(updatedRecord);
     return updatedRecord;
+  }
+
+  async clearProjects(): Promise<void> {
+    await ensureDir(this.projectsRoot);
+    await removeDirContents(this.projectsRoot);
   }
 
   getOutputPptxPath(projectId: string, title: string): string {

@@ -1,5 +1,7 @@
 import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 
+import { LayoutPlan } from '../design/design.types';
+import { DesignService } from '../design/design.service';
 import { LlmJsonService } from '../llm/llm-json.service';
 import { LlmService } from '../llm/llm.service';
 import { ParserService } from '../parser/parser.service';
@@ -22,6 +24,7 @@ export class PipelineService {
     private readonly parserService: ParserService,
     private readonly llmService: LlmService,
     private readonly llmJsonService: LlmJsonService,
+    private readonly designService: DesignService,
     private readonly slideSpecService: SlideSpecService,
     private readonly svgGeneratorService: SvgGeneratorService,
     private readonly pptxRendererService: PptxRendererService,
@@ -49,11 +52,21 @@ export class PipelineService {
     const deckPlan = await this.llmJsonService.planDeck(
       parsedDocument,
       analysis,
-      options.requestedSlides,
     );
     await this.projectStorageService.writeArtifact(projectId, 'deck-plan.json', deckPlan);
 
-    const visualPlan = this.svgGeneratorService.createVisualPlan(deckPlan, analysis, parsedDocument);
+    const designPlan = await this.designService.createDesignPlan(analysis, deckPlan);
+    await this.projectStorageService.writeArtifact(projectId, 'design-plan.json', designPlan);
+
+    const layoutPlan = await this.designService.createLayoutPlan(designPlan, deckPlan);
+    await this.projectStorageService.writeArtifact(projectId, 'layout-plan.json', layoutPlan);
+
+    const visualPlan = this.svgGeneratorService.createVisualPlan(
+      deckPlan,
+      analysis,
+      parsedDocument,
+      designPlan,
+    );
     await this.projectStorageService.writeArtifact(projectId, 'visual-plan.json', visualPlan);
 
     let slideSpecs = this.slideSpecService.createSlides(
@@ -83,20 +96,28 @@ export class PipelineService {
         roundVisualPlan,
         round,
       );
+      const roundSlidesWithLayout = this.attachLayoutMeta(roundSlidesWithAssets, layoutPlan);
       const objective = this.getIterationObjective(stage);
       const roundOutputFile = this.projectStorageService.getIterationOutputPptxPath(
         projectId,
         round,
         stage,
       );
-      await this.pptxRendererService.render(roundOutputFile, deckPlan.title, roundSlidesWithAssets);
+      await this.pptxRendererService.render(
+        roundOutputFile,
+        deckPlan.title,
+        roundSlidesWithLayout,
+        designPlan,
+      );
 
       iterations.push({
         round,
         stage,
         objective,
+        designPlan,
+        layoutPlan,
         visualPlan: roundVisualPlan,
-        slideSpecs: roundSlidesWithAssets,
+        slideSpecs: roundSlidesWithLayout,
         outputFile: roundOutputFile,
       });
       outputFiles.push(roundOutputFile);
@@ -105,7 +126,7 @@ export class PipelineService {
         projectId,
         round,
         'slide-specs.json',
-        roundSlidesWithAssets,
+        roundSlidesWithLayout,
       );
       await this.projectStorageService.writeIterationArtifact(projectId, round, 'objective.json', {
         round,
@@ -118,6 +139,18 @@ export class PipelineService {
         'visual-plan.json',
         roundVisualPlan,
       );
+      await this.projectStorageService.writeIterationArtifact(
+        projectId,
+        round,
+        'design-plan.json',
+        designPlan,
+      );
+      await this.projectStorageService.writeIterationArtifact(
+        projectId,
+        round,
+        'layout-plan.json',
+        layoutPlan,
+      );
     }
 
     const slidesWithAssets = await this.attachAssets(
@@ -126,18 +159,21 @@ export class PipelineService {
       visualPlan,
       refinementRounds,
     );
-    await this.projectStorageService.writeArtifact(projectId, 'slide-specs.json', slidesWithAssets);
+    const slidesWithLayout = this.attachLayoutMeta(slidesWithAssets, layoutPlan);
+    await this.projectStorageService.writeArtifact(projectId, 'slide-specs.json', slidesWithLayout);
 
     const outputFile = this.projectStorageService.getOutputPptxPath(projectId, deckPlan.title);
-    await this.pptxRendererService.render(outputFile, deckPlan.title, slidesWithAssets);
+    await this.pptxRendererService.render(outputFile, deckPlan.title, slidesWithLayout, designPlan);
     await this.projectStorageService.updateGeneratedProject(projectId, outputFile);
 
     return {
       projectId,
       title: deckPlan.title,
       deckPlan,
+      designPlan,
+      layoutPlan,
       visualPlan,
-      slideSpecs: slidesWithAssets,
+      slideSpecs: slidesWithLayout,
       outputFile,
       outputFiles,
       iterations,
@@ -169,6 +205,30 @@ export class PipelineService {
       ...slide,
       assetPath: assetPathBySlide.get(slide.slideNumber),
     }));
+  }
+
+  private attachLayoutMeta(slides: SlideSpec[], layoutPlan: LayoutPlan): SlideSpec[] {
+    const layoutBySlide = new Map(
+      layoutPlan.slides.map((slide) => [slide.slideNumber, slide]),
+    );
+
+    return slides.map((slide) => {
+      const layout = layoutBySlide.get(slide.slideNumber);
+      if (!layout) {
+        return slide;
+      }
+
+      return {
+        ...slide,
+        layoutMeta: {
+          composition: layout.composition,
+          frame: layout.frame,
+          slots: layout.slots,
+          constraints: layout.constraints,
+          densityRules: layout.densityRules,
+        },
+      };
+    });
   }
 
   private limitVisualPlanToCompletedRounds(

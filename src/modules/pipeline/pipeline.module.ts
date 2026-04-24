@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { DesignModule } from '../design/design.module';
 import { LlmModule } from '../llm/llm.module';
 import { ParserModule } from '../parser/parser.module';
 import { RendererModule } from '../renderer/renderer.module';
@@ -9,7 +10,15 @@ import { VisualsModule } from '../visuals/visuals.module';
 import { PipelineService } from './pipeline.service';
 
 @Module({
-  imports: [ParserModule, LlmModule, SlidesModule, VisualsModule, RendererModule, StorageModule],
+  imports: [
+    ParserModule,
+    LlmModule,
+    DesignModule,
+    SlidesModule,
+    VisualsModule,
+    RendererModule,
+    StorageModule,
+  ],
   providers: [PipelineService],
   exports: [PipelineService],
 })
