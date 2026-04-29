@@ -44,7 +44,7 @@ ppt-dsl.json
 7. 生成 `iterations/round-xx/ppt-dsl.json`
 8. 生成视觉素材文件
 9. 从 DSL 渲染 `.pptx`
-10. 将旧 `deck-plan / design-plan / layout-plan / visual-plan / slide-specs` 降级为 `debug/` 兼容视图
+10. 不再生成旧 `deck-plan / design-plan / layout-plan / visual-plan / slide-specs`
 
 ### 当前不做
 
@@ -75,19 +75,6 @@ Document
   -> Generate Assets
   -> Render From DSL
 ```
-
-过渡期允许存在兼容流程：
-
-```txt
-Document
-  -> Parse
-  -> Analyze
-  -> Legacy Plans
-  -> Build PPT DSL
-  -> Render From DSL
-```
-
-其中 `Legacy Plans` 只作为调试视图，不再作为长期主协议。
 
 ## 5. PPT DSL 原则
 
@@ -176,12 +163,6 @@ data/projects/<projectId>/
 ├── assets/
 │   ├── slide-002.svg
 │   └── ...
-├── debug/
-│   ├── deck-plan.json
-│   ├── design-plan.json
-│   ├── layout-plan.json
-│   ├── visual-plan.json
-│   └── slide-specs.json
 └── output/
     └── presentation.pptx
 ```
@@ -192,16 +173,29 @@ AI 编程工具默认按这个顺序建立上下文并推进：
 
 1. `AGENTS.md`
 2. `README.md`
-3. `docs/V4_DSL_FIRST_PLAN.md`
-4. `docs/PPT_DSL.md`
-5. `docs/FILE_CONTRACTS.md`
-6. `docs/archive/V3_REQUIREMENTS_ARCHIVE.md`
-7. `examples/sample.md`
-8. `src/modules/ppt-dsl/ppt-dsl.types.ts`
-9. `src/modules/pipeline/pipeline.service.ts`
-10. `src/modules/renderer/pptx-renderer.service.ts`
+3. `docs/README.md`
+4. `docs/product/V4_DSL_FIRST_PLAN.md`
+5. `docs/product/TASKS.md`
+6. `docs/process/AI_PROJECT_MANAGEMENT.md`
+7. `docs/architecture/PPT_DSL.md`
+8. `docs/reference/FILE_CONTRACTS.md`
+9. `docs/archive/V3_REQUIREMENTS_ARCHIVE.md`
+10. `examples/sample.md`
+11. `src/modules/ppt-dsl/ppt-dsl.types.ts`
+12. `src/modules/pipeline/pipeline.service.ts`
+13. `src/modules/renderer/pptx-renderer.service.ts`
 
-## 11. 完成后的汇报格式
+## 11. 任务管理规则
+
+- 新需求先写入 `docs/product/TASKS.md`
+- 影响架构的需求同步更新 `docs/product/V4_DSL_FIRST_PLAN.md`
+- 影响产物结构的需求同步更新 `docs/reference/FILE_CONTRACTS.md`
+- 影响 DSL 的需求同步更新 `docs/architecture/PPT_DSL.md`
+- 每个任务必须有验收标准
+- 每个任务完成后必须跑对应验证
+- 不依赖聊天记录作为长期需求来源
+
+## 12. 完成后的汇报格式
 
 完成任务后，请优先汇报：
 

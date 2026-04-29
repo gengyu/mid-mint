@@ -208,7 +208,8 @@ async function main() {
         projectId: project.id,
         outputFile: result.outputFile,
         totalSlides: result.pptDsl.slides.length,
-        themeName: result.pptDsl.design.intent,
+        themeName: result.pptDsl.design.theme?.name || result.pptDsl.design.intent,
+        themeStyle: result.pptDsl.design.theme?.style,
         layoutCompositions: result.pptDsl.slides.map((slide) => slide.layout.composition),
         roles: result.pptDsl.slides.map((slide) => slide.role),
         elementKinds: result.pptDsl.slides.map((slide) => [

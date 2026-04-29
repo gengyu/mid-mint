@@ -4,7 +4,6 @@ import { AssetService } from '../assets/asset.service';
 import { LlmJsonService } from '../llm/llm-json.service';
 import { LlmService } from '../llm/llm.service';
 import { ParserService } from '../parser/parser.service';
-import { PptDslBuilderService } from '../ppt-dsl/ppt-dsl-builder.service';
 import { PptxRendererService } from '../renderer/pptx-renderer.service';
 import { ProjectStorageService } from '../storage/project-storage.service';
 import {
@@ -20,7 +19,6 @@ export class PipelineService {
     private readonly parserService: ParserService,
     private readonly llmService: LlmService,
     private readonly llmJsonService: LlmJsonService,
-    private readonly pptDslBuilderService: PptDslBuilderService,
     private readonly assetService: AssetService,
     private readonly pptxRendererService: PptxRendererService,
     private readonly projectStorageService: ProjectStorageService,
@@ -45,17 +43,7 @@ export class PipelineService {
     const analysis = await this.llmJsonService.analyzeDocument(parsedDocument);
     await this.projectStorageService.writeArtifact(projectId, 'content-analysis.json', analysis);
 
-    const deckPlan = await this.llmJsonService.planDeck(parsedDocument, analysis);
-    await this.projectStorageService.writeDebugArtifact(projectId, 'deck-plan.json', deckPlan);
-
-    let pptDsl = this.pptDslBuilderService.build({
-      document: parsedDocument,
-      analysis,
-      deckPlan,
-      round: 0,
-      stage: 'structure-dsl',
-      objective: 'Initial DSL draft from deck plan.',
-    });
+    let pptDsl = await this.llmJsonService.generatePptDsl(parsedDocument, analysis);
 
     const iterations: PipelineIteration[] = [];
     const outputFiles: string[] = [];
@@ -64,18 +52,14 @@ export class PipelineService {
       const stage = this.getIterationStage(round);
       const objective = this.getIterationObjective(stage);
 
-      const refinement = await this.llmJsonService.refineDsl(
-        pptDsl,
+      pptDsl = await this.llmJsonService.refinePptDsl({
+        dsl: pptDsl,
+        analysis,
         round,
+        totalRounds: refinementRounds,
         stage,
         objective,
-      );
-
-      if (refinement.dsl.slides.length > 0) {
-        pptDsl = this.pptDslBuilderService.normalize(refinement.dsl, pptDsl);
-      }
-
-      pptDsl = this.pptDslBuilderService.markRefinement(pptDsl, round, stage, objective);
+      });
 
       const assetResults = await this.assetService.generateAssets(pptDsl);
       for (const assetResult of assetResults) {
@@ -99,7 +83,7 @@ export class PipelineService {
         stage,
         objective,
         pptDsl,
-        changes: refinement.changes,
+        changes: [],
         outputFile: roundOutputFile,
       });
       outputFiles.push(roundOutputFile);
@@ -114,7 +98,7 @@ export class PipelineService {
         round,
         stage,
         objective,
-        changes: refinement.changes,
+        changes: [],
       });
     }
 

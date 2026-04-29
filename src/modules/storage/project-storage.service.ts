@@ -89,14 +89,6 @@ export class ProjectStorageService {
     return artifactPath;
   }
 
-  async writeDebugArtifact(projectId: string, fileName: string, payload: unknown): Promise<string> {
-    const debugDir = path.join(this.getProjectDir(projectId), 'debug');
-    await ensureDir(debugDir);
-    const artifactPath = path.join(debugDir, fileName);
-    await writeJsonFile(artifactPath, payload);
-    return artifactPath;
-  }
-
   async writeIterationArtifact(
     projectId: string,
     round: number,
