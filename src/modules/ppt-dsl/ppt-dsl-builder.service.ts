@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
-import { DocumentSection } from '../parser/types/document-section.type';
-import { ParsedDocument } from '../parser/types/parsed-document.type';
+import { DocumentSection } from '../tools/document-parser/types/document-section.type';
+import { ParsedDocument } from '../tools/document-parser/types/parsed-document.type';
 import { PresentationAnalysis } from '../pipeline/pipeline.types';
 import {
   PptDslConstraint,

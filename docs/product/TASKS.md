@@ -13,6 +13,28 @@
 
 ## 当前任务队列
 
+### T0: LangGraph Pipeline and Parser Tool Migration
+
+状态：`done`
+
+目标：
+
+- 用 `@langchain/langgraph` 管理第四版生成主链路
+- 将文档解析从独立 `parser` 模块迁移到 `tools` 工具箱
+
+范围：
+
+- `PipelineService` 改为 LangGraph 节点编排
+- 新增 `ToolsModule`
+- 文档解析能力作为 `DocumentParserTool` 暴露给 pipeline
+- 移除旧 `src/modules/parser` 目录
+
+验收：
+
+- pipeline graph 包含 read input、parse document、analyze content、draft DSL、refine/render rounds、finalize output 节点
+- `parsed-document.json`、`content-analysis.json`、`ppt-dsl.json`、iterations 和 output 产物契约不变
+- `pnpm build` 通过
+
 ### T1: Content Segmentation
 
 状态：`todo`

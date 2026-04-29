@@ -6,7 +6,7 @@ import { TxtParser } from './parsers/txt.parser';
 import { DocumentSourceType, ParsedDocument } from './types/parsed-document.type';
 
 @Injectable()
-export class ParserService {
+export class DocumentParserTool {
   constructor(
     private readonly markdownParser: MarkdownParser,
     private readonly txtParser: TxtParser,

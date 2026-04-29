@@ -12,7 +12,7 @@ import {
 } from '../../common/utils/file.util';
 import { createProjectId } from '../../common/utils/id.util';
 import { writeJsonFile } from '../../common/utils/json.util';
-import { DocumentSourceType } from '../parser/types/parsed-document.type';
+import { DocumentSourceType } from '../tools/document-parser/types/parsed-document.type';
 
 export interface ProjectRecord {
   id: string;

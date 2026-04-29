@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { ParsedDocument } from '../parser/types/parsed-document.type';
+import { ParsedDocument } from '../tools/document-parser/types/parsed-document.type';
 import { PptDslBuilderService } from '../ppt-dsl/ppt-dsl-builder.service';
 import { PptDslDocument } from '../ppt-dsl/ppt-dsl.types';
 import { PipelineEnhancementStage, PresentationAnalysis } from '../pipeline/pipeline.types';
