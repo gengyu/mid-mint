@@ -53,7 +53,7 @@ Renderer 的职责变成：
 
 ```txt
 Document
-  -> Parse with DocumentParserTool
+  -> Parse with LangChain DocumentParserTool
   -> Analyze
   -> PPT DSL Draft
   -> Refine PPT DSL
@@ -266,11 +266,11 @@ data/projects/<projectId>/
 - `projects`
   只负责创建项目、查看项目、触发生成
 - `pipeline`
-  使用 `@langchain/langgraph` 管理第四版主流程编排，不吞并解析、LLM、资产或渲染职责
+  使用 `@langchain/langgraph` 管理第四版 agent workflow，不吞并解析、LLM、资产或渲染职责
 - `tools`
-  负责提供主链路可调用的工具。当前包含 `DocumentParserTool`，只负责输入文档结构化
+  负责提供主链路可调用的工具。当前包含 LangChain-compatible `DocumentParserTool`，只负责输入文档结构化
 - `llm`
-  只负责模型调用和结构化 JSON 输出
+  只负责通过 LangChain Runnable 调用模型并产出结构化 JSON
 - `ppt-dsl`
   负责 DSL 类型、DSL Builder、DSL refinement、DSL validation
 - `assets`

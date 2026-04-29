@@ -7,7 +7,8 @@
 ## 当前目标
 
 - 解析输入文档并产出稳定的结构化中间产物
-- 用 LangGraph 管理生成主链路的阶段编排
+- 用 LangGraph 管理生成主链路的 agent workflow
+- 用 LangChain Runnable 管理 LLM JSON 调用
 - 用 LLM 生成内容分析、叙事结构和多轮 refinement
 - 生成统一的 `ppt-dsl.json`，用描述语言表达整套 PPT
 - 用 `design` 描述整套 PPT 的风格体系、主题样式和设计 tokens
@@ -42,7 +43,7 @@
 
 ```txt
 Document
-  -> Parse with DocumentParserTool
+  -> Parse with LangChain DocumentParserTool
   -> Analyze
   -> PPT DSL Draft
   -> Refine PPT DSL
@@ -147,8 +148,8 @@ src/
 ├── config/
 └── modules/
     ├── projects/
-    ├── pipeline/
-    ├── tools/
+    ├── pipeline/   # LangGraph workflow
+    ├── tools/      # LangChain-compatible tools
     ├── llm/
     ├── ppt-dsl/
     ├── assets/

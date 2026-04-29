@@ -13,27 +13,40 @@
 
 ## 当前任务队列
 
-### T0: LangGraph Pipeline and Parser Tool Migration
+### T0: LangGraph Agent Pipeline and Tool Migration
 
 状态：`done`
 
 目标：
 
 - 用 `@langchain/langgraph` 管理第四版生成主链路
-- 将文档解析从独立 `parser` 模块迁移到 `tools` 工具箱
+- 将 LLM JSON 调用纳入 LangChain Runnable 流程
+- 将文档解析从独立 `parser` 模块迁移到 `tools` 工具箱，并暴露为 LangChain Tool
 
 范围：
 
 - `PipelineService` 改为 LangGraph 节点编排
+- `LlmService.generateJson` 改为 Runnable chain
 - 新增 `ToolsModule`
-- 文档解析能力作为 `DocumentParserTool` 暴露给 pipeline
+- 文档解析能力作为 `DocumentParserTool` 暴露给 pipeline 和 LangChain tool registry
 - 移除旧 `src/modules/parser` 目录
 
 验收：
 
 - pipeline graph 包含 read input、parse document、analyze content、draft DSL、refine/render rounds、finalize output 节点
+- LLM JSON 生成通过 LangChain Runnable 调用
+- `DocumentParserTool` 可作为 LangChain Tool invoke
 - `parsed-document.json`、`content-analysis.json`、`ppt-dsl.json`、iterations 和 output 产物契约不变
 - `pnpm build` 通过
+
+#### T0 子任务清单
+
+- [x] 引入 LangGraph 主流程 graph
+- [x] 将 parser 迁移到 `tools/document-parser`
+- [x] 将 OpenAI-compatible JSON 调用包装为 LangChain Runnable
+- [x] 为 document parser 提供 LangChain Tool 形态
+- [x] 更新 README 和 V4 架构文档
+- [x] 跑 `pnpm build`
 
 ### T1: Content Segmentation
 

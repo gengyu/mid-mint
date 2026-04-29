@@ -6,8 +6,8 @@ import { LlmJsonService } from '../llm/llm-json.service';
 import { LlmService } from '../llm/llm.service';
 import { PptxRendererService } from '../renderer/pptx-renderer.service';
 import { ProjectStorageService } from '../storage/project-storage.service';
-import { DocumentParserTool } from '../tools/document-parser/document-parser.tool';
 import { ParsedDocument } from '../tools/document-parser/types/parsed-document.type';
+import { ToolRegistryService } from '../tools/tool-registry.service';
 import { PptDslDocument } from '../ppt-dsl/ppt-dsl.types';
 import {
   GeneratePipelineOptions,
@@ -38,7 +38,7 @@ type PipelineGraphState = typeof PipelineStateAnnotation.State;
 @Injectable()
 export class PipelineService {
   constructor(
-    private readonly documentParserTool: DocumentParserTool,
+    private readonly toolRegistryService: ToolRegistryService,
     private readonly llmService: LlmService,
     private readonly llmJsonService: LlmJsonService,
     private readonly assetService: AssetService,
@@ -110,7 +110,12 @@ export class PipelineService {
     state: PipelineGraphState,
   ): Promise<Partial<PipelineGraphState>> => {
     const input = this.requireStateValue(state.input, 'input');
-    const parsedDocument = await this.documentParserTool.parse(input.content, input.sourceType);
+    const documentParserTool = this.getLangChainTool('document_parser');
+    const parsedDocumentJson = await documentParserTool.invoke({
+      content: input.content,
+      sourceType: input.sourceType,
+    });
+    const parsedDocument = JSON.parse(String(parsedDocumentJson)) as ParsedDocument;
     await this.projectStorageService.writeArtifact(
       state.projectId,
       'parsed-document.json',
@@ -227,6 +232,18 @@ export class PipelineService {
     }
 
     return value;
+  }
+
+  private getLangChainTool(name: string) {
+    const selectedTool = this.toolRegistryService
+      .getLangChainTools()
+      .find((candidate) => candidate.name === name);
+
+    if (!selectedTool) {
+      throw new Error(`LangChain tool is not registered: ${name}`);
+    }
+
+    return selectedTool;
   }
 
   private getIterationStage(round: number): PipelineEnhancementStage {
