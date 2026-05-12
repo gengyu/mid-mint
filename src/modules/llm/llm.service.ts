@@ -1,7 +1,13 @@
 import { Injectable } from '@nestjs/common';
+import { JsonOutputParser } from '@langchain/core/output_parsers';
+import { RunnableLambda, RunnableSequence } from '@langchain/core/runnables';
 import OpenAI from 'openai';
 
 import { getLlmConfig } from '../../config/llm.config';
+
+interface JsonGenerationInput {
+  prompt: string;
+}
 
 @Injectable()
 export class LlmService {
@@ -10,18 +16,40 @@ export class LlmService {
     return Boolean(config.baseUrl && config.model);
   }
 
-  async generateJson<T>(prompt: string): Promise<T | null> {
+  async generateJson<T extends object>(prompt: string): Promise<T | null> {
     const config = getLlmConfig();
     if (!config.baseUrl || !config.model) {
       return null;
     }
 
-    const client = new OpenAI({
-      apiKey: config.apiKey || 'mid-mint-local',
-      baseURL: config.baseUrl,
-    });
-
     try {
+      const chain = this.createJsonGenerationChain<T>();
+      return await chain.invoke({ prompt });
+    } catch {
+      return null;
+    }
+  }
+
+  private createJsonGenerationChain<T extends object>() {
+    return RunnableSequence.from<JsonGenerationInput, T>([
+      RunnableLambda.from<JsonGenerationInput, string>((input) => input.prompt),
+      this.createOpenAiCompatibleJsonRunnable(),
+      new JsonOutputParser<T>(),
+    ]);
+  }
+
+  private createOpenAiCompatibleJsonRunnable() {
+    return RunnableLambda.from<string, string>(async (prompt) => {
+      const config = getLlmConfig();
+      if (!config.baseUrl || !config.model) {
+        throw new Error('LLM is not configured.');
+      }
+
+      const client = new OpenAI({
+        apiKey: config.apiKey || 'mid-mint-local',
+        baseURL: config.baseUrl,
+      });
+
       const response = await client.chat.completions.create({
         model: config.model,
         messages: [
@@ -41,12 +69,10 @@ export class LlmService {
 
       const content = response.choices[0]?.message?.content;
       if (!content) {
-        return null;
+        throw new Error('LLM returned an empty response.');
       }
 
-      return JSON.parse(content) as T;
-    } catch {
-      return null;
-    }
+      return content;
+    });
   }
 }

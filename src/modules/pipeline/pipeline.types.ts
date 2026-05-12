@@ -9,30 +9,6 @@ export interface PresentationAnalysis {
   storyArc?: string[];
 }
 
-export interface DeckPlanSlide {
-  slideNumber: number;
-  title: string;
-  keyPoint: string;
-  sourceSectionTitle: string;
-  layoutHint: string;
-  role: string;
-  visualFocus: string;
-  objective: string;
-  sourceCoverage: string[];
-  structureReason: string;
-  contentWeight: string;
-}
-
-export interface DeckPlan {
-  title: string;
-  totalSlides: number;
-  slides: DeckPlanSlide[];
-}
-
-export type StoryArcPhase = 'context' | 'key-ideas' | 'action';
-
-export type PlannedSlide = DeckPlanSlide;
-
 export type PipelineEnhancementStage =
   | 'structure-dsl'
   | 'design-system-dsl'

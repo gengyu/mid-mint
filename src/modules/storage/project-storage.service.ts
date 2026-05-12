@@ -12,7 +12,7 @@ import {
 } from '../../common/utils/file.util';
 import { createProjectId } from '../../common/utils/id.util';
 import { writeJsonFile } from '../../common/utils/json.util';
-import { DocumentSourceType } from '../parser/types/parsed-document.type';
+import { DocumentSourceType } from '../tools/document-parser/types/parsed-document.type';
 
 export interface ProjectRecord {
   id: string;
@@ -85,14 +85,6 @@ export class ProjectStorageService {
 
   async writeArtifact(projectId: string, fileName: string, payload: unknown): Promise<string> {
     const artifactPath = path.join(this.getProjectDir(projectId), fileName);
-    await writeJsonFile(artifactPath, payload);
-    return artifactPath;
-  }
-
-  async writeDebugArtifact(projectId: string, fileName: string, payload: unknown): Promise<string> {
-    const debugDir = path.join(this.getProjectDir(projectId), 'debug');
-    await ensureDir(debugDir);
-    const artifactPath = path.join(debugDir, fileName);
     await writeJsonFile(artifactPath, payload);
     return artifactPath;
   }

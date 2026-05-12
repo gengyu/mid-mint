@@ -53,7 +53,7 @@ Renderer 的职责变成：
 
 ```txt
 Document
-  -> Parse
+  -> Parse with LangChain DocumentParserTool
   -> Analyze
   -> PPT DSL Draft
   -> Refine PPT DSL
@@ -61,27 +61,6 @@ Document
   -> Generate Assets
   -> Render From DSL
 ```
-
-过渡期允许存在兼容流程：
-
-```txt
-Document
-  -> Parse
-  -> Analyze
-  -> Legacy Plans
-  -> Build PPT DSL
-  -> Render From DSL
-```
-
-其中 `Legacy Plans` 指：
-
-- `deck-plan.json`
-- `design-plan.json`
-- `layout-plan.json`
-- `visual-plan.json`
-- `slide-specs.json`
-
-这些文件只能作为调试视图和迁移辅助，不再作为长期主协议。
 
 ## DSL 分层
 
@@ -211,12 +190,6 @@ data/projects/<projectId>/
 ├── assets/
 │   ├── slide-002.svg
 │   └── ...
-├── debug/
-│   ├── deck-plan.json
-│   ├── design-plan.json
-│   ├── layout-plan.json
-│   ├── visual-plan.json
-│   └── slide-specs.json
 └── output/
     ├── round-01-structure.pptx
     ├── round-02-design-system.pptx
@@ -224,8 +197,6 @@ data/projects/<projectId>/
     ├── round-04-polish.pptx
     └── presentation.pptx
 ```
-
-`debug/` 是过渡期目录，用于保留旧产物和排查模型输出。
 
 ## 多轮生成
 
@@ -295,11 +266,11 @@ data/projects/<projectId>/
 - `projects`
   只负责创建项目、查看项目、触发生成
 - `pipeline`
-  只负责串联第四版主流程
-- `parser`
-  只负责输入文档结构化
+  使用 `@langchain/langgraph` 管理第四版 agent workflow，不吞并解析、LLM、资产或渲染职责
+- `tools`
+  负责提供主链路可调用的工具。当前包含 LangChain-compatible `DocumentParserTool`，只负责输入文档结构化
 - `llm`
-  只负责模型调用和结构化 JSON 输出
+  只负责通过 LangChain Runnable 调用模型并产出结构化 JSON
 - `ppt-dsl`
   负责 DSL 类型、DSL Builder、DSL refinement、DSL validation
 - `assets`
@@ -318,9 +289,26 @@ data/projects/<projectId>/
 5. 每轮 refinement 写出 `iterations/round-xx/ppt-dsl.json`
 6. renderer 增加 `renderFromDsl`
 7. assets 从 DSL elements 生成素材
-8. 旧 `slide-specs` 链路降级为 debug / fallback
+8. 删除旧 plan / slide-specs 主链路代码
 9. 删除 renderer 中的旧模板残留
 10. 用长文档跑 4 个版本对比
+
+## 下一阶段任务
+
+下一阶段任务统一维护在：
+
+```txt
+docs/product/TASKS.md
+```
+
+当前优先级：
+
+1. Content Segmentation
+2. Theme Policy
+3. DSL Validator
+4. Renderer Layout Upgrade
+5. Evaluation System
+6. Long Document Regression
 
 ## 验收标准
 

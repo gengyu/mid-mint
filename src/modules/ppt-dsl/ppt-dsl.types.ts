@@ -98,6 +98,11 @@ export interface PptDslDeckMeta {
 }
 
 export interface PptDslDesignLanguage {
+  theme?: {
+    name: string;
+    style: string;
+    rationale?: string;
+  };
   intent: string;
   tokens: {
     color: Record<string, string>;

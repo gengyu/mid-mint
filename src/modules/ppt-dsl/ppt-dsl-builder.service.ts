@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 
-import { DocumentSection } from '../parser/types/document-section.type';
-import { ParsedDocument } from '../parser/types/parsed-document.type';
-import { DeckPlan, PresentationAnalysis } from '../pipeline/pipeline.types';
+import { DocumentSection } from '../tools/document-parser/types/document-section.type';
+import { ParsedDocument } from '../tools/document-parser/types/parsed-document.type';
+import { PresentationAnalysis } from '../pipeline/pipeline.types';
 import {
   PptDslConstraint,
   PptDslDocument,
@@ -17,56 +17,8 @@ interface BuildFallbackInput {
   analysis: PresentationAnalysis;
 }
 
-interface BuildInput {
-  document: ParsedDocument;
-  analysis: PresentationAnalysis;
-  deckPlan: DeckPlan;
-  round: number;
-  stage: string;
-  objective: string;
-}
-
 @Injectable()
 export class PptDslBuilderService {
-  build(input: BuildInput): PptDslDocument {
-    const { document, analysis, deckPlan, round, stage, objective } = input;
-    const slides: PptDslSlide[] = deckPlan.slides.map((plannedSlide, index) => {
-      const matchedSection = document.sections.find(
-        (section) => section.title === plannedSlide.sourceSectionTitle,
-      );
-      return this.buildSlideFromPlan(plannedSlide, matchedSection, index, analysis);
-    });
-
-    return this.normalize({
-      system: 'ppt-dsl-v1',
-      canvas: {
-        width: 13.333,
-        height: 7.5,
-        unit: 'in',
-        safeArea: { top: 0.48, right: 0.62, bottom: 0.48, left: 0.62 },
-      },
-      deck: {
-        title: deckPlan.title,
-        audience: analysis.audience ?? 'General audience',
-        narrativeArc: analysis.storyArc?.length
-          ? analysis.storyArc
-          : ['Context', 'Key ideas', 'Action'],
-        talkTrack: analysis.summary,
-        density: this.pickDensity(document),
-      },
-      design: this.buildDefaultDesign(analysis),
-      slides,
-      assets: [],
-      constraints: [
-        'keep-within-safe-area',
-        'avoid-overlap',
-        'preserve-reading-order',
-        'prefer-single-primary-idea',
-        'no-real-image',
-      ],
-    });
-  }
-
   buildFallback(input: BuildFallbackInput): PptDslDocument {
     const contentSections = input.document.sections.filter(
       (section) => section.title.trim() || section.body.trim() || section.bullets.length > 0,
@@ -167,7 +119,7 @@ export class PptDslBuilderService {
         talkTrack: input.analysis.summary,
         density: this.pickDensity(input.document),
       },
-      design: this.buildDefaultDesign(input.analysis),
+      design: this.buildDefaultDesign(input.analysis, input.document),
       slides,
       assets: [],
       constraints: [
@@ -209,6 +161,7 @@ export class PptDslBuilderService {
           : base.deck.density,
       },
       design: {
+        theme: candidate.design?.theme ?? base.design.theme,
         intent: this.stringOr(candidate.design?.intent, base.design.intent),
         tokens: {
           color: { ...base.design.tokens.color, ...candidate.design?.tokens?.color },
@@ -250,191 +203,6 @@ export class PptDslBuilderService {
         rhythm: this.applyStageRhythm(dsl.design.rhythm, stage),
       },
     };
-  }
-
-  private buildSlideFromPlan(
-    plannedSlide: DeckPlan['slides'][number],
-    matchedSection: DocumentSection | undefined,
-    index: number,
-    analysis: PresentationAnalysis,
-  ): PptDslSlide {
-    const role = this.mapLayoutHintToRole(plannedSlide.layoutHint, plannedSlide.role);
-    const slideIndex = plannedSlide.slideNumber;
-    const id = this.slideId(slideIndex);
-    const elements: PptDslElement[] = [
-      this.textElement(id, 'eyebrow', 'text', 'eyebrow', this.roleLabel(role), 'eyebrow', 10),
-      this.textElement(id, 'title', 'text', 'title', plannedSlide.title, 'title', 20),
-    ];
-
-    if (role === 'cover') {
-      elements.push(
-        this.textElement(id, 'subtitle', 'text', 'subtitle', this.compact(plannedSlide.keyPoint, 120), 'subtitle', 30),
-      );
-      elements.push({
-        id: `${id}-visual`,
-        kind: 'svg',
-        slot: 'heroVisual',
-        layer: 90,
-        generationPrompt: `Abstract SVG system visual for ${plannedSlide.title}.`,
-        constraints: ['no-real-image', 'preserve-aspect-ratio', 'keep-within-safe-area'],
-      });
-    } else if (role === 'agenda') {
-      const agendaBullets = analysis.storyArc?.length
-        ? analysis.storyArc
-        : ['Context', 'Key ideas', 'Action'];
-      elements.push({
-        id: `${id}-list`,
-        kind: 'list',
-        slot: 'content',
-        layer: 50,
-        ordered: true,
-        items: agendaBullets,
-        style: { typographyToken: 'body', colorToken: 'textSecondary' },
-        constraints: ['fit-text', 'allow-wrap', 'preserve-reading-order'],
-      });
-    } else if (role === 'section-divider') {
-      if (plannedSlide.keyPoint) {
-        elements.push(
-          this.textElement(id, 'body', 'rich-text', 'body', this.compact(plannedSlide.keyPoint, 180), 'content', 40),
-        );
-      }
-    } else if (role === 'quote') {
-      elements.push(
-        this.textElement(id, 'body', 'quote', 'body', this.compact(matchedSection?.body || plannedSlide.keyPoint, 220), 'quote', 40),
-      );
-    } else {
-      if (matchedSection?.body || plannedSlide.keyPoint) {
-        elements.push(
-          this.textElement(id, 'body', 'rich-text', 'body', this.compact(matchedSection?.body || plannedSlide.keyPoint, 220), 'content', 40),
-        );
-      }
-
-      if (matchedSection?.bullets?.length) {
-        elements.push({
-          id: `${id}-list`,
-          kind: 'list',
-          slot: role === 'process' ? 'steps' : 'content',
-          layer: 50,
-          ordered: role === 'process' || role === ('agenda' as PptDslSlideRole),
-          items: matchedSection.bullets.slice(0, role === 'process' ? 5 : 4),
-          style: { typographyToken: 'body', colorToken: 'textSecondary' },
-          constraints: ['fit-text', 'allow-wrap', 'preserve-reading-order'],
-        });
-      }
-
-      if (matchedSection?.tableData) {
-        elements.push({
-          id: `${id}-table`,
-          kind: 'table',
-          slot: 'content',
-          layer: 70,
-          headers: matchedSection.tableData.headers,
-          rows: matchedSection.tableData.rows,
-          constraints: ['fit-text', 'keep-within-safe-area'],
-        });
-      }
-
-      if (matchedSection?.codeBlocks?.[0]) {
-        elements.push({
-          id: `${id}-code`,
-          kind: 'code',
-          slot: 'content',
-          layer: 72,
-          language: matchedSection.codeBlocks[0].language,
-          code: matchedSection.codeBlocks[0].content,
-          style: { typographyToken: 'mono', backgroundToken: 'surfaceAlt' },
-          constraints: ['fit-text', 'allow-wrap', 'keep-within-safe-area'],
-        });
-      }
-
-      if (matchedSection?.formulas?.[0]) {
-        elements.push({
-          id: `${id}-formula`,
-          kind: 'formula',
-          slot: 'visual',
-          layer: 80,
-          formula: matchedSection.formulas[0],
-          constraints: ['preserve-aspect-ratio', 'keep-within-safe-area'],
-        });
-      }
-
-      if (matchedSection?.mermaidDefinitions?.[0]) {
-        elements.push({
-          id: `${id}-mermaid`,
-          kind: 'mermaid',
-          slot: 'visual',
-          layer: 82,
-          definition: matchedSection.mermaidDefinitions[0],
-          constraints: ['preserve-aspect-ratio', 'keep-within-safe-area'],
-        });
-      }
-
-      if (this.shouldAddSvgForRole(role)) {
-        elements.push({
-          id: `${id}-visual`,
-          kind: 'svg',
-          slot: 'visual',
-          layer: 90,
-          generationPrompt: `Create a concise SVG explanation for: ${plannedSlide.title}.`,
-          constraints: ['no-real-image', 'preserve-aspect-ratio', 'keep-within-safe-area'],
-        });
-      }
-    }
-
-    elements.push(
-      this.textElement(id, 'takeaway', 'statement', 'takeaway', this.compact(plannedSlide.objective || plannedSlide.keyPoint, 90), 'takeaway', 60),
-    );
-
-    return {
-      id,
-      index: slideIndex,
-      role,
-      intent: plannedSlide.objective || plannedSlide.keyPoint,
-      sourceRefs: plannedSlide.sourceCoverage,
-      layout: {
-        composition: this.pickComposition(role, index),
-        frame: {
-          direction: this.pickFrameDirection(role),
-          padding: { top: 0.48, right: 0.62, bottom: 0.48, left: 0.62 },
-          gap: 0.32,
-          align: role === 'cover' || role === 'closing' ? 'center' : 'start',
-          columns: role === 'comparison' ? 2 : undefined,
-        },
-        slots: this.defaultSlots(role),
-      },
-      elements,
-      speakerNotes: plannedSlide.keyPoint,
-    };
-  }
-
-  private mapLayoutHintToRole(layoutHint: string, fallbackRole: string): PptDslSlideRole {
-    switch (layoutHint) {
-      case 'cover': return 'cover';
-      case 'agenda': return 'agenda';
-      case 'section-divider': return 'section-divider';
-      case 'comparison': return 'comparison';
-      case 'process': return 'process';
-      case 'quote': return 'quote';
-      case 'summary-closing': return 'closing';
-      default:
-        if (fallbackRole === 'closing' || fallbackRole === 'summary') return 'closing';
-        return 'content';
-    }
-  }
-
-  private shouldAddSvgForRole(role: PptDslSlideRole): boolean {
-    return role === 'cover' || role === 'closing' || role === 'process' || role === 'comparison';
-  }
-
-  private pickFrameDirection(role: PptDslSlideRole): 'vertical' | 'horizontal' | 'grid' | 'hero' {
-    switch (role) {
-      case 'cover': return 'hero';
-      case 'comparison': return 'grid';
-      case 'process': return 'horizontal';
-      case 'quote':
-      case 'section-divider': return 'vertical';
-      default: return 'vertical';
-    }
   }
 
   private buildSlide(input: {
@@ -638,51 +406,241 @@ export class PptDslBuilderService {
     };
   }
 
-  private buildDefaultDesign(analysis: PresentationAnalysis): PptDslDocument['design'] {
+  private buildDefaultDesign(
+    analysis: PresentationAnalysis,
+    document?: ParsedDocument,
+  ): PptDslDocument['design'] {
+    const theme = this.pickTheme(analysis, document);
+
     return {
-      intent: `Create a clear, structured deck for ${analysis.mainTopic}.`,
+      theme: {
+        name: theme.name,
+        style: theme.style,
+        rationale: theme.rationale,
+      },
+      intent: theme.intent.replace('{topic}', analysis.mainTopic),
       tokens: {
         color: {
-          background: '#F6F8FC',
-          surface: '#FFFFFF',
-          surfaceAlt: '#E8EEF5',
-          textPrimary: '#102033',
-          textSecondary: '#5B6B7F',
-          accent: '#0F766E',
-          accentSoft: '#D9F2F5',
-          border: '#D9E3F0',
-          inverseBackground: '#0B1F33',
-          inverseText: '#FFFFFF',
-          warning: '#F59E0B',
+          ...theme.color,
         },
         typography: {
-          display: { font: 'Aptos Display', size: 34, weight: 'semibold', colorToken: 'textPrimary' },
-          title: { font: 'Aptos Display', size: 30, weight: 'semibold', colorToken: 'textPrimary' },
-          subtitle: { font: 'Aptos', size: 16, colorToken: 'textSecondary' },
-          body: { font: 'Aptos', size: 14, colorToken: 'textSecondary' },
-          caption: { font: 'Aptos', size: 9, colorToken: 'textSecondary' },
-          mono: { font: 'Aptos Mono', size: 12, colorToken: 'textPrimary' },
+          display: { font: theme.displayFont, size: 36, weight: 'semibold', colorToken: 'textPrimary' },
+          title: { font: theme.displayFont, size: 31, weight: 'semibold', colorToken: 'textPrimary' },
+          subtitle: { font: theme.bodyFont, size: 16, colorToken: 'textSecondary' },
+          body: { font: theme.bodyFont, size: 14, colorToken: 'textSecondary' },
+          caption: { font: theme.bodyFont, size: 9, colorToken: 'textSecondary' },
+          mono: { font: theme.monoFont, size: 12, colorToken: 'textPrimary' },
         },
         spacing: {
-          pageMarginX: 0.62,
-          pageMarginY: 0.48,
-          sectionGap: 0.32,
-          itemGap: 0.16,
+          ...theme.spacing,
         },
         radius: {
-          card: 0.16,
-          panel: 0.22,
+          ...theme.radius,
         },
         stroke: {
-          default: 1,
+          default: theme.stroke,
         },
       },
-      rhythm: {
-        opening: 'Open with one strong promise.',
-        middle: 'Alternate explanation, structure, contrast, and evidence.',
-        closing: 'End with a concise takeaway and next move.',
-      },
+      rhythm: theme.rhythm,
     };
+  }
+
+  private pickTheme(
+    analysis: PresentationAnalysis,
+    document?: ParsedDocument,
+  ): ReturnType<PptDslBuilderService['themePresets']>[number] {
+    const text = [
+      analysis.mainTopic,
+      analysis.summary,
+      analysis.audience,
+      analysis.tone,
+      ...(analysis.keyMessages ?? []),
+      ...(analysis.storyArc ?? []),
+      document?.rawText.slice(0, 4000),
+    ].join(' ').toLowerCase();
+    const presets = this.themePresets();
+
+    if (/market|growth|launch|startup|brand|product|用户|增长|发布|品牌/.test(text)) {
+      return presets.find((preset) => preset.name === 'startup-bold')!;
+    }
+    if (/finance|board|executive|strategy|risk|投资|董事会|战略|风险/.test(text)) {
+      return presets.find((preset) => preset.name === 'executive-ink')!;
+    }
+    if (/research|paper|academic|study|education|课程|研究|论文|教学/.test(text)) {
+      return presets.find((preset) => preset.name === 'warm-paper')!;
+    }
+    if (/data|metric|dashboard|platform|architecture|rag|ai|llm|system|工程|架构|数据|平台/.test(text)) {
+      return presets.find((preset) => preset.name === 'data-dashboard')!;
+    }
+    return presets.find((preset) => preset.name === 'academic-clean')!;
+  }
+
+  private themePresets(): Array<{
+    name: string;
+    style: string;
+    rationale: string;
+    intent: string;
+    displayFont: string;
+    bodyFont: string;
+    monoFont: string;
+    color: Record<string, string>;
+    spacing: Record<string, number>;
+    radius: Record<string, number>;
+    stroke: number;
+    rhythm: PptDslDocument['design']['rhythm'];
+  }> {
+    return [
+      {
+        name: 'data-dashboard',
+        style: 'Dark analytical dashboard with electric cyan accents and dense system panels.',
+        rationale: 'Best for technical, AI, data, architecture, and platform documents.',
+        intent: 'Create a high-contrast analytical deck for {topic}, like a polished command center.',
+        displayFont: 'Aptos Display',
+        bodyFont: 'Aptos',
+        monoFont: 'Aptos Mono',
+        color: {
+          background: '#07111F',
+          surface: '#0E1B2D',
+          surfaceAlt: '#14243A',
+          textPrimary: '#EAF2FF',
+          textSecondary: '#93A9C8',
+          accent: '#38BDF8',
+          accentSoft: '#123C55',
+          border: '#24415F',
+          inverseBackground: '#EAF2FF',
+          inverseText: '#07111F',
+          warning: '#FBBF24',
+        },
+        spacing: { pageMarginX: 0.58, pageMarginY: 0.44, sectionGap: 0.28, itemGap: 0.14 },
+        radius: { card: 0.08, panel: 0.12 },
+        stroke: 1.2,
+        rhythm: {
+          opening: 'Open like a system dashboard with a sharp thesis.',
+          middle: 'Alternate architecture, evidence, and decision panels.',
+          closing: 'End with a clear operating recommendation.',
+        },
+      },
+      {
+        name: 'executive-ink',
+        style: 'Premium dark executive briefing with restrained gold accents.',
+        rationale: 'Best for strategy, finance, risk, leadership, and board-level material.',
+        intent: 'Create a premium executive briefing for {topic}, restrained and decisive.',
+        displayFont: 'Georgia',
+        bodyFont: 'Aptos',
+        monoFont: 'Aptos Mono',
+        color: {
+          background: '#11100E',
+          surface: '#1B1915',
+          surfaceAlt: '#252119',
+          textPrimary: '#F7F1E5',
+          textSecondary: '#B8AA95',
+          accent: '#D6A84F',
+          accentSoft: '#3A2D15',
+          border: '#3A3428',
+          inverseBackground: '#F7F1E5',
+          inverseText: '#11100E',
+          warning: '#EAB308',
+        },
+        spacing: { pageMarginX: 0.7, pageMarginY: 0.56, sectionGap: 0.36, itemGap: 0.18 },
+        radius: { card: 0.04, panel: 0.08 },
+        stroke: 0.9,
+        rhythm: {
+          opening: 'Open with a boardroom thesis.',
+          middle: 'Use fewer, stronger claims with deliberate contrast.',
+          closing: 'Close on a decisive recommendation.',
+        },
+      },
+      {
+        name: 'warm-paper',
+        style: 'Warm editorial paper system with clay, ink, and soft annotation blocks.',
+        rationale: 'Best for research, education, essays, and explanatory writing.',
+        intent: 'Create a warm editorial explanation deck for {topic}, thoughtful and readable.',
+        displayFont: 'Georgia',
+        bodyFont: 'Aptos',
+        monoFont: 'Aptos Mono',
+        color: {
+          background: '#F7EFE3',
+          surface: '#FFF9EF',
+          surfaceAlt: '#ECDDC9',
+          textPrimary: '#2B2118',
+          textSecondary: '#756455',
+          accent: '#B85C38',
+          accentSoft: '#F1CDBA',
+          border: '#DBC7AE',
+          inverseBackground: '#2B2118',
+          inverseText: '#FFF9EF',
+          warning: '#C47A1C',
+        },
+        spacing: { pageMarginX: 0.72, pageMarginY: 0.52, sectionGap: 0.34, itemGap: 0.18 },
+        radius: { card: 0.18, panel: 0.26 },
+        stroke: 0.8,
+        rhythm: {
+          opening: 'Open like an editorial argument.',
+          middle: 'Alternate explanation, annotation, and synthesis.',
+          closing: 'End with a memorable distilled insight.',
+        },
+      },
+      {
+        name: 'startup-bold',
+        style: 'Bold launch deck with energetic coral, cream, and oversized type.',
+        rationale: 'Best for product, growth, startup, brand, and launch narratives.',
+        intent: 'Create a bold launch-style deck for {topic}, energetic and memorable.',
+        displayFont: 'Aptos Display',
+        bodyFont: 'Aptos',
+        monoFont: 'Aptos Mono',
+        color: {
+          background: '#FFF7ED',
+          surface: '#FFFFFF',
+          surfaceAlt: '#FFE1CF',
+          textPrimary: '#27140C',
+          textSecondary: '#7A4B35',
+          accent: '#F05A28',
+          accentSoft: '#FFD4BE',
+          border: '#F4B99A',
+          inverseBackground: '#27140C',
+          inverseText: '#FFF7ED',
+          warning: '#F59E0B',
+        },
+        spacing: { pageMarginX: 0.58, pageMarginY: 0.42, sectionGap: 0.3, itemGap: 0.14 },
+        radius: { card: 0.24, panel: 0.32 },
+        stroke: 1.4,
+        rhythm: {
+          opening: 'Open with a launch-poster moment.',
+          middle: 'Keep claims punchy with bold visual breaks.',
+          closing: 'Close with momentum and a concrete next step.',
+        },
+      },
+      {
+        name: 'academic-clean',
+        style: 'Clean academic whiteboard with blue-gray structure and quiet emphasis.',
+        rationale: 'Good default for general explanatory content.',
+        intent: 'Create a clean academic explanation deck for {topic}, calm and precise.',
+        displayFont: 'Aptos Display',
+        bodyFont: 'Aptos',
+        monoFont: 'Aptos Mono',
+        color: {
+          background: '#F8FAFC',
+          surface: '#FFFFFF',
+          surfaceAlt: '#E2E8F0',
+          textPrimary: '#172033',
+          textSecondary: '#64748B',
+          accent: '#2563EB',
+          accentSoft: '#DBEAFE',
+          border: '#CBD5E1',
+          inverseBackground: '#172033',
+          inverseText: '#FFFFFF',
+          warning: '#D97706',
+        },
+        spacing: { pageMarginX: 0.64, pageMarginY: 0.48, sectionGap: 0.32, itemGap: 0.16 },
+        radius: { card: 0.12, panel: 0.18 },
+        stroke: 1,
+        rhythm: {
+          opening: 'Open with a clear learning objective.',
+          middle: 'Build understanding step by step.',
+          closing: 'End with a concise synthesis.',
+        },
+      },
+    ];
   }
 
   private defaultSlots(role: PptDslSlideRole): PptDslSlide['layout']['slots'] {

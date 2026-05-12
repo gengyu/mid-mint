@@ -7,6 +7,8 @@
 ## 当前目标
 
 - 解析输入文档并产出稳定的结构化中间产物
+- 用 LangGraph 管理生成主链路的 agent workflow
+- 用 LangChain Runnable 管理 LLM JSON 调用
 - 用 LLM 生成内容分析、叙事结构和多轮 refinement
 - 生成统一的 `ppt-dsl.json`，用描述语言表达整套 PPT
 - 用 `design` 描述整套 PPT 的风格体系、主题样式和设计 tokens
@@ -35,15 +37,13 @@
 - constraints
 - speaker notes
 
-现有 `deck-plan / design-plan / layout-plan / visual-plan / slide-specs` 会迁移到 `debug/` 或作为兼容视图保留，不再作为长期主协议。
-
 第四版不使用固定模板库，不走真实图片链路，主视觉和技术表达优先使用 SVG / Mermaid / Formula 等稳定可控资产。
 
 ## 当前主流程
 
 ```txt
 Document
-  -> Parse
+  -> Parse with LangChain DocumentParserTool
   -> Analyze
   -> PPT DSL Draft
   -> Refine PPT DSL
@@ -127,7 +127,6 @@ data/projects/<projectId>/
 - `content-analysis.json`
 - `ppt-dsl.json`
 - `iterations/round-xx/ppt-dsl.json`
-- `debug/*`
 - `iterations/round-xx/*`
 - `assets/*`
 - `output/presentation.pptx`
@@ -149,11 +148,11 @@ src/
 ├── config/
 └── modules/
     ├── projects/
-    ├── pipeline/
-    ├── parser/
+    ├── pipeline/   # LangGraph workflow
+    ├── tools/      # LangChain-compatible tools
     ├── llm/
-    ├── visuals/
-    ├── slides/
+    ├── ppt-dsl/
+    ├── assets/
     ├── renderer/
     └── storage/
 ```
@@ -174,7 +173,6 @@ data/projects/<projectId>/
 │       ├── objective.json
 │       └── ppt-dsl.json
 ├── assets/
-├── debug/
 └── output/
     └── presentation.pptx
 ```
@@ -197,8 +195,11 @@ pnpm smoke
 ## 推荐阅读顺序
 
 1. [AGENTS.md](/Users/gengyu/github/mid-mint/AGENTS.md)
-2. [V4_DSL_FIRST_PLAN.md](/Users/gengyu/github/mid-mint/docs/V4_DSL_FIRST_PLAN.md)
-3. [PPT_DSL.md](/Users/gengyu/github/mid-mint/docs/PPT_DSL.md)
-4. [FILE_CONTRACTS.md](/Users/gengyu/github/mid-mint/docs/FILE_CONTRACTS.md)
-5. [V3_REQUIREMENTS_ARCHIVE.md](/Users/gengyu/github/mid-mint/docs/archive/V3_REQUIREMENTS_ARCHIVE.md)
-6. [sample.md](/Users/gengyu/github/mid-mint/examples/sample.md)
+2. [docs/README.md](/Users/gengyu/github/mid-mint/docs/README.md)
+3. [V4_DSL_FIRST_PLAN.md](/Users/gengyu/github/mid-mint/docs/product/V4_DSL_FIRST_PLAN.md)
+4. [TASKS.md](/Users/gengyu/github/mid-mint/docs/product/TASKS.md)
+5. [AI_PROJECT_MANAGEMENT.md](/Users/gengyu/github/mid-mint/docs/process/AI_PROJECT_MANAGEMENT.md)
+6. [PPT_DSL.md](/Users/gengyu/github/mid-mint/docs/architecture/PPT_DSL.md)
+7. [FILE_CONTRACTS.md](/Users/gengyu/github/mid-mint/docs/reference/FILE_CONTRACTS.md)
+8. [V3_REQUIREMENTS_ARCHIVE.md](/Users/gengyu/github/mid-mint/docs/archive/V3_REQUIREMENTS_ARCHIVE.md)
+9. [sample.md](/Users/gengyu/github/mid-mint/examples/sample.md)
